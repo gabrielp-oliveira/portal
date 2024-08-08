@@ -1,0 +1,29 @@
+
+
+
+<button (click)="googleLogin()">google</button>
+<button (click)="microsoftLogin()">microsoft</button>
+<br>
+<br>
+<br>
+
+<form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+    <label for="email">Email: </label>
+    <input id="email" type="email" formControlName="email"/>
+    <br />
+  
+    <label for="password">password: </label>
+    <input id="password" type="password" formControlName="password" />
+    
+    
+    
+    
+    <br />
+    <a routerLink="/auth/signup">sign up</a>
+
+    <br />
+      <button type="submit" [disabled]="!signUpForm.valid">Submit Profile</button>
+  </form>
+
+
+
