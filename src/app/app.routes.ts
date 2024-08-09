@@ -1,16 +1,17 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { NoAuthGuard } from './guards/no-auth-guard.guard';
 
 export const routes: Routes = [
     {
-      path: 'auth/login',
+      path: 'login',
       loadComponent: () => import('./standAlone/auth/auth.component').then(c => c.AuthComponent),
-      // canDeactivate: [AuthGuard]
+      canActivate: [NoAuthGuard]
     },
     {
-      path: 'auth/signup',
-      loadComponent: () => import('./standAlone/auth/signUp.component').then(c => c.SignUpComponent),
-      // canDeactivate: [AuthGuard]
+      path: 'signup',
+      loadComponent: () => import('./standAlone/signup/signup.component').then(c => c.SignupComponent),
+      canActivate: [NoAuthGuard]
     },
     {
       path: '',

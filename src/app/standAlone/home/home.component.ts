@@ -15,6 +15,7 @@ export class HomeComponent {
   isUserLogged:boolean = false
   constructor(private auth: AuthService){}
   ngOnInit(){
-   this.isUserLogged= this.auth.logged 
+   this.isUserLogged= this.auth.isUserLogged() 
+   console.log(this.isUserLogged)
   }
 }

@@ -13,17 +13,17 @@ export class AuthGuard implements CanActivate {
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-      console.log('..')
-
-    const token = localStorage.getItem('accessToken');
-    const tokenExpiry = new Date(localStorage.getItem('expiry') || '');
-    if (token && tokenExpiry.getTime() > new Date().getTime()) {
+      console.log(1)
+      
+      const token = localStorage.getItem('accessToken');
+      const tokenExpiry = new Date(localStorage.getItem('expiry') || '');
+      if (token && tokenExpiry.getTime() > new Date().getTime()) {
       delete next.queryParams['accessToken']
       delete next.queryParams['expiry']
       this.auth.logged = true
       return true;
     } else {
-
+      
       const urlToken = next.queryParams['accessToken'];
       const tokenExpiry = next.queryParams['expiry'];
       if (urlToken) {
@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
         this.auth.logged = false
         return false; // Return false to ensure the route gets reactivated
       } else {
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/login']);
         this.auth.logged = false
         return false;
       }

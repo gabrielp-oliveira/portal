@@ -9,17 +9,17 @@
 
 <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
     <label for="email">Email: </label>
-    <input id="email" type="email" formControlName="email"/>
+    <input id="email" type="email" formControlName="email" required/>
     <br />
   
     <label for="password">password: </label>
-    <input id="password" type="password" formControlName="password" />
+    <input id="password" type="password" formControlName="password" required/>
     
     
     
     
     <br />
-    <a routerLink="/auth/signup">sign up</a>
+    <a routerLink="/signup">sign up</a>
 
     <br />
       <button type="submit" [disabled]="!signUpForm.valid">Submit Profile</button>

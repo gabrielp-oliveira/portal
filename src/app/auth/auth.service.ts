@@ -22,10 +22,23 @@ export class AuthService {
   microsoftLogin() {
     this.http.get<{ url: string }>('http://localhost:8080/auth/microsoft/getUrl').subscribe(response => {
       const url: any = response
+      console.log(url)
       window.location.href = url;
     });
   }
 
+  isUserLogged() :boolean{
+
+    const token = localStorage.getItem('accessToken');
+
+    const expiry = new Date(localStorage.getItem('expiry') || '');
+    if (token && expiry.getTime() > new Date().getTime()) {
+      return true;
+    }else{    
+      return false;
+    }
+
+  }
 
   logOut(){
     localStorage.clear();
@@ -49,5 +62,21 @@ export class AuthService {
         return throwError(error);
       })
     );
+  }
+
+  signUp(body:any){
+    this.http.post<{ url: string }>('http://localhost:8080/signup', body).subscribe(response => {
+      const url: any = response
+      window.location.href = url;
+    });
+  }
+  login(body:any){
+    this.http.post<{ url: string }>('http://localhost:8080/login', body).subscribe(response => {
+      console.log(response)
+
+      this.router.navigate(['/dashboard'])
+    }, (err) => {
+      console.error(err.message)
+    });
   }
 }

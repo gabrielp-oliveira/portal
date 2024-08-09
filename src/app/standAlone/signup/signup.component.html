@@ -1,0 +1,26 @@
+<p>signup works!</p>
+
+<form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+    <label for="email">Email: </label>
+    <input id="email" type="email" formControlName="email" />
+    <label for="email">Full Name: </label>
+    <input id="name" type="name" formControlName="name" />
+    <br />
+
+
+    <label for="password">Password: </label>
+    <input id="password" type="password" formControlName="password" />
+    <br />
+
+    <label for="confirmPassword">Confirm Password: </label>
+    <input id="confirmPassword" type="password" formControlName="confirmPassword" />
+    <br />
+    <div *ngIf="signUpForm.hasError('mismatch') && signUpForm.get('confirmPassword')?.touched">
+        <span>Passwords do not match.</span>
+    </div>
+
+    <br />
+    <button type="submit" [disabled]="!signUpForm.valid">Submit Profile</button>
+</form>
+
+<a routerLink="/login">login</a>
