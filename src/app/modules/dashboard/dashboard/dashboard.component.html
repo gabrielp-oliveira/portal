@@ -7,5 +7,13 @@
 <br>
 <br>
 
-<button mat-raised-button (click)="openDialog('150ms', '150ms')">Open dialog slowly</button>
+<button mat-raised-button (click)="openDialog('150ms', '150ms')">Create new world</button>
+<br>
 
+<ul>
+    <li *ngFor="let w of worldList">
+        <a [routerLink]="['/world', w.id]">{{w.name}}</a>
+
+
+    </li>
+</ul>

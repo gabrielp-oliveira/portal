@@ -23,7 +23,8 @@ export const routes: Routes = [
       canActivate: [AuthGuard]
     },
     {
-      path: 'papper',
-      loadChildren: () => import('./modules/papper/papper.module').then(c => c.PapperModule)
-    },
+      path: 'world/:id',
+      loadChildren: () => import('./modules/world/world.module').then(c => c.worldModule),
+      canActivate: [AuthGuard]
+    }
   ];

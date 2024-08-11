@@ -13,7 +13,6 @@ export class AuthGuard implements CanActivate {
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-      console.log(1)
       
       const token = localStorage.getItem('accessToken');
       const tokenExpiry = new Date(localStorage.getItem('expiry') || '');

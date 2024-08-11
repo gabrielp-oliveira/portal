@@ -6,7 +6,6 @@ import { tap } from 'rxjs/operators';
 @Injectable()
 export class HeaderInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('header interceptor')
     return next.handle(req).pipe(
       tap(event => {
         if (event instanceof HttpResponse) {
@@ -14,7 +13,6 @@ export class HeaderInterceptor implements HttpInterceptor {
           const accessToken = event.headers.get('accessToken');
           const tokenExpiry = event.headers.get('expiry');
 
-          console.log(tokenExpiry)
 
           if (accessToken) {
             localStorage.setItem('accessToken', accessToken);

@@ -3,28 +3,64 @@ import { ApiService } from '../../api.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
-import { world } from '../../../models/papperTrailTypes';
+import { Papper, world } from '../../../models/papperTrailTypes';
+import { ErrorService } from '../../error.service';
+import { WorldDataService } from '../world-data.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent  {
+export class DashboardComponent {
 
-  constructor(private api:ApiService, private auth:AuthService, public dialog: MatDialog){}
-  ngOnInit(){
-    this.api.GetRootList().subscribe((worldList) => {
-      console.log(worldList)
-    })
+  constructor(
+    private err: ErrorService,
+    private api: ApiService,
+    private auth: AuthService,
+    public dialog: MatDialog,
+    private wp:WorldDataService
+  ) { }
+
+  worldList: world[] = []
+  papperList: Papper[] = []
+
+  ngOnInit() {
+    this.api.getWorldList().subscribe({
+      next: (worldList) => {
+        console.log(worldList);
+        this.worldList = worldList
+      },
+      error: (err) => {
+        this.err.errHandler(err)
+      },
+      complete: () => {
+        console.log('Operação concluída');
+      }
+    });
+
   }
 
-  logOut(){
+  logOut() {
     this.auth.logOut()
   }
 
+  getPapperList(worldId: string) {
+    this.api.getPapperList(worldId).subscribe({
+      next: (worldList) => {
+        console.log(worldList);
+        this.papperList = worldList
+      },
+      error: (err) => {
+        this.err.errHandler(err)
+      },
+      complete: () => {
+        console.log('Operação concluída');
+      }
+    });
+  }
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.open(createWorldPapperDialogComponent, {
+    this.dialog.open(createWorldDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,
@@ -36,18 +72,18 @@ export class DashboardComponent  {
 
 
 @Component({
-  selector: 'app-createPapperDialog',
+  selector: 'app-createWorldDialog',
   templateUrl: './dialogs/createWorldRootDialog.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class createWorldPapperDialogComponent  {
+export class createWorldDialogComponent {
   worldForm: FormGroup;
-  constructor(private fb: FormBuilder,private api:ApiService,){
+  constructor(private fb: FormBuilder, private api: ApiService,) {
     this.worldForm = this.fb.group({
       Name: ['', [Validators.required]],
     });
   }
-  onSubmit(){
+  onSubmit() {
     this.api.Createworld(this.worldForm.value).subscribe((world) => {
       console.log(world)
     })

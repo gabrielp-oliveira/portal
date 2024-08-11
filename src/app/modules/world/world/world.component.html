@@ -1,0 +1,20 @@
+<p>world component works!</p>
+<div *ngIf="world$ | async as world">
+    <h1>{{ world.name }}</h1>
+    <p>ID: {{ world.id }}</p>
+    <p>Created At: {{ world.created_at }}</p>
+    <!-- Outras propriedades do world -->
+  </div>
+<button mat-raised-button (click)="openDialog('150ms', '150ms')">Create new papper</button>
+
+<ul>
+    papper list
+    <br>
+        <li *ngFor="let papper of pappers$ | async">
+          {{ papper.name }} - {{ papper.Description }}
+        </li>
+    
+</ul>
+<br>
+<br>
+<button mat-raised-button (click)="openDialog('150ms', '150ms')">Create new chapter</button>
