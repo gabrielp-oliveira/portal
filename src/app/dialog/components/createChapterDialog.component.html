@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Create new chapter</h2>
+<mat-dialog-content>
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+    <label for="Name">Chapter Name: </label>
+    <input id="Name" type="text" formControlName="name" />
+    
+    <label for="description">Chapter Description: </label>
+    <input id="description" type="text" formControlName="description" />
+    
+    <label for="papper">Choose a papper to save your new chapter: </label>
+    <select id="papper" formControlName="papper_id">
+      <option value="">Choose a papper</option>
+      <option *ngFor="let papper of pappers$ | async" [value]="papper.id">
+        {{ papper.name }} - {{ papper.description }}
+      </option>
+    </select>
+    
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>

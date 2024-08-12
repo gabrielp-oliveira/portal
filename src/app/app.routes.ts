@@ -26,5 +26,10 @@ export const routes: Routes = [
       path: 'world/:id',
       loadChildren: () => import('./modules/world/world.module').then(c => c.worldModule),
       canActivate: [AuthGuard]
+    },
+    {
+      path: 'world/:id/chapter/:chapterId',
+      loadChildren: () => import('./modules/docx/docx.module').then(c => c.DocxModule),
+      canActivate: [AuthGuard]
     }
   ];

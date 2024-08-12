@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { createPapperDialogComponent, WorldComponent } from './world/world.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { WorldComponent } from './world/world.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { dialogModule } from '../../dialog/dialog.module';
 
 const routes: Routes = [
   {
@@ -13,10 +13,10 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [WorldComponent, createPapperDialogComponent],
+  declarations: [WorldComponent],
   imports: [
     CommonModule,
-    MatDialogModule,
+    dialogModule,
     ReactiveFormsModule,
 
     RouterModule.forChild(routes)

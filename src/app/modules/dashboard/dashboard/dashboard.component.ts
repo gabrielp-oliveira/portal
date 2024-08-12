@@ -6,6 +6,7 @@ import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from "@angula
 import { Papper, world } from '../../../models/papperTrailTypes';
 import { ErrorService } from '../../error.service';
 import { WorldDataService } from '../world-data.service';
+import { DialogService } from '../../../dialog/dialog.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,7 +19,7 @@ export class DashboardComponent {
     private err: ErrorService,
     private api: ApiService,
     private auth: AuthService,
-    public dialog: MatDialog,
+    private dialog: DialogService,
     private wp:WorldDataService
   ) { }
 
@@ -60,33 +61,11 @@ export class DashboardComponent {
     });
   }
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.open(createWorldDialogComponent, {
-      width: '350px',
-      enterAnimationDuration,
-      exitAnimationDuration,
-    });
+    this.dialog.openCreateWorldDialog(enterAnimationDuration, exitAnimationDuration)
+    
   }
 
 
 }
 
 
-@Component({
-  selector: 'app-createWorldDialog',
-  templateUrl: './dialogs/createWorldRootDialog.component.html',
-  styleUrl: './dashboard.component.scss'
-})
-export class createWorldDialogComponent {
-  worldForm: FormGroup;
-  constructor(private fb: FormBuilder, private api: ApiService,) {
-    this.worldForm = this.fb.group({
-      Name: ['', [Validators.required]],
-    });
-  }
-  onSubmit() {
-    this.api.Createworld(this.worldForm.value).subscribe((world) => {
-      console.log(world)
-    })
-  }
-
-}

@@ -63,6 +63,10 @@ export class WorldDataService {
     const chapters = this.chaptersSubject.value;
     this.chaptersSubject.next([...chapters, chapter]);
   }
+  getChapterLink(id: string): string{
+    return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
+  }
+  
 
   addEvent(event: Event): void {
     const events = this.eventsSubject.value;
@@ -110,9 +114,10 @@ export class WorldDataService {
       id: data.id,
       name: data.name
   }
+
   this.setWorld(basicworldInfo)
   this.setPappers(data.Pappers)
-  this.setChapters(data.Chapters)
+  this.setChapters(data.chapters)
   this.setConnections(data.Connections)
   this.setEvents(data.Events)
   this.setTimelines(data.Timelines)
