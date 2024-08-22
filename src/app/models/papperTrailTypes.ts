@@ -21,19 +21,23 @@ export type Papper = {
     description: string,
     Path: string,
     Created_at: string,
-    World_id: string,
+    world_id: string,
+    chapter?: Chapter[],
+    order?: number
 }
 
 
 export type Chapter = {
     id: string,
-    WorldsID: string,
+    world_id: string,
     name: string,
     description: string,
     createdAt: string,
-    PapperID: string,
+    papper_id: string,
     EventID: string,
     TimelineID: string,
+    order?: number
+
 }
 
 export type Connection = {

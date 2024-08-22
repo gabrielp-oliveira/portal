@@ -36,8 +36,14 @@ export class WorldComponent {
 
   openChapter(worldId: string | undefined, papperId: string){
     this.router.navigate([`/world/${worldId}/chapter/${papperId}`]);
+  }
 
-    // this.wd.getChapterLink(id)
+  updateChapter(pachapterId: string){
+    this.dialog.openUpdateChapterDialog('150ms', '150ms', pachapterId) 
+  }
+
+  updatePapper(papperId: string){
+    this.dialog.openUpdatePapperrDialog('150ms', '150ms', papperId) 
   }
   private loadWorldData(id: string): void {
     this.api.getWorldData(id).subscribe({

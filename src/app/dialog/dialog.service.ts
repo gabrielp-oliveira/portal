@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { createChapterDialogComponent, createPapperDialogComponent, createWorldDialogComponent } from './components/dialog.component';
+import { createChapterDialogComponent, createPapperDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
@@ -12,6 +12,14 @@ export class DialogService {
 
 
   
+  openDialog(component:any, enterAnimationDuration: string, exitAnimationDuration: string, data?: any){
+    this.dialog.open(component, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: data
+    });
+  }
 
   openCreateWorldDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createWorldDialogComponent, {
@@ -26,6 +34,22 @@ export class DialogService {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,
+    });
+  }
+  openUpdateChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string, chapterId: string): void {
+    this.dialog.open(UpdateChapterDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: {chapterId: chapterId}
+    });
+  }
+  openUpdatePapperrDialog(enterAnimationDuration: string, exitAnimationDuration: string, papperId: string): void {
+    this.dialog.open(UpdatePapperDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: {papperId: papperId}
     });
   }
   openCreateChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {

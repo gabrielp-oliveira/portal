@@ -13,7 +13,8 @@
     papper list
     <br>
     <li *ngFor="let papper of pappers$ | async">
-      {{ papper.name }} - {{ papper.description }}
+      {{ papper.name }} - {{ papper.description }} 
+      <button (click)="updatePapper(papper.id)">Update</button>
     </li>
     
   </ul>
@@ -21,7 +22,9 @@
     chapter list
     <br>
     <li *ngFor="let chapter of chapters$ | async">
-      {{ chapter.name }} - {{ chapter.description }} <button (click)="openChapter(world.id, chapter.id)">Open</button>
+      {{ chapter.name }} - {{ chapter.description }}
+      <button (click)="openChapter(world.id, chapter.id)">Open</button>
+      <button (click)="updateChapter(chapter.id)">update</button>
     </li>
     
   </ul>
