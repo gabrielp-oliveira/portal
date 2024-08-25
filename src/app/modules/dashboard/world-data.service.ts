@@ -63,6 +63,18 @@ export class WorldDataService {
     const chapters = this.chaptersSubject.value;
     this.chaptersSubject.next([...chapters, chapter]);
   }
+  updateChapter(chapter: Chapter): void {
+    const chapters = this.chaptersSubject.value.map(existingChapter => 
+      existingChapter.id === chapter.id ? chapter : existingChapter
+    );
+    this.chaptersSubject.next(chapters);
+  }
+  updatePapper(papper: Papper): void {
+    const pappers = this.pappersSubject.value.map(existingPapper => 
+      existingPapper.id === papper.id ? papper : existingPapper
+    );
+    this.pappersSubject.next(pappers);
+  }
   getChapterLink(id: string): string{
     return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
   }

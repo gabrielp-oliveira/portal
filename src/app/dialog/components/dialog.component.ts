@@ -143,7 +143,7 @@ import { Chapter } from '../../models/papperTrailTypes';
       )
     }
     addNewChapter(newChapter: Chapter){
-        this.wd.addChapter(newChapter)
+        this.wd.updateChapter(newChapter)
     }
   }
   @Component({
@@ -187,9 +187,7 @@ import { Chapter } from '../../models/papperTrailTypes';
       this.api.updatePapper(this.data.papperId, this.worldForm.value).subscribe(
         
         {
-            next: (data) => {
-              console.log(data)
-            },
+            next: (data) => this.wd.updatePapper(data),
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
