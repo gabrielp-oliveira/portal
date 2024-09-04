@@ -7,6 +7,7 @@ export type world = {
     Connections: Connection[],
     Timelines: Timeline[],
     Pappers: Papper[]
+    storyLines: StoryLine[]
 }
 export type basicWorld = {
     id?: string,
@@ -54,10 +55,29 @@ export type Event = {
 }
 
 
+
+
+
 export type Timeline = {
     id: string,
     WorldsID: string,
-    Date: string,
+    name: string,
+    description: string,
+    order: number,
+    range: number,
+    created_at: string,
+
+
+}
+
+
+export type StoryLine = {
+    id: string,
+    WorldsID: string,
+    name: string,
+    description: string,
+    Created_at: string,
+    order: number
 }
 
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { world, Papper, Chapter, Connection, Timeline, Event, basicWorld } from '../../models/papperTrailTypes';
+import { world, Papper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine } from '../../models/papperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +12,7 @@ export class WorldDataService {
   private chaptersSubject = new BehaviorSubject<Chapter[]>([]);
   private eventsSubject = new BehaviorSubject<Event[]>([]);
   private timelinesSubject = new BehaviorSubject<Timeline[]>([]);
+  private storylinesSubject = new BehaviorSubject<StoryLine[]>([]);
   private connectionsSubject = new BehaviorSubject<Connection[]>([]);
 
   // Observables para os componentes se inscreverem
@@ -20,6 +21,7 @@ export class WorldDataService {
   chapters$ = this.chaptersSubject.asObservable();
   events$ = this.eventsSubject.asObservable();
   timelines$ = this.timelinesSubject.asObservable();
+  storylines$ = this.storylinesSubject.asObservable();
   connections$ = this.connectionsSubject.asObservable();
 
   constructor() {}
@@ -47,6 +49,9 @@ export class WorldDataService {
 
   setTimelines(timelines: Timeline[]): void {
     this.timelinesSubject.next(timelines);
+  }
+  setStorylines(storyLine: StoryLine[]): void {
+    this.storylinesSubject.next(storyLine);
   }
 
   setConnections(connections: Connection[]): void {
@@ -133,6 +138,6 @@ export class WorldDataService {
   this.setConnections(data.Connections)
   this.setEvents(data.Events)
   this.setTimelines(data.Timelines)
-
+  this.setStorylines(data.storyLines)
   }
 }

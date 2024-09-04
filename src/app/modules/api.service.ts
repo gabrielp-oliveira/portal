@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, Papper, world } from '../models/papperTrailTypes';
+import { Chapter, Connection, Papper, world } from '../models/papperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -45,6 +45,9 @@ export class ApiService {
   }
   createChapter(body: Chapter):Observable<Chapter>  {
    return this.http.post<Chapter>('http://localhost:9090/createChapter', body)
+  }
+  createConnection(body: Connection):Observable<Chapter>  {
+   return this.http.post<Chapter>('http://localhost:9090/createConnection', body)
   }
 
 
