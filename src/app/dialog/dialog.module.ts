@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { createPapperDialogComponent, createChapterDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent } from './components/dialog.component';
+import { MatSliderModule } from '@angular/material/slider';
 
 
 
@@ -16,7 +17,8 @@ import { createPapperDialogComponent, createChapterDialogComponent, createWorldD
   imports: [
     CommonModule,
     MatDialogModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatSliderModule
   ]
 })
 export class dialogModule { }

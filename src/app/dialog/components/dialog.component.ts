@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter } from '../../models/papperTrailTypes';
+import { Chapter, Timeline } from '../../models/papperTrailTypes';
 
 
 
@@ -102,38 +102,60 @@ import { Chapter } from '../../models/papperTrailTypes';
     worldForm: FormGroup;
     worldId:string | undefined= ''
       errorHandler: any;
+      tl: Timeline[]
+      selectedTl: Timeline
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
+
+      this.timelines$.subscribe((tl) => {
+        this.tl = tl
+      })
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
         papper_id: ['', [Validators.required]],
         order: ['', [Validators.required]],
+        timeline_id: ['', [Validators.required]],
+        storyline_id: ['', [Validators.required]],
+        range: [0, [Validators.required]],
       });
 
-      this.api.getChapteData(this.data.chapterId).subscribe((chapter) => {
+      this.chapters$.subscribe((cpList) => {
+        const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
         console.log(chapter)
+
+        const e = {target: {value: chapter.timeline_id}}
+        this.getTimeLineDetails(e)
+
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
           name: chapter.name,
           description: chapter.description,
           order: chapter.order,
-          papper_id: chapter.papper_id
+          papper_id: chapter.papper_id,
+          timeline_id: chapter.timeline_id,
+          storyline_id: chapter.storyline_id,
+          range: chapter.range,
         });
-
       })
+
+
 
     }
 
     pappers$ = this.wd.pappers$;
+    timelines$ = this.wd.timelines$;
+    storylines$ = this.wd.storylines$;
     chapters$ = this.wd.chapters$;
     world$ = this.wd.world$;
+    range:number = 1
 
     onSubmit(){
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.chapterId
+      console.log(body)
       this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
         
         {
@@ -144,6 +166,19 @@ import { Chapter } from '../../models/papperTrailTypes';
     }
     addNewChapter(newChapter: Chapter){
         this.wd.updateChapter(newChapter)
+    }
+    formatLabel(value: number): string {
+      this.range = value
+      return `${value}`;
+    }
+
+
+    getTimeLineDetails(e:any){
+      const val:string = e.target.value
+      if(val.trim() != ""){
+        const result = this.tl.filter((t) => t.id == val)
+        this.selectedTl = result[0]
+      }
     }
   }
   @Component({

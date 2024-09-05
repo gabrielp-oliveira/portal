@@ -17,6 +17,35 @@
         {{ papper.name }} - {{ papper.description }}
       </option>
     </select>
+    <select id="timeline" formControlName="timeline_id" (change)="getTimeLineDetails($event)">
+      <option value="">Choose a timeline</option>
+      <option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
+        {{ timeline.name }}
+      </option>
+    </select>
+
+    <br>
+    <mat-slider
+    *ngIf="selectedTl.range"
+    min="1"
+    
+    id="range"
+    max={{selectedTl.range}}
+    step="1"
+    showTickMarks
+    discrete
+    [displayWith]="formatLabel"
+    >
+    <input matSliderThumb formControlName="range"/>
+  </mat-slider>
+  
+  <br>
+    <select id="storyline" formControlName="storyline_id">
+      <option value="">Choose a storyline</option>
+      <option *ngFor="let storyline of storylines$ | async" [value]="storyline.id">
+        {{ storyline.name }}
+      </option>
+    </select>
     
     <mat-dialog-actions>
       <button mat-button mat-dialog-close>Cancel</button>

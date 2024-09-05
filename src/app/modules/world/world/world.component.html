@@ -1,4 +1,4 @@
-<!-- <div *ngIf="world$ | async as world">
+<div *ngIf="world$ | async as world">
 <div>
 
   <p>world component works!</p>
@@ -11,7 +11,7 @@
   <ul>
     papper list
     <br>
-    <li *ngFor="let papper of pappers$ | async">
+    <li  *ngFor="let papper of pappers$ | async">
       {{ papper.name }} - {{ papper.description }} 
       <button (click)="updatePapper(papper.id)">Update</button>
     </li>
@@ -30,7 +30,7 @@
   <br>
   <br>
   <button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')">Create new chapter</button>
-</div> -->
+</div>
 
 
 <app-subway></app-subway>

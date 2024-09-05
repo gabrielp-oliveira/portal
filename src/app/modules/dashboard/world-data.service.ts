@@ -131,13 +131,12 @@ export class WorldDataService {
       id: data.id,
       name: data.name
   }
-
   this.setWorld(basicworldInfo)
-  this.setPappers(data.Pappers)
+  this.setPappers(data.pappers)
   this.setChapters(data.chapters)
   this.setConnections(data.Connections)
   this.setEvents(data.Events)
-  this.setTimelines(data.Timelines)
+  this.setTimelines(data.timelines)
   this.setStorylines(data.storyLines)
   }
 }

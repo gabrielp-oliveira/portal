@@ -5,8 +5,8 @@ export type world = {
     chapters: Chapter[],
     Events: Event[],
     Connections: Connection[],
-    Timelines: Timeline[],
-    Pappers: Papper[]
+    timelines: Timeline[],
+    pappers: Papper[]
     storyLines: StoryLine[]
 }
 export type basicWorld = {
@@ -28,7 +28,10 @@ export type Papper = {
 }
 
 
+
 export type Chapter = {
+    width: number
+    height: number
     id: string,
     world_id: string,
     name: string,
@@ -36,10 +39,19 @@ export type Chapter = {
     createdAt: string,
     papper_id: string,
     EventID: string,
-    TimelineID: string,
-    order?: number
-
+    timeline_id: string,
+    storyline_id: string,
+    range: number,
+    order?: number,
 }
+
+export type ChapterTimeline =  {
+	id  :       string      ,  
+	chapter_Id :string     ,   
+	timelineID :string,
+	range    :  number  ,          
+}
+
 
 export type Connection = {
     id: string,

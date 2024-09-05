@@ -77,10 +77,10 @@ export const LEGEND_TITLE_FONT_WEIGHT_DEFAULT = 300;
 export const LEGEND_TITLE_FONT_WEIGHT_HIGHLIGHTED = 800;
 export const LEGEND_ICON_RADIUS = 7;
 export const LEGEND_LINE_LENGTH = 15;
-export const LEGEND_FONT_SIZE = "20px";
+export const LEGEND_FONT_SIZE = "18px";
 
 //node
-export const NODE_RADIUS = 6;
+export const NODE_RADIUS = 4;
 export const NODE_ICON_LENGTH = 10;
 export const NODE_BACKGROUND_DEFAULT = "#fff";
 export const NODE_BORDER_COLOR_DEFAULT = "#000";
