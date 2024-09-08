@@ -6,6 +6,7 @@ import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
+import { Chapter, Papper } from '../../../models/papperTrailTypes';
 
 @Component({
   selector: 'app-world',
@@ -23,16 +24,49 @@ export class WorldComponent {
     private errorHandler: ErrorService
   ) { }
 
-  pappers$ = this.wd.pappers$;
+  pappers$: Papper[];
   world$ = this.wd.world$;
-  chapters$ = this.wd.chapters$;
+  chapters$: Chapter[]
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
       if (id) {
         this.loadWorldData(id);
       }
+
+      this.wd.chapters$.subscribe((c) => {
+        this.chapters$ = c
+      })
+      this.wd.pappers$.subscribe((p) => {
+        this.pappers$ = p
+      })
   }
+
+  papperBackgroundColor(order: number){
+    return {
+      'background-color': this.numberToRGB(order)
+    }
+  }
+  chapterBackgroundColor(id: string){
+
+    const a = this.pappers$.filter((p) => p.id == id)[0]
+
+    return {
+      'background-color': this.numberToRGB(a.order)
+    }
+  }
+  numberToRGB(num: number): string {
+    // Função hash simples para garantir que cores sejam geradas consistentemente
+    const hash = num * 2654435761 % 2**32;
+  
+    // Extrai valores de R, G, B a partir do hash
+    const r = (hash & 0xFF0000) >> 16;
+    const g = (hash & 0x00FF00) >> 8;
+    const b = (hash & 0x0000FF);
+  
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
 
   openChapter(worldId: string | undefined, papperId: string){
     this.router.navigate([`/world/${worldId}/chapter/${papperId}`]);

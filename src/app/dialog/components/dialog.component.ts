@@ -103,7 +103,15 @@ import { Chapter, Timeline } from '../../models/papperTrailTypes';
     worldId:string | undefined= ''
       errorHandler: any;
       tl: Timeline[]
-      selectedTl: Timeline
+      selectedTl: Timeline = {
+        range: 0,
+        id: '',
+        WorldsID: '',
+        name: '',
+        description: '',
+        order: 0,
+        created_at: ''
+      }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
@@ -123,20 +131,18 @@ import { Chapter, Timeline } from '../../models/papperTrailTypes';
 
       this.chapters$.subscribe((cpList) => {
         const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
-        console.log(chapter)
-
         const e = {target: {value: chapter.timeline_id}}
         this.getTimeLineDetails(e)
-
+        console.log(chapter)
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
           name: chapter.name,
           description: chapter.description,
           order: chapter.order,
           papper_id: chapter.papper_id,
-          timeline_id: chapter.timeline_id,
-          storyline_id: chapter.storyline_id,
-          range: chapter.range,
+          timeline_id: chapter?.timeline_id,
+          storyline_id: chapter?.storyline_id,
+          range: chapter?.range,
         });
       })
 
@@ -175,7 +181,8 @@ import { Chapter, Timeline } from '../../models/papperTrailTypes';
 
     getTimeLineDetails(e:any){
       const val:string = e.target.value
-      if(val.trim() != ""){
+      console.log(val)
+      if( val != null &&val.trim() != ""){
         const result = this.tl.filter((t) => t.id == val)
         this.selectedTl = result[0]
       }
@@ -252,5 +259,4 @@ import { Chapter, Timeline } from '../../models/papperTrailTypes';
     }
   
   }
-
 

@@ -80,7 +80,7 @@ export const LEGEND_LINE_LENGTH = 15;
 export const LEGEND_FONT_SIZE = "18px";
 
 //node
-export const NODE_RADIUS = 4;
+export const NODE_RADIUS = 8;
 export const NODE_ICON_LENGTH = 10;
 export const NODE_BACKGROUND_DEFAULT = "#fff";
 export const NODE_BORDER_COLOR_DEFAULT = "#000";
@@ -88,10 +88,11 @@ export const NODE_BORDER_WIDTH_DEFAULT = 1;
 export const NODE_BORDER_WIDTH_HIGHLIGHTED = 2;
 
 //edge
-export const EDGE_BORDER_WIDTH_DEFAULT = 3;
+export const EDGE_BORDER_WIDTH_DEFAULT = 4;
 export const EDGE_BORDER_COLOR_DEFAULT = "#999";
 export const LABEL_FONT_SIZE_DEFAULT = "12px";
-export const LABEL_FONT_SIZE_GROUP = "12px";
+export const LABEL_FONT_SIZE_GROUP = 12;
+export const TIMELINE_MARGIN = 12;
 
 //label
 export const LABEL_FONT_FAMILY_DEFAULT = "Arial ";

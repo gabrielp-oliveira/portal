@@ -23,7 +23,7 @@ export class WorldDataService {
   timelines$ = this.timelinesSubject.asObservable();
   storylines$ = this.storylinesSubject.asObservable();
   connections$ = this.connectionsSubject.asObservable();
-
+  worldId: string = ""
   constructor() {}
 
   getWorld(){
@@ -31,7 +31,8 @@ export class WorldDataService {
   }
 
   // Métodos para atualizar o estado
-  setWorld(world: basicWorld | null): void {
+  setWorld(world: basicWorld): void {
+    this.worldId = world.id
     this.worldSubject.next(world);
   }
 
@@ -134,7 +135,7 @@ export class WorldDataService {
   this.setWorld(basicworldInfo)
   this.setPappers(data.pappers)
   this.setChapters(data.chapters)
-  this.setConnections(data.Connections)
+  this.setConnections(data.connections)
   this.setEvents(data.Events)
   this.setTimelines(data.timelines)
   this.setStorylines(data.storyLines)

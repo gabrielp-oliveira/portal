@@ -46,8 +46,12 @@ export class ApiService {
   createChapter(body: Chapter):Observable<Chapter>  {
    return this.http.post<Chapter>('http://localhost:9090/createChapter', body)
   }
-  createConnection(body: Connection):Observable<Chapter>  {
-   return this.http.post<Chapter>('http://localhost:9090/createConnection', body)
+  createConnection(body: Connection):Observable<Connection>  {
+   return this.http.post<Connection>('http://localhost:9090/createConnection', body)
+  }
+  removeConnection(body: Connection):Observable<Connection>  {
+    return this.http.post<Connection>('http://localhost:9090/removeConnection', body)
+
   }
 
 

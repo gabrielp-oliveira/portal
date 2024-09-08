@@ -1,1 +1,17 @@
 <div id="subway" #subway></div>
+
+<button id="menuBtn" mat-button [matMenuTriggerFor]="menu" #chapterMenuTrigger="matMenuTrigger" style="display: none;"></button>
+
+<mat-menu #menu="matMenu" yPosition="above">
+  <button mat-menu-item>open</button>
+  <button mat-menu-item>details</button>
+  <button mat-menu-item (click)="createConnection()">create connection</button>
+</mat-menu>
+
+<button id="menuBtn" mat-button [matMenuTriggerFor]="menuConnection" #connectionMenuTrigger="matMenuTrigger" style="display: none;"></button>
+
+<mat-menu #menuConnection="matMenu" yPosition="above">
+  <button mat-menu-item>details</button>
+  <button mat-menu-item (click)="removeConnection()">remove connection</button>
+</mat-menu>
+
