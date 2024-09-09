@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { createChapterDialogComponent, createPapperDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent } from './components/dialog.component';
+import { createChapterDialogComponent, createEventsDialogComponent, createPapperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
@@ -23,6 +23,48 @@ export class DialogService {
 
   openCreateWorldDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createWorldDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openUpdateTimelineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(UpdateTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  opencreateEventsDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(createEventsDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openCreateStoryline(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(createStorylineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openCreateStorylineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(UpdateTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openCreateTimelineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(createTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openCreateEventsDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(UpdateTimelineDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,

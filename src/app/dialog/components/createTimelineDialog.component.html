@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>Update timeline</h2>
+<mat-dialog-content>
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+    <label for="Name">timeline Name: </label>
+    <input id="Name" type="text" formControlName="name" />
+    
+    <label for="description">timeline Description: </label>
+    <input id="description" type="text" formControlName="description" />
+
+    <br>
+    <mat-slider
+    min="1"
+    
+    id="range"
+    max=20
+    step="1"
+    showTickMarks
+    discrete
+    >
+    <input matSliderThumb formControlName="range"/>
+  </mat-slider>
+  
+  <br>
+   
+    
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>

@@ -8,6 +8,7 @@ import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, Connection, StoryLine, Timeline } from '../../../models/papperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { DialogService } from '../../../dialog/dialog.service';
 
 const D3_ROOT_ELEMENT_ID = "subway";
 
@@ -47,7 +48,7 @@ export class SubwayComponent {
   connections:Connection[] = [];
 
   constructor(
-    private cd: ChangeDetectorRef,
+    private dialog: DialogService,
     private wd: WorldDataService,
     private api: ApiService
   ) {
@@ -110,6 +111,7 @@ export class SubwayComponent {
   }
 
   private initSvg() {
+    console.log(this.width)
     return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
       .append("svg")
       .attr("width", this.width)
@@ -450,10 +452,14 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         const strHeight = st.order * this.gridHeight;
         this.graphHeigh += this.gridHeight
         if (g && g instanceof SVGGraphicsElement) {
+
           const bbox = g.getBBox();  // Obtém as dimensões do <g> usando getBBox
-          return this.createEdge(MARGIN + 50, strHeight, bbox.width + MARGIN, strHeight, bbox.width, strHeight, true);
+          console.log( g.parentElement?.parentElement)
+          console.log( bbox.width )
+
+          return this.createEdge(MARGIN + 50, strHeight, (g.parentElement?.clientWidth || this.width) + (MARGIN * 10), strHeight, (g.parentElement?.clientWidth || this.width), strHeight, true);
         }
-        return this.createEdge(MARGIN + 50, strHeight, this.width + MARGIN, strHeight, this.width, strHeight, true);
+        return this.createEdge(MARGIN + 50, strHeight, this.width + (MARGIN * 10), strHeight, this.width, strHeight, true);
       })
       .attr("fill", "none")
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado

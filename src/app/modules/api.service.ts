@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, Connection, Papper, world } from '../models/papperTrailTypes';
+import { Chapter, Connection, Papper, StoryLine, Timeline, world } from '../models/papperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -47,11 +47,22 @@ export class ApiService {
    return this.http.post<Chapter>('http://localhost:9090/createChapter', body)
   }
   createConnection(body: Connection):Observable<Connection>  {
-   return this.http.post<Connection>('http://localhost:9090/createConnection', body)
+    return this.http.post<Connection>('http://localhost:9090/createConnection', body)
   }
   removeConnection(body: Connection):Observable<Connection>  {
     return this.http.post<Connection>('http://localhost:9090/removeConnection', body)
-
+  }
+  removeTimeline(id: string):Observable<Timeline>  {
+    return this.http.delete<Timeline>(`http://localhost:9090/removeConnection?id=${id}`)
+  }
+  createStoryLine(body: StoryLine):Observable<StoryLine>  {
+   return this.http.post<StoryLine>('http://localhost:9090/createStoryline', body)
+  }
+  updateTimeline(body: Timeline):Observable<Timeline>  {
+    return this.http.put<Timeline>(`http://localhost:9090/updateTimeline?id=${body.id}`, body);
+  }
+  createTimeline(body: Timeline):Observable<Timeline>  {
+    return this.http.post<Timeline>(`http://localhost:9090/createTimeline`, body);
   }
 
 

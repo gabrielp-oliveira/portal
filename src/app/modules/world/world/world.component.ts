@@ -93,5 +93,18 @@ export class WorldComponent {
     this.dialog.openCreateChapterDialog(enterAnimationDuration, exitAnimationDuration)
   }
 
+  createStoryline(){
+    this.dialog.openCreateStoryline('150ms', '150ms')
+  }
+  createTimeline(){
+    this.dialog.openCreateTimelineDialog('150ms', '150ms')
+
+  }
+  createEvents(){
+    this.dialog.opencreateEventsDialog('150ms', '150ms')
+
+  }
+  
+
 }
 

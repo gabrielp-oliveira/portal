@@ -64,6 +64,10 @@ export class WorldDataService {
     const pappers = this.pappersSubject.value;
     this.pappersSubject.next([...pappers, papper]);
   }
+  addStoryline(storyline: StoryLine): void {
+    const storylines = this.storylinesSubject.value;
+    this.storylinesSubject.next([...storylines, storyline]);
+  }
 
   addChapter(chapter: Chapter): void {
     const chapters = this.chaptersSubject.value;

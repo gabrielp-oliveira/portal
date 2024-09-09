@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>create Event</h2>
+<mat-dialog-content>
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+    <label for="Name">event Name: </label>
+    <input id="Name" type="text" formControlName="name" />
+    
+    <label for="description">event Description: </label>
+    <input id="description" type="text" formControlName="description" />
+    
+    <label for="order">event order: </label>
+    <input id="order" type="number" formControlName="order" />
+    
+    <label for="papper">Choose a papper to save your event: </label>
+
+    <select id="timeline" formControlName="timeline_id" (change)="getTimeLineDetails($event)">
+      <option value="">Choose a timeline to set your event</option>
+      <option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
+        {{ timeline.name }}
+      </option>
+    </select>
+
+    <br>
+   
+    
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>
