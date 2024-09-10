@@ -79,6 +79,12 @@ export class WorldDataService {
     );
     this.chaptersSubject.next(chapters);
   }
+  updateTimeline(timeline: Timeline): void {
+    const timelines = this.timelinesSubject.value.map(existingTimeline => 
+      existingTimeline.id === timeline.id ? timeline : existingTimeline
+    );
+    this.timelinesSubject.next(timelines);
+  }
   updatePapper(papper: Papper): void {
     const pappers = this.pappersSubject.value.map(existingPapper => 
       existingPapper.id === papper.id ? papper : existingPapper

@@ -81,6 +81,8 @@ export type Timeline = {
     order: number,
     range: number,
     created_at: string,
+    leftgap: number,
+    edit?: boolean
 
 
 }

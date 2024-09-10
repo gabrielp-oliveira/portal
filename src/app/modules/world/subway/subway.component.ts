@@ -22,13 +22,18 @@ export class SubwayComponent {
 
   width: number;
   height: number;
+  timeLineTxtHeight:number = 20
 
   selectedChapter: Chapter | undefined;
   selectedConnection: Connection | undefined;
+  selectedTimeline: Timeline;
+  NextSelectedTimeline: number;
 
   isCreateConnectionSet: boolean;
+  timelineEdit: boolean = false
   gridWidth = 100
   gridHeight = 50
+  totalGridHeight = 0
 
   @ViewChild('chapterMenuTrigger') chapterMenuTrigger!: MatMenuTrigger;
   @ViewChild("connectionMenuTrigger") trggerConnectionMenu!: MatMenuTrigger;
@@ -110,13 +115,12 @@ export class SubwayComponent {
     console.log('remove all subscriptions')
   }
 
-  private initSvg() {
-    console.log(this.width)
-    return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
-      .append("svg")
-      .attr("width", this.width)
-      .attr("height", 300)
-      .append("g")
+  private initSvg():  d3.Selection<SVGGElement, unknown, HTMLElement, any>{
+    return  d3.select(`#${D3_ROOT_ELEMENT_ID}`)
+    .append("svg")
+    .attr("width", this.width)
+    .attr("height", 300)
+    .append("g")
   }
 
 
@@ -453,9 +457,6 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         this.graphHeigh += this.gridHeight
         if (g && g instanceof SVGGraphicsElement) {
 
-          const bbox = g.getBBox();  // Obtém as dimensões do <g> usando getBBox
-          console.log( g.parentElement?.parentElement)
-          console.log( bbox.width )
 
           return this.createEdge(MARGIN + 50, strHeight, (g.parentElement?.clientWidth || this.width) + (MARGIN * 10), strHeight, (g.parentElement?.clientWidth || this.width), strHeight, true);
         }
@@ -474,59 +475,308 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .attr("text-anchor", "middle")
       .text((node: any) => node.name);
   }
-  
   renderTimeLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
-    data: any
+    data: Timeline[]
   ) {
+
     const gridHeight = ((data.length - 1) * this.gridHeight) - 20;
+    this.totalGridHeight = gridHeight;
   
-    // Seleciona um grupo exclusivo para as timelines
     let el: any = svg
       .selectAll("g.timeline-group")
       .data(data)
       .enter()
       .append("g")
-      .attr("class", "timeline-group");  // Adiciona uma classe específica
+      .attr("class", (t) => `${CSS.escape(t.id)}-timeline-group`);
   
-    // Renderiza os retângulos que cobrem toda a altura do gráfico
     el.append("rect")
-      .attr("x", (tl: Timeline) => {
-        let range = 100;
-          const anterior= data.filter((t:Timeline) => t.order < tl.order).reduce((a: any, b:any) => {
-            return a+ b.range
-          }, 0)
-        return (anterior * 20) + range ;
-      })
-      .attr("y", MARGIN - 30)
+      .attr("x",(tl:Timeline) => this.calculateEditIconPosition(tl, data))
+      .attr("y", 0)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
-      .style("fill", "rgba(100, 10, 0, 0.1)")  // Define a cor de preenchimento do retângulo
-      .style("stroke", "rgba(100, 10, 0, 0.3)")  // Define a cor da borda
-      .style("stroke-dasharray", "5,3")  // Faz com que a borda seja pontilhada
-      .on("click", (data: any) => {
-        console.log(data.target.__data__);
-      });
+      .style("fill", "rgba(100, 10, 0, 0.1)");
+  
+    if (!this.timelineEdit) {
+      el.append("text")
+        .attr("class", `timeline-txt`)
+        .attr("x", (tl: Timeline) => {
+          let range = 100;
+          const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+          return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
+        })
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+        .attr("text-anchor", "middle")
+        .text((tl: any) => tl.name);
+    }
   
     el.append("text")
-
       .attr("x", (tl: Timeline) => {
         let range = 100;
-          const anterior= data.filter((t:Timeline) => t.order < tl.order).reduce((a: any, b:any) => {
-            return a+ b.range
-          }, 0)
-        return (anterior * 20) + range +   (tl.range * 10);;
+        const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+        const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+        const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+        return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
       })
-      
-      .attr("y", 35)
-      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-      .attr("text-anchor", "middle")
-      .text((tl: any) => tl.name);
+      .attr("y", this.timeLineTxtHeight * 2)
+      .attr("font-family", "Arial")
+      .attr("font-size", "12px")
+      .attr("cursor", "pointer")
+      .text("✎")
+      .on("click", (ev: MouseEvent, tl: Timeline) => this.showEditButtons(el, tl, data, this.timelineEdit));
+  }
+  
+  private showEditButtons(edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
+    // Fecha a edição do último retângulo editado
+    console.log(this.selectedTimeline?.name)
+    console.log(timeline.id)
+    if (this.selectedTimeline && this.selectedTimeline.id !== timeline.id) {
+      const lastElement = d3.select(edit._groups[0].filter((element: any) => element.__data__.id == this.selectedTimeline.id)[0]);
+      // lastElement.select(".timeline-txt").remove(); // Remove o texto anterior se necessário
+      lastElement.append("text") // Reinsere o texto original do retângulo anterior
+        .attr("class", `timeline-txt`)
+        .attr("x", () => {
+          let range = 100;
+          const currentOrder = timelines.filter((t: Timeline) => t.order <= this.selectedTimeline.order);
+          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+          return ((anteriorRange - this.selectedTimeline.range) * 20) + (anteriorGap * 20) + range + ((this.selectedTimeline.range / 2) * 20);
+        })
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+        .attr("text-anchor", "middle")
+        .text((tl: any) => this.selectedTimeline.name);
+      lastElement.select(".timeline-drag").remove(); // Remove o botão de edição
+    }
+    if(this.selectedTimeline?.id != timeline.id){
+      this.timelineEdit = true;
+    }else {
+      this.timelineEdit = !show;
+    }
+  
+  
+    const element = d3.select(edit._groups[0].filter((element: any) => element.__data__.id == timeline.id)[0]);
+  
+    if (this.timelineEdit) {
+      edit._groups[0].forEach((element: any) => {
+        if (element.__data__.id !== timeline.id) {
+          d3.select(element).select(".timeline-drag").remove();
+        }
+      });
+      element.select(".timeline-txt").remove(); // Remove o texto para abrir o modo de edição
+    } else {
+      element.append("text")
+        .attr("class", `timeline-txt`)
+        .attr("x", () => {
+          let range = 100;
+          const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
+          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+          return ((anteriorRange - timeline.range) * 20) + (anteriorGap * 20) + range + ((timeline.range / 2) * 20);
+        })
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+        .attr("text-anchor", "middle")
+        .text((tl: any) => timeline.name);
+    }
+  
+    this.selectedTimeline = timeline;
+  
+    this.showGrabTimeline(element, timelines, this.timelineEdit);
+  }
+  
+  private showGrabTimeline(element: any, timelines: Timeline[], show: boolean) {
+    if (show) {
+      element.append("text")
+        .attr("class", `timeline-drag`)
+        .attr("x", (tl: Timeline) => {
+          let range = 100;
+          const currentOrder = timelines.filter((t: Timeline) => t.order <= tl.order);
+          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+          return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
+        })
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", "Arial")
+        .attr("font-size", "12px")
+        .attr("cursor", "pointer")
+        .text("grab")
+        .call(
+          d3.drag<SVGCircleElement, Timeline>()
+            .on("start", (event, t) => this.timelineDragStart(element, timelines, t))
+            .on("drag", (event, t) => this.timelineDragged(element, event, timelines))
+            .on("end", (event, t) => this.timelineDragEnded(element, timelines, event, t))
+        );
+    } else {
+      element.select(".timeline-drag").remove();
+    }
+  }
+  
+  
+  private calculateXPosition(tl: Timeline, data: Timeline[]): number {
+    const range = 100;
+    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+    const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+    return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range;
+  }
+  
+  private calculateTextPosition(tl: Timeline, data: Timeline[]): number {
+    const range = 100;
+    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+    const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+    return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
+  }
+  
+  private calculateEditIconPosition(tl: Timeline, data: Timeline[]): number {
+        let range = 100;
+        const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+        const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+        const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
+        return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range;
   }
   
 
 
+    timelineDragStart(element: any, timelines: Timeline[], timeline: Timeline){
+      d3.select(element._groups[0][0]).raise().attr("stroke", "black");
+
+      this.NextSelectedTimeline =  timelines.filter((tl) => tl.order == timeline.order +1)[0]?.leftgap || 0
+      console.log('..')
+    }
+    timelineDragged(element:any, event: MouseEvent, timelines: Timeline[] ){
+      d3.select(element._groups[0][0]).raise().attr("stroke", "black");
+
+      const timeline = element._groups[0][0].__data__
+      const nextTimeline = timelines.filter((tl) => tl.order == timeline.order +1)[0]
+
+      let range = 100;
+      const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
+      const anteriorRange = currentOrder.reduce((a: any, b: any) => {
+          return a + b.range;
+      }, 0);
+      const anteriorGap = currentOrder.reduce((a: any, b: any) => {
+          return a + b.leftgap;
+      }, 0);
+
+      const {x} = event
+
+      const leftGapMousebased = Math.round((x - range) / 20 - ((timeline.range / 2)))
+      let diff = leftGapMousebased - (anteriorRange + anteriorGap) + timeline.range + timeline.leftgap
+      diff = diff <= 0 ?  0 : diff
+      timeline.leftgap = diff
+      if(nextTimeline != undefined){
+          if((this.NextSelectedTimeline - diff ) <= 0){
+              nextTimeline.leftgap = 0
+            }else {
+              nextTimeline.leftgap = this.NextSelectedTimeline - diff
+
+            this.wd.updateTimeline(nextTimeline)
+        }
+        }
+        this.wd.updateTimeline(timeline)
+
+    }
+    timelineDragEnded(element:any, timelines: Timeline[], event: MouseEvent, timeline: Timeline){
+      d3.select(element._groups[0][0]).raise().attr("stroke", "none");
+
+    }
+    private showArrows(element: any, edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
+      this.timelineEdit = show;
+
+      if (show) {
+
+        this.selectedTimeline = timeline
+      // Adiciona seta na esquerda
+      let left = edit.append("text")
+      .attr("class", "editleftarrow")
+
+      .attr("x", (_: any) => {
+                let range = 100;
+                const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
+                const anteriorRange = currentOrder.reduce((a: any, b: any) => {
+                    return a + b.range;
+                }, 0);
+                const anteriorGap = currentOrder.reduce((a: any, b: any) => {
+                    return a + b.leftgap;
+                }, 0);
+                if(currentOrder.length == 1){
+                  return (anteriorGap * 20) + range + 5
+                }
+                return (anteriorRange * 20) + (anteriorGap * 20) + range + 5;
+            })
+            .attr("y", 35)
+            .attr("font-family", "Arial")
+            .attr("font-size", "12px")
+            .attr("cursor", "pointer")
+            .text("←")
+            .on("click", () => this.adjustLeftGap(timeline, -1));  // Ajusta o leftgap
+
+        // Adiciona seta na direita
+        let right = edit.append("text")
+            .attr("class", "editrightarrow")
+            .attr("x", (_: any) => {
+                let range = 100;
+                const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
+                const anteriorRange = currentOrder.reduce((a: any, b: any) => {
+                    return a + b.range;
+                }, 0);
+                const anteriorGap = currentOrder.reduce((a: any, b: any) => {
+                    return a + b.leftgap;
+                }, 0);
+
+                if(currentOrder.length == 1){
+                  return (anteriorGap * 20) + (timeline.range * 20) + range - 25
+                }
+
+                return (anteriorRange * 20) + (anteriorGap * 20) + (timeline.range * 20) + range - 25;
+            })
+            .attr("y", 35)
+            .attr("font-family", "Arial")
+            .attr("font-size", "12px")
+            .attr("cursor", "pointer")
+            .text("→")
+            .on("click", () => this.adjustLeftGap(timeline, 1));  // Ajusta o leftgap
+
+        // Armazena as setas no elemento para remoção posterior
+
+    } else {
+      this.selectedTimeline = {
+        id: "",
+        WorldsID: "",
+        name: "",
+        description: "",
+        order: 0,
+        range: 0,
+        created_at: "",
+        leftgap: 0,
+        edit: false
+      }
+      const el = d3.select(edit._groups[0][0])
+      el.select('.editrightarrow').remove()
+      el.select('.editleftarrow').remove();
+        
+    }
+}
+
+
+  private adjustLeftGap(timeline: Timeline, adjustment: number) {
+    if((timeline.leftgap + adjustment) < 0){
+      return
+    }
+    timeline.leftgap += adjustment
+    this.api.updateTimeline(timeline).subscribe((tl:Timeline) => {
+      this.wd.updateTimeline(tl)
+    })
+
+  }
 
   private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean) {
 
