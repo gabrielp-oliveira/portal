@@ -111,7 +111,6 @@ import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
         description: '',
         order: 0,
         created_at: '',
-        leftgap: 0
 
       }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
@@ -207,8 +206,7 @@ import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
         name: '',
         description: '',
         order: 0,
-        created_at: '',
-        leftgap: 0
+        created_at: ''
       }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
@@ -387,8 +385,7 @@ import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
         name: '',
         description: '',
         order: 0,
-        created_at: '',
-        leftgap: 0
+        created_at: ''
 
       }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,

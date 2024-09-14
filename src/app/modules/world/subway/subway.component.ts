@@ -22,15 +22,16 @@ export class SubwayComponent {
 
   width: number;
   height: number;
-  timeLineTxtHeight:number = 20
+  timeLineTxtHeight: number = 20
 
   selectedChapter: Chapter | undefined;
   selectedConnection: Connection | undefined;
   selectedTimeline: Timeline;
   NextSelectedTimeline: number;
+  currentSelectTimelineLeftGap: number;
 
   isCreateConnectionSet: boolean;
-  timelineEdit: boolean = false
+  timelineEdit: boolean = true
   gridWidth = 100
   gridHeight = 50
   totalGridHeight = 0
@@ -49,8 +50,9 @@ export class SubwayComponent {
 
   graphHeigh: number = 0
 
-  chapters:Chapter[] = [];
-  connections:Connection[] = [];
+  chapters: Chapter[] = [];
+  connections: Connection[] = [];
+  timelines: Timeline[] = [];
 
   constructor(
     private dialog: DialogService,
@@ -66,15 +68,16 @@ export class SubwayComponent {
     this.height = this.root?.nativeElement.offsetHeight;
 
     let svg = this.initSvg();
-    combineLatest({ "timelines": this.timelines$, "storyLines": this.storylines$,
-       "chapters": this.chapters$, "pappers": this.pappers$, "connections": this.connections$
-  }).subscribe((data) => {
-    data.chapters = data.chapters.filter((c) =>  c.timeline_id != null && c.storyline_id != null)
+    combineLatest({
+      "timelines": this.timelines$, "storyLines": this.storylines$,
+      "chapters": this.chapters$, "pappers": this.pappers$, "connections": this.connections$
+    }).subscribe((data) => {
+      data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
 
-    
-    let {chapters, pappers, storyLines, timelines, connections} = data
-    this.connections = connections
-    data.timelines = timelines.sort((a, b) => a.order - b.order);
+
+      let { chapters, pappers, storyLines, timelines, connections } = data
+      this.connections = connections
+      data.timelines = timelines.sort((a, b) => a.order - b.order);
 
       data.chapters = chapters.map((c) => {
         c.width = 0
@@ -82,20 +85,20 @@ export class SubwayComponent {
         const tl = timelines.filter((t) => t.id == c.timeline_id)[0]
         const pp = pappers.filter((p) => p.id == c.papper_id)[0]
 
-        if(!c.selected){
+        if (!c.selected) {
           c.color = this.numberToRGB(pp.order)
         }
         c.height = (str?.order * this.gridHeight) || 0
 
 
         const tlRanges = data.timelines.reduce((a, b) => {
-          if(b.order < tl?.order){
+          if (b.order < tl?.order) {
             return a + b.range
-          }else {
+          } else {
             return a
           }
         }, 0)
-        const width = (tlRanges*20) + ((c.range -1) * 20)
+        const width = (tlRanges * 20) + ((c.range - 1) * 20)
         c.width = width + 100
         return c
       })
@@ -115,20 +118,23 @@ export class SubwayComponent {
     console.log('remove all subscriptions')
   }
 
-  private initSvg():  d3.Selection<SVGGElement, unknown, HTMLElement, any>{
-    return  d3.select(`#${D3_ROOT_ELEMENT_ID}`)
-    .append("svg")
-    .attr("width", this.width)
-    .attr("height", 300)
-    .append("g")
-  }
+  private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
+    return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
+      .append("svg")
+      .attr("width", this.width)
+      .attr("height", 300)
+      .append("g") // Retorna o grupo <g> que vai conter outros elementos
+
+    }
+  
 
 
   private renderChapters(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     chapters: Chapter[],
     s: StoryLine[],
-    t: Timeline[]
+    t: Timeline[],
+    c: Connection[]
   ) {
     // Cria um grupo (g) para cada capítulo
     let eleEnter = svg.selectAll("g.chapter-group")
@@ -138,8 +144,9 @@ export class SubwayComponent {
       .attr("id", (c: Chapter) => `${c.id}-chapter-group`)  // Adiciona um ID único para cada grupo de capítulos
       .attr("class", "chapter-group");
 
-      // Circles
-      eleEnter
+    // Circles
+
+    eleEnter
       .append("circle")
       .attr("cx", (chp: Chapter) => chp.width)
       .attr("cy", (chp: Chapter) => chp.height)
@@ -151,8 +158,8 @@ export class SubwayComponent {
       .call(
         d3.drag<SVGCircleElement, Chapter>()
           .on("start", (event, d) => this.dragStarted(event, d))
-          .on("drag", (event, d) => this.dragged(event, d)) 
-          .on("end", (event, d) => this.dragEnded(s, t, event, d)) 
+          .on("drag", (event, d) => this.dragged(svg, event, d, c, chapters))
+          .on("end", (event, d) => this.dragEnded(s, t, event, d))
       )
       .on('contextmenu', (ev: MouseEvent, c: Chapter) => {
         ev.preventDefault();
@@ -161,19 +168,19 @@ export class SubwayComponent {
         // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
 
         this.chapterMenuTrigger.openMenu();
-        const menu = document.querySelector("#"+this.chapterMenuTrigger.menu?.panelId)
+        const menu = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId)
         const menuElement = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId) as HTMLElement;
 
         if (menuElement) {
           // Defina o estilo de posicionamento
           menuElement.style.position = 'absolute';
-          menuElement.style.left = `${ev.x+ 5 }px`;
+          menuElement.style.left = `${ev.x + 5}px`;
           menuElement.style.top = `${ev.y + 5}px`;
         }
         this.selectedChapter = c
 
       })
-  
+
     // Labels (Texto)
     eleEnter
       .append("text")
@@ -186,21 +193,22 @@ export class SubwayComponent {
       .attr("id", (c: Chapter) => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
       .text((node: Chapter) => node.name);
   }
-  
 
-  createConnection(){
-    if(this.selectedChapter){
+
+  createConnection() {
+    if (this.selectedChapter) {
 
       this.selectedChapter.selected = true
       this.selectedChapter.color = "blue"
       this.isCreateConnectionSet = true
+
       this.wd.updateChapter(this.selectedChapter)
       alert("chose a chapter to connect.")
     }
-    
+
   }
-  removeConnection(){
-    if(this.selectedConnection != undefined){
+  removeConnection() {
+    if (this.selectedConnection != undefined) {
       const target = this.chapters.filter((chp) => chp.id == this.selectedConnection?.targetChapterID)[0]
       target.color = "red"
       target.selected = true
@@ -214,7 +222,7 @@ export class SubwayComponent {
         this.wd.removeConnection(this.selectedConnection?.id || "")
         this.selectedConnection = undefined
         setTimeout(() => {
-          
+
           source.selected = false
           target.selected = false
           this.wd.updateChapter(target)
@@ -222,132 +230,183 @@ export class SubwayComponent {
         }, 1000);
       })
     }
-    
+
   }
 
-private dragStarted(event: any, d: Chapter) {
-  if(this.isCreateConnectionSet && this.selectedChapter){
-    if(this.selectedChapter.id == d.id){
-      alert("you cannot create connection with the same chapter")
-      return
-    }
-    const body:Connection = 
+  private dragStarted(event: any, d: Chapter) {
+    if (this.isCreateConnectionSet && this.selectedChapter) {
+      if (this.selectedChapter.id == d.id) {
+        alert("you cannot create connection with the same chapter")
+        return
+      }
+      const body: Connection =
       {
-        "id":"",
+        "id": "",
         "targetChapterID": d.id,
         "sourceChapterID": this.selectedChapter.id,
         "world_id": this.wd.worldId
       }
-    
-    this.api.createConnection(body).subscribe((cnn) => {
-      this.isCreateConnectionSet = false
-      this.chapters= this.chapters.map((c) => {
-        if(this.selectedChapter != undefined && c.id == this.selectedChapter.id){
-          c.color = c.color
-          c.selected = false
-        }
-        return c
+
+      this.api.createConnection(body).subscribe((cnn) => {
+        this.isCreateConnectionSet = false
+        this.chapters = this.chapters.map((c) => {
+          if (this.selectedChapter != undefined && c.id == this.selectedChapter.id) {
+            c.color = c.color
+            c.selected = false
+          }
+          return c
+        })
+        this.wd.setChapters(this.chapters)
+        this.wd.addConnection(cnn)
       })
-      this.wd.setChapters(this.chapters)
-      this.wd.addConnection(cnn)
-    })
 
-    return
+      return
+    }
+
+    const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
+    const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
+    d3.select(elementtextId).raise().attr("stroke", "black");
+    d3.select(elementCircleId).raise().attr("stroke", "black");
   }
-  const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
-  const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
-  d3.select(elementtextId).raise().attr("stroke", "black");
-  d3.select(elementCircleId).raise().attr("stroke", "black");
-}
 
-  private dragged(event: any, d: Chapter) {
+  private dragged(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, event: any, d: Chapter, connections: Connection[], chapters: Chapter[]) {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
 
-    if(event.x < 100 || event.y < 50 || event.y > this.graphHeigh){
+    if (event.x < 100 || event.y < 50 || event.y > this.graphHeigh) {
       return
     }
 
     d3.select(elementCircleId)
       .attr("cx", d.width = event.x)
       .attr("cy", d.height = event.y);
-  
+
     d3.select(elementtextId)
       .attr("dx", d.width)
       .attr("dy", d.height + 15)
       .attr("cx", d.width = event.x)
       .attr("cy", d.height = event.y)
       .attr("stroke", d.color)
+
+
+
+    this.updateConnectionDrag(svg, connections, chapters, d)
+
   }
-  
-  private dragEnded(s:StoryLine[] ,t: Timeline[],event: any, d: Chapter) {
+
+  updateConnectionDrag(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, cnns: Connection[], chp: Chapter[], chapterSelected: Chapter) {
+    const connectionRelated = cnns?.filter((c) => c.sourceChapterID === chapterSelected.id || c.targetChapterID === chapterSelected.id);
+
+    if (!connectionRelated || connectionRelated.length === 0) {
+      return; // Se não houver conexões relacionadas, não há necessidade de continuar.
+    }
+
+    // Criar um mapa com capítulos para acesso rápido
+    const chapterMap = new Map(chp.map(chp => [chp.id, chp]));
+
+    let relatedChaptersSet = new Set<Chapter>();
+
+    connectionRelated.forEach((cnn) => {
+      const className = `${cnn.id}-connections-group`;
+      const element = document.getElementById(className);
+
+      if (element) {
+        element.remove(); // Remover diretamente se o elemento existir
+      }
+
+      // Adicionar os capítulos relacionados ao conjunto (Set) sem duplicatas
+      const sourceChapter = chapterMap.get(cnn.sourceChapterID);
+      const targetChapter = chapterMap.get(cnn.targetChapterID);
+
+      if (sourceChapter) relatedChaptersSet.add(sourceChapter);
+      if (targetChapter) relatedChaptersSet.add(targetChapter);
+    });
+
+    // Converter o Set de capítulos relacionados em um array
+    const relatedChapters = Array.from(relatedChaptersSet);
+
+    if (relatedChapters.length > 0) {
+      this.renderConnections(svg, relatedChapters, connectionRelated);
+    }
+
+  }
+
+  private dragEnded(s: StoryLine[], t: Timeline[], event: any, d: Chapter) {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
 
     // erro ao criar connection, programa esta jogando o chapter point para o ultimo storyline.
     d3.select(elementCircleId).attr("stroke", d.color);
     d3.select(elementtextId).attr("stroke", 'black');
-  
+
     // Após o movimento, você pode capturar a nova posição do chapter, timeline e storyline
 
-    const newTimeline = this.findTimelineForChapter(t, event.x, d);
+    const newTimeline = this.findTimelineForChapter(t, event.x);
     const newStoryline = this.findStorylineForChapter(s, event.y);
-  
-    const body :Chapter= {
+
+    let newStorylineId
+    if (newStoryline) {
+      newStorylineId = newStoryline.id
+    } else {
+      newStorylineId = d.storyline_id
+
+    }
+    const body: Chapter = {
       ...d,
       range: newTimeline.range,
-      storyline_id: newStoryline.id,
+      storyline_id: newStorylineId,
       timeline_id: newTimeline.timeline.id
     }
     this.api.updateChapter(d.id, body).subscribe(
-        
+
       {
-          next: (data) => this.addNewChapter(data),
-          error: (err) => console.error(err)
-        }
+        next: (data) => this.addNewChapter(data),
+        error: (err) => console.error(err)
+      }
     )
 
   }
 
-  addNewChapter(newChapter: Chapter){
+  addNewChapter(newChapter: Chapter) {
     this.wd.updateChapter(newChapter)
-}
+  }
 
   // Funções para encontrar o timeline e storyline
-private findTimelineForChapter(t :Timeline[],x:number, chapter: Chapter): {timeline: Timeline, range: number} {
+  private findTimelineForChapter(t: Timeline[], x: number): { timeline: Timeline, range: number } {
 
-  let range = Math.round((x-100) / 20) + 1
+    let range = Math.round((x - 100) / 20) + 1
 
-  if(range <= 0){
-    range = 0
-  }
-  let tl = 0
-  for(let i = 0; i < t.length -1; i++) {
-    if((range - t[i].range) <= 0){
-      break
-    }else{
-      tl += 1
-      range -= t[i].range
+    // const totalTimeLineRange = t.reduce((a, b) => a + b.range, 0)
+    if (range <= 0) {
+      range = 0
     }
-  }
+    let tl = 0
+    for (let i = 0; i < t.length - 1; i++) {
+      if ((range - t[i].range) <= 0) {
+        break
+      } else {
+        tl += 1
+        range -= t[i].range
+      }
+    }
 
-  if(range <= 0){
-    range = 1
-  }
-  const result = {
-    timeline: t[tl],
-    range: range
-  }
+    if (range <= 0) {
+      range = 1
+    }
 
-  return result;
-}
-private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
-  let range = Math.round((y-50) / this.gridHeight)
-  if(range >= s.length -1){
-    range = s.length -1
+    const result = {
+      timeline: t[tl],
+      range: range
+    }
+    return result;
   }
-  return s[range];
-}
+  private findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
+    let range = Math.round((y - 50) / this.gridHeight)
+    if (range >= s.length - 1) {
+      range = s.length - 1
+    }
+    return s[range];
+  }
 
 
 
@@ -356,28 +415,29 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
     c: Chapter[],
     cnn: Connection[]
   ) {
-    if(cnn.length <= 0){
+    if (cnn.length <= 0) {
       return
     }
     svg.selectAll("g")
-    .data(cnn)
-    .append("path")
-    .attr("class", (c) =>CSS.escape(c.id) +"-connections-group")
-    .raise()
-    .attr("d", (edge: Connection) => {
-      
+      .data(cnn)
+      .append("path")
+      .attr("id", (c) => c.id + "-connections-group")
+      .raise()
+      .attr("d", (edge: Connection) => {
+
         let source = c.find((data: Chapter) => data.id === edge.sourceChapterID);
         let target = c.find((data: Chapter) => data.id === edge.targetChapterID);
 
-        let y0 = source? source?.height  : 0;
-        let x0 = source? source?.width  : 0;
-        let x1 = target? target.width  : 0;
+        let y0 = source ? source?.height : 0;
+        let x0 = source ? source?.width : 0;
+        let x1 = target ? target.width : 0;
         let y1 = target ? target?.height : 0;
-        
+
+
         const CONSTANT_CONTROL_POINT = 5;
         const HORIZONTAL_THRESHOLD = 3;
 
-        
+
         let isHorizontal = Math.abs(y0 - y1) < HORIZONTAL_THRESHOLD;
         let isVertical = Math.abs(x0 - x1) < HORIZONTAL_THRESHOLD;
 
@@ -385,7 +445,7 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         let controlPointY = isVertical ? y1 : y1 - CONSTANT_CONTROL_POINT * ((y1 - y0) / (x1 - x0));
 
         let pathData = ""
-        
+
         if (isVertical == true) {
 
           // const distance = (controlPointY / 50) * 15
@@ -403,17 +463,16 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .on('contextmenu', (ev: MouseEvent, connection: Connection) => {
         ev.preventDefault();
 
-
         // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
 
         this.trggerConnectionMenu.openMenu();
-        const menu = document.querySelector("#"+this.trggerConnectionMenu.menu?.panelId)
+        const menu = document.querySelector("#" + this.trggerConnectionMenu.menu?.panelId)
         const menuElement = document.querySelector("#" + this.trggerConnectionMenu.menu?.panelId) as HTMLElement;
 
         if (menuElement) {
           // Defina o estilo de posicionamento
           menuElement.style.position = 'absolute';
-          menuElement.style.left = `${ev.x+ 5 }px`;
+          menuElement.style.left = `${ev.x + 5}px`;
           menuElement.style.top = `${ev.y + 5}px`;
         }
         this.selectedConnection = connection
@@ -423,18 +482,18 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         source.color = "red"
         this.wd.updateChapter(target)
         this.wd.updateChapter(source)
-        
+
       })
-      .on('mouseover', function(event, d) {
+      .on('mouseover', function (event, d) {
         d3.select(this)
-        .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2)
       })
-      .on('mouseout', function(event, d) {
+      .on('mouseout', function (event, d) {
         d3.select(this)
-        .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
       })
 
-      
+
   }
 
   renderStoryLines(
@@ -447,7 +506,7 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .enter()
       .append("g")
       .attr("class", "storyline-group");  // Adiciona uma classe específica
-  
+
     el.append("path")
       .attr("d", (st: StoryLine) => {
         var g = d3.select(`#${D3_ROOT_ELEMENT_ID}`)
@@ -466,7 +525,7 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado
       .style("stroke", "rgba(0, 0, 0, 0.25)")  // Define a cor da linha
       .lower();
-  
+
     el.append("text")
       .attr("dx", () => MARGIN)
       .attr("dy", (node: any) => (node.order * this.gridHeight) + 2)
@@ -475,76 +534,93 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .attr("text-anchor", "middle")
       .text((node: any) => node.name);
   }
+
+
+  calculateXPosition (tl: Timeline, data: Timeline[]) {
+    let range = 100;
+    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+    return ((anteriorRange - tl.range) * 20) + range + ((tl.range / 2) * 20);
+  };
+
+
   renderTimeLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     data: Timeline[]
   ) {
-
     const gridHeight = ((data.length - 1) * this.gridHeight) - 20;
     this.totalGridHeight = gridHeight;
   
-    let el: any = svg
-      .selectAll("g.timeline-group")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", (t) => `${CSS.escape(t.id)}-timeline-group`);
+
   
+    // Seleciona os grupos existentes e associa os dados
+    let el: d3.Selection<SVGGElement, Timeline, SVGGElement, unknown> = svg
+      .selectAll<SVGGElement, Timeline>("g.timeline-group")
+      .data(data, (d: Timeline) => d.id);
+  
+    // Remove os grupos que não estão mais nos dados
+    el.exit().remove();
+  
+    // Cria novos grupos para novos dados
+    const enter = el.enter()
+      .append<SVGGElement>("g")
+      .attr("class", "timeline-group")
+      .attr("id", (t: Timeline) => `${CSS.escape(t.id)}-timeline-group`);
+  
+    // Atualiza grupos existentes e novos grupos
+    el = enter.merge(el);
+  
+    // Adiciona ou atualiza os retângulos
     el.append("rect")
-      .attr("x",(tl:Timeline) => this.calculateEditIconPosition(tl, data))
+      .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 0)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
   
-    if (!this.timelineEdit) {
+    // Adiciona ou atualiza os textos se o modo de edição estiver ativo
+    if (this.timelineEdit) {
       el.append("text")
-        .attr("class", `timeline-txt`)
-        .attr("x", (tl: Timeline) => {
-          let range = 100;
-          const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
-          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-          return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
-        })
+        .attr("class", "timeline-txt")
+        .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data))
         .attr("y", this.timeLineTxtHeight)
         .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
         .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
         .attr("text-anchor", "middle")
-        .text((tl: any) => tl.name);
+        .text((tl: Timeline) => tl.name);
     }
   
+    // Adiciona ou atualiza os ícones de edição
     el.append("text")
-      .attr("x", (tl: Timeline) => {
-        let range = 100;
-        const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
-        const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-        const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-        return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
-      })
+      .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data))
       .attr("y", this.timeLineTxtHeight * 2)
       .attr("font-family", "Arial")
       .attr("font-size", "12px")
       .attr("cursor", "pointer")
       .text("✎")
-      .on("click", (ev: MouseEvent, tl: Timeline) => this.showEditButtons(el, tl, data, this.timelineEdit));
+      .on("click", (ev: MouseEvent, tl: Timeline) => this.showEditButtons(el, tl, data, !this.timelineEdit));
+  
+    // Se o modo de edição estiver ativo e houver uma linha selecionada, mostra os botões de edição
+    if (this.timelineEdit && this.selectedTimeline) {
+      this.showEditButtons(el, this.selectedTimeline, data, this.timelineEdit);
+    }
   }
   
+
   private showEditButtons(edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
-    // Fecha a edição do último retângulo editado
-    console.log(this.selectedTimeline?.name)
-    console.log(timeline.id)
     if (this.selectedTimeline && this.selectedTimeline.id !== timeline.id) {
-      const lastElement = d3.select(edit._groups[0].filter((element: any) => element.__data__.id == this.selectedTimeline.id)[0]);
-      // lastElement.select(".timeline-txt").remove(); // Remove o texto anterior se necessário
+
+      const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
+      const lastElement = d3.select(document.getElementById(elementId));
+
       lastElement.append("text") // Reinsere o texto original do retângulo anterior
         .attr("class", `timeline-txt`)
         .attr("x", () => {
           let range = 100;
           const currentOrder = timelines.filter((t: Timeline) => t.order <= this.selectedTimeline.order);
           const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-          return ((anteriorRange - this.selectedTimeline.range) * 20) + (anteriorGap * 20) + range + ((this.selectedTimeline.range / 2) * 20);
+
+          return ((anteriorRange - this.selectedTimeline.range) * 20) + range + ((this.selectedTimeline.range / 2) * 20);
         })
         .attr("y", this.timeLineTxtHeight)
         .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
@@ -553,15 +629,17 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         .text((tl: any) => this.selectedTimeline.name);
       lastElement.select(".timeline-drag").remove(); // Remove o botão de edição
     }
-    if(this.selectedTimeline?.id != timeline.id){
+    if (this.selectedTimeline?.id != timeline.id) {
       this.timelineEdit = true;
-    }else {
-      this.timelineEdit = !show;
+    } else {
+      this.timelineEdit = show;
     }
-  
-  
-    const element = d3.select(edit._groups[0].filter((element: any) => element.__data__.id == timeline.id)[0]);
-  
+
+
+    const elementId = `${CSS.escape(timeline.id)}-timeline-group`;
+    const element = d3.select(document.getElementById(elementId));
+
+
     if (this.timelineEdit) {
       edit._groups[0].forEach((element: any) => {
         if (element.__data__.id !== timeline.id) {
@@ -576,8 +654,7 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
           let range = 100;
           const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
           const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-          return ((anteriorRange - timeline.range) * 20) + (anteriorGap * 20) + range + ((timeline.range / 2) * 20);
+          return ((anteriorRange - timeline.range) * 20) + range + ((timeline.range / 2) * 20);
         })
         .attr("y", this.timeLineTxtHeight)
         .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
@@ -585,22 +662,22 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         .attr("text-anchor", "middle")
         .text((tl: any) => timeline.name);
     }
-  
+
     this.selectedTimeline = timeline;
-  
-    this.showGrabTimeline(element, timelines, this.timelineEdit);
+    this.showGrabTimeline(element, timeline, timelines, this.timelineEdit);
   }
-  
-  private showGrabTimeline(element: any, timelines: Timeline[], show: boolean) {
+
+  private showGrabTimeline(element: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
     if (show) {
       element.append("text")
         .attr("class", `timeline-drag`)
-        .attr("x", (tl: Timeline) => {
+        .attr("x", () => {
           let range = 100;
-          const currentOrder = timelines.filter((t: Timeline) => t.order <= tl.order);
+          console.log('...')
+          const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
           const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-          const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-          return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
+
+          return ((anteriorRange - timeline.range) * 20) + range + ((timeline.range / 2) * 20);
         })
         .attr("y", this.timeLineTxtHeight)
         .attr("font-family", "Arial")
@@ -609,174 +686,189 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
         .text("grab")
         .call(
           d3.drag<SVGCircleElement, Timeline>()
-            .on("start", (event, t) => this.timelineDragStart(element, timelines, t))
-            .on("drag", (event, t) => this.timelineDragged(element, event, timelines))
-            .on("end", (event, t) => this.timelineDragEnded(element, timelines, event, t))
+            .on("start", () => this.timelineSwapDragStart())
+            .on("drag", (event, t) => this.timelineSwapDragged(event, timelines))
+            .on("end", (event, t) => this.timelineSwapDragEnded(element, timelines, event, t))
         );
+
     } else {
       element.select(".timeline-drag").remove();
     }
   }
-  
-  
-  private calculateXPosition(tl: Timeline, data: Timeline[]): number {
-    const range = 100;
-    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
-    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-    const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-    return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range;
-  }
-  
-  private calculateTextPosition(tl: Timeline, data: Timeline[]): number {
-    const range = 100;
-    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
-    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-    const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-    return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range + ((tl.range / 2) * 20);
-  }
-  
+
+
+
+
+
   private calculateEditIconPosition(tl: Timeline, data: Timeline[]): number {
-        let range = 100;
-        const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
-        const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-        const anteriorGap = currentOrder.reduce((a: any, b: any) => a + b.leftgap, 0);
-        return ((anteriorRange - tl.range) * 20) + (anteriorGap * 20) + range;
+    let range = 100;
+    const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
+    const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+    return ((anteriorRange - tl.range) * 20) + range;
   }
+
+
+
+  timelineSwapDragStart() {
+
+    const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
+    d3.select(document.getElementById(elementId)).raise().attr("stroke", "black");
+
+  }
+
+
+
+
+
+
+  timelineSwapDragged(event: any, timelines: Timeline[]) {
+    const selectedElementiD = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
+    const CurrentSelectedTimelineElement :any = d3.select(document.getElementById(selectedElementiD));
+    const rectElement = CurrentSelectedTimelineElement.select("rect");
+    const textElement = CurrentSelectedTimelineElement.selectAll("text");
+
+    
+
+    const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
+
+
+    const beforeSelected = timelines.filter((t) => t.order <= newTimeline.order)
+    const afterSelectedTimeline = timelines.filter((t) => t.order > this.selectedTimeline.order)
+    const toWalkAfter = this.calculateEditIconPosition(newTimeline, afterSelectedTimeline)
+    
+    
+    
+    
+    const selectedNewElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
+    const newTimelineElement :any = d3.select(document.getElementById(selectedNewElementiD));
+    const newRectElement = newTimelineElement.select("rect");
+    const newTextElement = newTimelineElement.selectAll("text");
+    
+    const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
+    const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines) 
+    
+    if (this.selectedTimeline.order > newTimeline.order) {    
+      
+
+      
+      rectElement
+      .transition()      
+      .duration(100)    
+      .ease(d3.easeCubic) 
+      .attr('x', otherElementLocation )
+  
+      
+      textElement._groups[0].forEach((element:any) => {
+        d3.select(element)
+        .attr('x', this.calculateXPosition(newTimeline, timelines));
+      });
   
 
+      //  aqui ---------------------------
+      console.log(otherElementLocation, currentElementLocation, newTimeline.range, this.selectedTimeline.range)
+      newRectElement
+      .transition()      
+      .duration(100)     
+      .ease(d3.easeCubic)
+      .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
+  
+      newTextElement._groups[0].forEach((element:any) => {
+        d3.select(element)
+        .transition()      
+        .duration(100)    
+        .ease(d3.easeCubic) 
+        .attr('x',this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
+      );
+      });
+  
 
-    timelineDragStart(element: any, timelines: Timeline[], timeline: Timeline){
-      d3.select(element._groups[0][0]).raise().attr("stroke", "black");
+      
+      
+    } else if (this.selectedTimeline.order < newTimeline.order) {
 
-      this.NextSelectedTimeline =  timelines.filter((tl) => tl.order == timeline.order +1)[0]?.leftgap || 0
-      console.log('..')
+
+
+      rectElement
+      .transition()      
+      .duration(100)    
+      .ease(d3.easeCubic) 
+      .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+  
+      
+      textElement._groups[0].forEach((element:any) => {
+        d3.select(element)
+        .attr('x', this.calculateXPosition(newTimeline, timelines));
+      });
+  
+
+      newRectElement
+      .transition()      
+      .duration(100)     
+      .ease(d3.easeCubic)
+      .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
+  
+      newTextElement._groups[0].forEach((element:any) => {
+        d3.select(element)
+        .transition()      
+        .duration(100)    
+        .ease(d3.easeCubic) 
+        .attr('x',this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
+      );
+      });
+
+
+
+      // rectElement
+      // .transition()      
+      // .duration(100)    
+      // .ease(d3.easeCubic) 
+      // .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+  
+      
+      // textElement._groups[0].forEach((element:any) => {
+      //   d3.select(element)
+      //   .attr('x', this.calculateXPosition(newTimeline, timelines));
+      // });
+
+
+    }else {
+      // alterando localizacao do item selecionado.
+      let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
+      rectElement
+      .transition()      
+      .duration(100)     
+      .ease(d3.easeCubic) 
+      .attr('x', toWalk);
+      textElement._groups[0].forEach((element:any) => {
+        d3.select(element)
+        .attr('x', this.calculateXPosition(this.selectedTimeline, timelines));
+      });
+
+      // --------------
+
+
+
     }
-    timelineDragged(element:any, event: MouseEvent, timelines: Timeline[] ){
-      d3.select(element._groups[0][0]).raise().attr("stroke", "black");
 
-      const timeline = element._groups[0][0].__data__
-      const nextTimeline = timelines.filter((tl) => tl.order == timeline.order +1)[0]
-
-      let range = 100;
-      const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
-      const anteriorRange = currentOrder.reduce((a: any, b: any) => {
-          return a + b.range;
-      }, 0);
-      const anteriorGap = currentOrder.reduce((a: any, b: any) => {
-          return a + b.leftgap;
-      }, 0);
-
-      const {x} = event
-
-      const leftGapMousebased = Math.round((x - range) / 20 - ((timeline.range / 2)))
-      let diff = leftGapMousebased - (anteriorRange + anteriorGap) + timeline.range + timeline.leftgap
-      diff = diff <= 0 ?  0 : diff
-      timeline.leftgap = diff
-      if(nextTimeline != undefined){
-          if((this.NextSelectedTimeline - diff ) <= 0){
-              nextTimeline.leftgap = 0
-            }else {
-              nextTimeline.leftgap = this.NextSelectedTimeline - diff
-
-            this.wd.updateTimeline(nextTimeline)
-        }
-        }
-        this.wd.updateTimeline(timeline)
-
-    }
-    timelineDragEnded(element:any, timelines: Timeline[], event: MouseEvent, timeline: Timeline){
-      d3.select(element._groups[0][0]).raise().attr("stroke", "none");
-
-    }
-    private showArrows(element: any, edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
-      this.timelineEdit = show;
-
-      if (show) {
-
-        this.selectedTimeline = timeline
-      // Adiciona seta na esquerda
-      let left = edit.append("text")
-      .attr("class", "editleftarrow")
-
-      .attr("x", (_: any) => {
-                let range = 100;
-                const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
-                const anteriorRange = currentOrder.reduce((a: any, b: any) => {
-                    return a + b.range;
-                }, 0);
-                const anteriorGap = currentOrder.reduce((a: any, b: any) => {
-                    return a + b.leftgap;
-                }, 0);
-                if(currentOrder.length == 1){
-                  return (anteriorGap * 20) + range + 5
-                }
-                return (anteriorRange * 20) + (anteriorGap * 20) + range + 5;
-            })
-            .attr("y", 35)
-            .attr("font-family", "Arial")
-            .attr("font-size", "12px")
-            .attr("cursor", "pointer")
-            .text("←")
-            .on("click", () => this.adjustLeftGap(timeline, -1));  // Ajusta o leftgap
-
-        // Adiciona seta na direita
-        let right = edit.append("text")
-            .attr("class", "editrightarrow")
-            .attr("x", (_: any) => {
-                let range = 100;
-                const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order)
-                const anteriorRange = currentOrder.reduce((a: any, b: any) => {
-                    return a + b.range;
-                }, 0);
-                const anteriorGap = currentOrder.reduce((a: any, b: any) => {
-                    return a + b.leftgap;
-                }, 0);
-
-                if(currentOrder.length == 1){
-                  return (anteriorGap * 20) + (timeline.range * 20) + range - 25
-                }
-
-                return (anteriorRange * 20) + (anteriorGap * 20) + (timeline.range * 20) + range - 25;
-            })
-            .attr("y", 35)
-            .attr("font-family", "Arial")
-            .attr("font-size", "12px")
-            .attr("cursor", "pointer")
-            .text("→")
-            .on("click", () => this.adjustLeftGap(timeline, 1));  // Ajusta o leftgap
-
-        // Armazena as setas no elemento para remoção posterior
-
-    } else {
-      this.selectedTimeline = {
-        id: "",
-        WorldsID: "",
-        name: "",
-        description: "",
-        order: 0,
-        range: 0,
-        created_at: "",
-        leftgap: 0,
-        edit: false
-      }
-      const el = d3.select(edit._groups[0][0])
-      el.select('.editrightarrow').remove()
-      el.select('.editleftarrow').remove();
-        
-    }
-}
-
-
-  private adjustLeftGap(timeline: Timeline, adjustment: number) {
-    if((timeline.leftgap + adjustment) < 0){
-      return
-    }
-    timeline.leftgap += adjustment
-    this.api.updateTimeline(timeline).subscribe((tl:Timeline) => {
-      this.wd.updateTimeline(tl)
-    })
-
+  
+    // this.selectedTimeline = newTimeline
   }
+
+
+  timelineSwapDragEnded(element: any, timelines: Timeline[], event: MouseEvent, timeline: Timeline) {
+    d3.select(element._groups[0][0]).raise().attr("stroke", "none");
+
+
+    const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
+    const newSelectedElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
+    const newTimelineElement = d3.select(document.getElementById(newSelectedElementiD));
+
+    // const next = timelines.filter((tl) => tl.order == timeline.order + 1)[0]
+
+    // this.api.updateTimeline(next)
+    // this.api.updateTimeline(timeline)
+  }
+
 
   private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean) {
 
@@ -857,13 +949,13 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
 
   numberToRGB(num: number): string {
     // Função hash simples para garantir que cores sejam geradas consistentemente
-    const hash = num * 2654435761 % 2**32;
-  
+    const hash = num * 2654435761 % 2 ** 32;
+
     // Extrai valores de R, G, B a partir do hash
     const r = (hash & 0xFF0000) >> 16;
     const g = (hash & 0x00FF00) >> 8;
     const b = (hash & 0x0000FF);
-  
+
     return `rgb(${r}, ${g}, ${b})`;
   }
 
@@ -873,15 +965,18 @@ private findStorylineForChapter(s:StoryLine[], y:number): StoryLine {
       .selectAll("g > *").remove();
   }
 
-  private handleGraphEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, data: any) {
-
-    this.renderTimeLines(svg, data.timelines);
-    this.renderStoryLines(svg, data.storyLines);
-    this.renderChapters(svg, data.chapters, data.storyLines, data.timelines);
-    this.renderConnections(svg, data.chapters, data.connections);
+  private handleGraphEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    data: { "chapters": Chapter[], "storyLines": StoryLine[], "connections": Connection[], "timelines": Timeline[] }) {
 
 
-      
+    const { timelines, storyLines, connections, chapters } = data
+    this.renderTimeLines(svg, timelines);
+    this.renderStoryLines(svg, storyLines);
+    this.renderChapters(svg, chapters, storyLines, timelines, connections);
+    this.renderConnections(svg, chapters, connections);
+
+
+
 
     this.initZoom();
   }
