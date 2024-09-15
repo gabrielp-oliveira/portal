@@ -53,6 +53,8 @@ export class SubwayComponent {
   chapters: Chapter[] = [];
   connections: Connection[] = [];
   timelines: Timeline[] = [];
+  timelineOrderToUpdate: number
+  prevTimeline: Timeline | undefined
 
   constructor(
     private dialog: DialogService,
@@ -68,6 +70,9 @@ export class SubwayComponent {
     this.height = this.root?.nativeElement.offsetHeight;
 
     let svg = this.initSvg();
+    this.wd.timelines$.subscribe((t) => {
+      this.timelines = t
+    })
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
       "chapters": this.chapters$, "pappers": this.pappers$, "connections": this.connections$
@@ -125,8 +130,8 @@ export class SubwayComponent {
       .attr("height", 300)
       .append("g") // Retorna o grupo <g> que vai conter outros elementos
 
-    }
-  
+  }
+
 
 
   private renderChapters(
@@ -536,7 +541,7 @@ export class SubwayComponent {
   }
 
 
-  calculateXPosition (tl: Timeline, data: Timeline[]) {
+  calculateXPosition(tl: Timeline, data: Timeline[]) {
     let range = 100;
     const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
     const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
@@ -550,26 +555,26 @@ export class SubwayComponent {
   ) {
     const gridHeight = ((data.length - 1) * this.gridHeight) - 20;
     this.totalGridHeight = gridHeight;
-  
 
-  
+
+
     // Seleciona os grupos existentes e associa os dados
     let el: d3.Selection<SVGGElement, Timeline, SVGGElement, unknown> = svg
       .selectAll<SVGGElement, Timeline>("g.timeline-group")
       .data(data, (d: Timeline) => d.id);
-  
+
     // Remove os grupos que não estão mais nos dados
     el.exit().remove();
-  
+
     // Cria novos grupos para novos dados
     const enter = el.enter()
       .append<SVGGElement>("g")
       .attr("class", "timeline-group")
       .attr("id", (t: Timeline) => `${CSS.escape(t.id)}-timeline-group`);
-  
+
     // Atualiza grupos existentes e novos grupos
     el = enter.merge(el);
-  
+
     // Adiciona ou atualiza os retângulos
     el.append("rect")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
@@ -577,7 +582,7 @@ export class SubwayComponent {
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
-  
+
     // Adiciona ou atualiza os textos se o modo de edição estiver ativo
     if (this.timelineEdit) {
       el.append("text")
@@ -589,9 +594,10 @@ export class SubwayComponent {
         .attr("text-anchor", "middle")
         .text((tl: Timeline) => tl.name);
     }
-  
+
     // Adiciona ou atualiza os ícones de edição
     el.append("text")
+      .attr("class", "timeline-edit")
       .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data))
       .attr("y", this.timeLineTxtHeight * 2)
       .attr("font-family", "Arial")
@@ -599,13 +605,13 @@ export class SubwayComponent {
       .attr("cursor", "pointer")
       .text("✎")
       .on("click", (ev: MouseEvent, tl: Timeline) => this.showEditButtons(el, tl, data, !this.timelineEdit));
-  
+
     // Se o modo de edição estiver ativo e houver uma linha selecionada, mostra os botões de edição
     if (this.timelineEdit && this.selectedTimeline) {
       this.showEditButtons(el, this.selectedTimeline, data, this.timelineEdit);
     }
   }
-  
+
 
   private showEditButtons(edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
     if (this.selectedTimeline && this.selectedTimeline.id !== timeline.id) {
@@ -723,135 +729,236 @@ export class SubwayComponent {
 
   timelineSwapDragged(event: any, timelines: Timeline[]) {
     const selectedElementiD = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
-    const CurrentSelectedTimelineElement :any = d3.select(document.getElementById(selectedElementiD));
+    const CurrentSelectedTimelineElement: any = d3.select(document.getElementById(selectedElementiD));
     const rectElement = CurrentSelectedTimelineElement.select("rect");
     const textElement = CurrentSelectedTimelineElement.selectAll("text");
 
-    
 
     const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
 
 
     const beforeSelected = timelines.filter((t) => t.order <= newTimeline.order)
-    const afterSelectedTimeline = timelines.filter((t) => t.order > this.selectedTimeline.order)
-    const toWalkAfter = this.calculateEditIconPosition(newTimeline, afterSelectedTimeline)
-    
-    
-    
-    
+
     const selectedNewElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
-    const newTimelineElement :any = d3.select(document.getElementById(selectedNewElementiD));
+    const newTimelineElement: any = d3.select(document.getElementById(selectedNewElementiD));
     const newRectElement = newTimelineElement.select("rect");
     const newTextElement = newTimelineElement.selectAll("text");
-    
-    const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
-    const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines) 
-    
-    if (this.selectedTimeline.order > newTimeline.order) {    
-      
 
-      
+    const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
+    const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines)
+
+
+    if (this.selectedTimeline.order > newTimeline.order) {
+
+
+
       rectElement
-      .transition()      
-      .duration(100)    
-      .ease(d3.easeCubic) 
-      .attr('x', otherElementLocation )
-  
-      
-      textElement._groups[0].forEach((element:any) => {
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('x', otherElementLocation)
+
+
+      textElement._groups[0].forEach((element: any) => {
         d3.select(element)
-        .attr('x', this.calculateXPosition(newTimeline, timelines));
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation + (this.selectedTimeline.range * 10));
       });
-  
+
 
       //  aqui ---------------------------
-      console.log(otherElementLocation, currentElementLocation, newTimeline.range, this.selectedTimeline.range)
-      newRectElement
-      .transition()      
-      .duration(100)     
-      .ease(d3.easeCubic)
-      .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
-  
-      newTextElement._groups[0].forEach((element:any) => {
-        d3.select(element)
-        .transition()      
-        .duration(100)    
-        .ease(d3.easeCubic) 
-        .attr('x',this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
-      );
-      });
-  
+      if (this.prevTimeline != undefined && this.prevTimeline.order < newTimeline.order) {
 
-      
-      
+        const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
+        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
+        const prevRectElement = prevTimelineElement.select("rect");
+        const prevtextElement = prevTimelineElement.selectAll("text");
+        prevRectElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
+
+        const range = this.prevTimeline?.range * 10
+        prevtextElement._groups[0].forEach((element: any) => {
+          d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', otherElementLocation - range);
+        });
+
+
+      } else {
+
+        newRectElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
+
+
+        newTextElement._groups[0].forEach((element: any) => {
+          d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
+            );
+        });
+
+      }
+
     } else if (this.selectedTimeline.order < newTimeline.order) {
 
-
-
       rectElement
-      .transition()      
-      .duration(100)    
-      .ease(d3.easeCubic) 
-      .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
-  
-      
-      textElement._groups[0].forEach((element:any) => {
-        d3.select(element)
-        .attr('x', this.calculateXPosition(newTimeline, timelines));
-      });
-  
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
 
-      newRectElement
-      .transition()      
-      .duration(100)     
-      .ease(d3.easeCubic)
-      .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
-  
-      newTextElement._groups[0].forEach((element:any) => {
+
+      textElement._groups[0].forEach((element: any) => {
         d3.select(element)
-        .transition()      
-        .duration(100)    
-        .ease(d3.easeCubic) 
-        .attr('x',this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
-      );
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
       });
 
 
+      if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
 
-      // rectElement
-      // .transition()      
-      // .duration(100)    
-      // .ease(d3.easeCubic) 
-      // .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
-  
-      
-      // textElement._groups[0].forEach((element:any) => {
-      //   d3.select(element)
-      //   .attr('x', this.calculateXPosition(newTimeline, timelines));
-      // });
+        const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
+        const range = this.prevTimeline?.range
+        const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
+        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
+        const prevRectElement = prevTimelineElement.select("rect");
+        const prevtextElement = prevTimelineElement.selectAll("text");
+        prevRectElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', Location);
 
-
-    }else {
-      // alterando localizacao do item selecionado.
-      let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
-      rectElement
-      .transition()      
-      .duration(100)     
-      .ease(d3.easeCubic) 
-      .attr('x', toWalk);
-      textElement._groups[0].forEach((element:any) => {
-        d3.select(element)
-        .attr('x', this.calculateXPosition(this.selectedTimeline, timelines));
-      });
-
-      // --------------
+        prevtextElement._groups[0].forEach((element: any) => {
+          d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', Location + (range * 10));
+        });
 
 
+      } else {
+        newRectElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
+
+        newTextElement._groups[0].forEach((element: any) => {
+          d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', this.calculateXPosition(newTimeline, timelines) - (this.selectedTimeline.range * 10));
+        });
+
+      }
+
+
+    } else if (this.selectedTimeline.order == newTimeline.order) {
+
+      if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
+        const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
+
+        const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
+        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
+        const prevRectElement = prevTimelineElement.select("rect");
+        const prevtextElement = prevTimelineElement.selectAll("text");
+        const range = this.prevTimeline?.range
+
+        prevRectElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', Location);
+
+
+        prevtextElement._groups[0].forEach((element: any) => {
+          d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', Location + (range * 10));
+        });
+
+
+
+
+      } else {
+
+        if (this.prevTimeline != undefined) {
+
+          const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
+
+          const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
+          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
+          const prevRectElement = prevTimelineElement.select("rect");
+          const prevtextElement = prevTimelineElement.selectAll("text");
+          const range = this.prevTimeline?.range
+
+          prevRectElement
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', Location);
+
+          prevtextElement._groups[0].forEach((element: any) => {
+            d3.select(element)
+              .transition()
+              .duration(100)
+              .ease(d3.easeCubic)
+              .attr('x', Location + (range * 10));
+          });
+
+          let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
+          rectElement
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', toWalk);
+
+          textElement._groups[0].forEach((element: any) => {
+            d3.select(element)
+              .attr('x', () => {
+                if (this.prevTimeline) {
+                  return this.calculateXPosition(this.prevTimeline, timelines)
+                } else {
+                  return this.calculateXPosition(this.selectedTimeline, timelines)
+                }
+              });
+          });
+        }
+
+
+      }
 
     }
 
-  
-    // this.selectedTimeline = newTimeline
+    // newTimeline.order = this.selectedTimeline.order
+    if (this.timelineOrderToUpdate == 0) {
+      this.timelineOrderToUpdate = this.selectedTimeline.order
+  }
+
+  if (this.timelineOrderToUpdate != 0) {
+      this.timelineOrderToUpdate = newTimeline.order
+  }
+    this.prevTimeline = newTimeline
+
   }
 
 
@@ -859,16 +966,46 @@ export class SubwayComponent {
     d3.select(element._groups[0][0]).raise().attr("stroke", "none");
 
 
-    const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
-    const newSelectedElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
-    const newTimelineElement = d3.select(document.getElementById(newSelectedElementiD));
 
-    // const next = timelines.filter((tl) => tl.order == timeline.order + 1)[0]
 
-    // this.api.updateTimeline(next)
-    // this.api.updateTimeline(timeline)
+    let tls = timelines
+    
+    for(let i = this.timelineOrderToUpdate; i != this.selectedTimeline.order;){
+      console.log(timelines[i -1].order)
+      console.log(this.timelineOrderToUpdate)
+      console.log('------')
+      if(this.timelineOrderToUpdate > this.selectedTimeline.order){
+        tls[i -1].order -= 1 
+        i--
+        
+      }else {
+        tls[i -1].order += 1 
+        i++
+      }
+    }
+    console.log(tls)
+    this.selectedTimeline.order = this.timelineOrderToUpdate
+    this.compareTimelinesAndUpdate(this.timelines, tls);
+
+    this.wd.setTimelines(tls)
+    this.prevTimeline = undefined
+
   }
 
+  compareTimelinesAndUpdate(timelinesOld: Timeline[], timelinesNew: Timeline[]) {
+    timelinesOld.forEach((oldTimeline) => {
+        const newTimeline = timelinesNew.find(t => t.id === oldTimeline.id);
+        if (newTimeline && oldTimeline.order !== newTimeline.order) {
+            this.updateTimelineOrder(newTimeline);
+        }
+    });
+}
+
+// Função que vai fazer o update do `order` da timeline
+updateTimelineOrder(timeline: Timeline) {
+    this.api.updateTimeline(timeline)
+
+  }
 
   private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean) {
 
