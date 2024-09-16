@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/co
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
 import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, NODE_RADIUS, PATH_ROOT_MARGIN_BOTTOM, PATH_ROOT_MARGIN_LEFT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap } from '../../../models/graphsTypes';
-import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, Connection, StoryLine, Timeline } from '../../../models/papperTrailTypes';
@@ -551,9 +551,11 @@ export class SubwayComponent {
 
   renderTimeLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
-    data: Timeline[]
+    data: Timeline[],
+    height: number
   ) {
-    const gridHeight = ((data.length - 1) * this.gridHeight) - 20;
+    const gridHeight = (height * this.gridHeight) + 20;
+
     this.totalGridHeight = gridHeight;
 
 
@@ -679,7 +681,6 @@ export class SubwayComponent {
         .attr("class", `timeline-drag`)
         .attr("x", () => {
           let range = 100;
-          console.log('...')
           const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
           const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
 
@@ -692,7 +693,7 @@ export class SubwayComponent {
         .text("grab")
         .call(
           d3.drag<SVGCircleElement, Timeline>()
-            .on("start", () => this.timelineSwapDragStart())
+            .on("start", (_, t) => this.timelineSwapDragStart(t))
             .on("drag", (event, t) => this.timelineSwapDragged(event, timelines))
             .on("end", (event, t) => this.timelineSwapDragEnded(element, timelines, event, t))
         );
@@ -715,8 +716,9 @@ export class SubwayComponent {
 
 
 
-  timelineSwapDragStart() {
+  timelineSwapDragStart(t: Timeline) {
 
+    this.selectedTimeline = t
     const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     d3.select(document.getElementById(elementId)).raise().attr("stroke", "black");
 
@@ -736,7 +738,9 @@ export class SubwayComponent {
 
     const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
 
+    const isSame = this.selectedTimeline.id == newTimeline.id
 
+    
     const beforeSelected = timelines.filter((t) => t.order <= newTimeline.order)
 
     const selectedNewElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
@@ -747,8 +751,8 @@ export class SubwayComponent {
     const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
     const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines)
 
-
-    if (this.selectedTimeline.order > newTimeline.order) {
+    // console.log(rectElement.node().getBoundingClientRect().width) / 2
+    if (!isSame && this.selectedTimeline.order > newTimeline.order) {
 
 
 
@@ -764,7 +768,7 @@ export class SubwayComponent {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation + (this.selectedTimeline.range * 10));
+          .attr('x', otherElementLocation + (rectElement.node().getBoundingClientRect().width) / 2);
       });
 
 
@@ -781,13 +785,12 @@ export class SubwayComponent {
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
 
-        const range = this.prevTimeline?.range * 10
         prevtextElement._groups[0].forEach((element: any) => {
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', otherElementLocation - range);
+            .attr('x', otherElementLocation + (prevRectElement.node().getBoundingClientRect().width) / 2);
         });
 
 
@@ -805,13 +808,12 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', this.calculateXPosition(newTimeline, timelines) + (this.selectedTimeline.range * 20)
-            );
+            .attr('x', otherElementLocation + (this.selectedTimeline.range * 20) + (newRectElement.node().getBoundingClientRect().width) / 2);
         });
 
       }
 
-    } else if (this.selectedTimeline.order < newTimeline.order) {
+    } else if (!isSame &&this.selectedTimeline.order < newTimeline.order) {
 
       rectElement
         .transition()
@@ -825,7 +827,7 @@ export class SubwayComponent {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+          .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ (rectElement.node().getBoundingClientRect().width) / 2));
       });
 
 
@@ -848,7 +850,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location + (range * 10));
+            .attr('x', Location +  (prevRectElement.node().getBoundingClientRect().width) / 2);
         });
 
 
@@ -864,13 +866,13 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', this.calculateXPosition(newTimeline, timelines) - (this.selectedTimeline.range * 10));
+            .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + (newRectElement.node().getBoundingClientRect().width) / 2);
         });
 
       }
 
 
-    } else if (this.selectedTimeline.order == newTimeline.order) {
+    } else if (isSame && this.selectedTimeline.order == newTimeline.order) {
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
         const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
@@ -879,7 +881,6 @@ export class SubwayComponent {
         const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
         const prevRectElement = prevTimelineElement.select("rect");
         const prevtextElement = prevTimelineElement.selectAll("text");
-        const range = this.prevTimeline?.range
 
         prevRectElement
           .transition()
@@ -893,7 +894,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location + (range * 10));
+            .attr('x', Location + (prevRectElement.node().getBoundingClientRect().width) / 2);
         });
 
 
@@ -902,7 +903,7 @@ export class SubwayComponent {
       } else {
 
         if (this.prevTimeline != undefined) {
-
+          
           const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
 
           const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
@@ -922,7 +923,7 @@ export class SubwayComponent {
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', Location + (range * 10));
+              .attr('x', Location +  (prevRectElement.node().getBoundingClientRect().width) / 2);
           });
 
           let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
@@ -936,7 +937,7 @@ export class SubwayComponent {
             d3.select(element)
               .attr('x', () => {
                 if (this.prevTimeline) {
-                  return this.calculateXPosition(this.prevTimeline, timelines)
+                  return this.calculateXPosition(this.prevTimeline, timelines) 
                 } else {
                   return this.calculateXPosition(this.selectedTimeline, timelines)
                 }
@@ -965,47 +966,50 @@ export class SubwayComponent {
   timelineSwapDragEnded(element: any, timelines: Timeline[], event: MouseEvent, timeline: Timeline) {
     d3.select(element._groups[0][0]).raise().attr("stroke", "none");
 
+    this.selectedTimeline.order = this.timelineOrderToUpdate;
+
+    const reordenadas: Timeline[] = [];
+
+    let currentOrder = 1; 
+    timelines
+        .sort((a, b) => a.order - b.order) 
+        .forEach((t) => {
+            if (t.id === this.selectedTimeline.id) {
+                t.order = this.selectedTimeline.order;
+            } else {
+                if (currentOrder === this.selectedTimeline.order) {
+                    currentOrder++; 
+                }
+                t.order = currentOrder;
+                currentOrder++;
+            }
+            reordenadas.push(t);
+        });
 
 
+    reordenadas.forEach(timeline => {
+        this.wd.updateTimeline(timeline)
+      });
+      const updateTimelinesApi = reordenadas.map((t) => {
+        return this.api.updateTimeline(t).subscribe((e) => {
+          this.wd.updateTimeline(e)
+        })
+    })
 
-    let tls = timelines
-    
-    for(let i = this.timelineOrderToUpdate; i != this.selectedTimeline.order;){
-      console.log(timelines[i -1].order)
-      console.log(this.timelineOrderToUpdate)
-      console.log('------')
-      if(this.timelineOrderToUpdate > this.selectedTimeline.order){
-        tls[i -1].order -= 1 
-        i--
-        
-      }else {
-        tls[i -1].order += 1 
-        i++
-      }
-    }
-    console.log(tls)
-    this.selectedTimeline.order = this.timelineOrderToUpdate
-    this.compareTimelinesAndUpdate(this.timelines, tls);
-
-    this.wd.setTimelines(tls)
-    this.prevTimeline = undefined
-
-  }
-
-  compareTimelinesAndUpdate(timelinesOld: Timeline[], timelinesNew: Timeline[]) {
-    timelinesOld.forEach((oldTimeline) => {
-        const newTimeline = timelinesNew.find(t => t.id === oldTimeline.id);
-        if (newTimeline && oldTimeline.order !== newTimeline.order) {
-            this.updateTimelineOrder(newTimeline);
-        }
+    updateTimelinesApi.forEach(element => {
+      element.unsubscribe()
     });
+
+
+
+
+    // Resetar prevTimeline
+    this.prevTimeline = undefined;
 }
 
-// Função que vai fazer o update do `order` da timeline
-updateTimelineOrder(timeline: Timeline) {
-    this.api.updateTimeline(timeline)
 
-  }
+
+
 
   private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean) {
 
@@ -1107,7 +1111,7 @@ updateTimelineOrder(timeline: Timeline) {
 
 
     const { timelines, storyLines, connections, chapters } = data
-    this.renderTimeLines(svg, timelines);
+    this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
     this.renderChapters(svg, chapters, storyLines, timelines, connections);
     this.renderConnections(svg, chapters, connections);
