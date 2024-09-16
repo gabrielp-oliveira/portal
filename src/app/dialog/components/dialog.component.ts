@@ -6,6 +6,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
 import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
+import { combineLatest } from 'rxjs';
 
 
 
@@ -198,73 +199,124 @@ import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
     worldForm: FormGroup;
     worldId:string | undefined= ''
       errorHandler: any;
-      tl: Timeline[]
-      selectedTl: Timeline = {
-        range: 0,
-        id: '',
-        WorldsID: '',
-        name: '',
-        description: '',
-        order: 0,
-        created_at: ''
-      }
+
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
+      @Inject(MAT_DIALOG_DATA) public data: Timeline
     ){
 
-      this.timelines$.subscribe((tl) => {
-        this.tl = tl
-      })
+ 
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
         papper_id: ['', [Validators.required]],
-        order: ['', [Validators.required]],
-        timeline_id: ['', [Validators.required]],
-        storyline_id: ['', [Validators.required]],
         range: [0, [Validators.required]],
       });
 
-      this.chapters$.subscribe((cpList) => {
-        const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
-        const e = {target: {value: chapter.timeline_id}}
-        this.getTimeLineDetails(e)
-        console.log(chapter)
-        this.worldId = chapter.world_id
         this.worldForm.patchValue({
-          name: chapter.name,
-          description: chapter.description,
-          order: chapter.order,
-          papper_id: chapter.papper_id,
-          timeline_id: chapter?.timeline_id,
-          storyline_id: chapter?.storyline_id,
-          range: chapter?.range,
+          name: data.name,
+          description: data.description,
+          range: data?.range
         });
-      })
 
 
 
     }
 
-    pappers$ = this.wd.pappers$;
-    timelines$ = this.wd.timelines$;
-    storylines$ = this.wd.storylines$;
-    chapters$ = this.wd.chapters$;
-    world$ = this.wd.world$;
+
+
     range:number = 1
+    
 
     onSubmit(){
-      const body = this.worldForm.value
-      body.world_id = this.worldId
-      body.id = this.data.chapterId
-      console.log(body)
-      this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
+      const body = {...this.data, ...this.worldForm.value, }
+      this.api.updateTimeline(body).subscribe(
         
         {
-            next: (data) => this.addNewChapter(data),
+            next: (tl) => this.wd.updateTimeline(tl),
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
+    }
+
+    formatLabel(value: number): string {
+      this.range = value
+      return `${value}`;
+    }
+
+
+
+  }
+  @Component({
+    selector: 'app-deleteTimelineDialog',
+    templateUrl: './deleteTimelineDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class deleteTimelineDialogComponent  {
+    worldForm: FormGroup;
+
+    errorHandler: any;
+
+    constructor(private api:ApiService, private wd: WorldDataService, private fb: FormBuilder,
+      @Inject(MAT_DIALOG_DATA) public data: {timeline: Timeline, timelines: Timeline[], chapters: Chapter[]}
+    ){
+      this.worldForm = this.fb.group({
+        confirm: [false, [Validators.required]],
+      });
+    }
+
+
+    range:number = 1
+
+    onSubmit(){
+
+      if(this.worldForm.value.confirm){
+        if(this.data.timelines.length > 1 ) {
+  this.api.deleteTimeline(this.data.timeline.id)
+        .subscribe(
+          
+          {
+            next: (results) => {
+
+
+
+
+
+              const chaptersToUpdate = this.data.chapters.filter((c) => c.timeline_id == this.data.timeline.id)
+              const nextTimeline = this.data.timelines.filter((t) => t.order == this.data.timeline.order +1 )[0]
+              const prevTimeline = this.data.timelines.filter((t) => t.order == this.data.timeline.order -1 )[0] 
+              const newTimeline = nextTimeline || prevTimeline
+
+              const unsubscribeLater = chaptersToUpdate.map((e) => {
+                if(!newTimeline){
+      
+                  e.storyline_id = ""
+                  e.timeline_id = ""
+                  return this.api.updateChapter(e.id, e).subscribe((c) => this.wd.updateChapter(c))
+                }else {
+                  e.timeline_id = newTimeline.id
+                  return this.api.updateChapter(e.id, e).subscribe((c) => this.wd.updateChapter(c))
+                  
+                }
+              })
+
+              this.wd.removeTimeline(results.id)
+
+              const unsubscribeLater2 = this.data.timelines.map((tl) => {
+                if(tl.order > this.data.timeline.order) {
+                  tl.order -= 1
+                  return this.api.updateTimeline(tl).subscribe((tl) => this.wd.updateTimeline(tl))
+                }
+                return undefined
+                
+              })
+            },
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+        )
+      }else {
+        alert("you must have at least one timeline")
+      }
+    }
     }
     addNewChapter(newChapter: Chapter){
         this.wd.updateChapter(newChapter)
@@ -275,15 +327,9 @@ import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
     }
 
 
-    getTimeLineDetails(e:any){
-      const val:string = e.target.value
-      console.log(val)
-      if( val != null &&val.trim() != ""){
-        const result = this.tl.filter((t) => t.id == val)
-        this.selectedTl = result[0]
-      }
-    }
+
   }
+
   @Component({
     selector: 'app-createTimelineDialog',
     templateUrl: './createTimelineDialog.component.html',

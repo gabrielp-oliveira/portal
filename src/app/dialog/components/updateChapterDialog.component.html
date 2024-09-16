@@ -18,7 +18,7 @@
       </option>
     </select>
     <select id="timeline" formControlName="timeline_id" (change)="getTimeLineDetails($event)">
-      <option value="">Choose a timeline</option>
+
       <option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
         {{ timeline.name }}
       </option>
@@ -41,7 +41,7 @@
   
   <br>
     <select id="storyline" formControlName="storyline_id">
-      <option value="">Choose a storyline</option>
+      <!-- <option value="">Choose a storyline</option> -->
       <option *ngFor="let storyline of storylines$ | async" [value]="storyline.id">
         {{ storyline.name }}
       </option>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { createChapterDialogComponent, createEventsDialogComponent, createPapperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { createChapterDialogComponent, createEventsDialogComponent, createPapperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, deleteTimelineDialogComponent, UpdateChapterDialogComponent, UpdatePapperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Chapter, Timeline } from '../models/papperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -28,11 +29,20 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
-  openUpdateTimelineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openUpdateTimelineDialog(t: Timeline, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(UpdateTimelineDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,
+      data: t
+    });
+  }
+  openDeleteTimelineDialog(t: {timeline: Timeline, timelines: Timeline[], chapters:Chapter[]  }, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(deleteTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: t
     });
   }
   opencreateEventsDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {

@@ -360,7 +360,7 @@ export class SubwayComponent {
       ...d,
       range: newTimeline.range,
       storyline_id: newStorylineId,
-      timeline_id: newTimeline.timeline.id
+      timeline_id: newTimeline.timeline?.id
     }
     this.api.updateChapter(d.id, body).subscribe(
 
@@ -554,6 +554,7 @@ export class SubwayComponent {
     data: Timeline[],
     height: number
   ) {
+    console.log(data[0]?.range)
     const gridHeight = (height * this.gridHeight) + 20;
 
     this.totalGridHeight = gridHeight;
@@ -679,13 +680,8 @@ export class SubwayComponent {
     if (show) {
       element.append("text")
         .attr("class", `timeline-drag`)
-        .attr("x", () => {
-          let range = 100;
-          const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
-          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
+        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) + 20)
 
-          return ((anteriorRange - timeline.range) * 20) + range + ((timeline.range / 2) * 20);
-        })
         .attr("y", this.timeLineTxtHeight)
         .attr("font-family", "Arial")
         .attr("font-size", "12px")
@@ -693,10 +689,30 @@ export class SubwayComponent {
         .text("grab")
         .call(
           d3.drag<SVGCircleElement, Timeline>()
-            .on("start", (_, t) => this.timelineSwapDragStart(t))
+            .on("start", (_, t) => this.timelineSwapDragStart(t, timelines))
             .on("drag", (event, t) => this.timelineSwapDragged(event, timelines))
             .on("end", (event, t) => this.timelineSwapDragEnded(element, timelines, event, t))
         );
+      element.append("text")
+        .attr("class", `timeline-delete`)
+        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) - 20)
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", "Arial")
+        .attr("font-size", "12px")
+        .attr("cursor", "pointer")
+        .text("del")
+        .on("click", (e:any) =>this.dialog.openDeleteTimelineDialog({timeline:timeline, timelines:timelines, chapters:this.chapters}, "150ms","150ms"))
+        
+      element.append("text")
+        .attr("class", `timeline-update`)
+        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) - 55)
+        .attr("y", this.timeLineTxtHeight)
+        .attr("font-family", "Arial")
+        .attr("font-size", "12px")
+        .attr("cursor", "pointer")
+        .text("upd")
+        .on("click", (e:any) =>this.dialog.openUpdateTimelineDialog(timeline, "150ms","150ms"))
+        
 
     } else {
       element.select(".timeline-drag").remove();
@@ -716,8 +732,10 @@ export class SubwayComponent {
 
 
 
-  timelineSwapDragStart(t: Timeline) {
-
+  timelineSwapDragStart(t: Timeline, timelines: Timeline[]) {
+    if(timelines.length <= 1){
+      return
+    }
     this.selectedTimeline = t
     const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     d3.select(document.getElementById(elementId)).raise().attr("stroke", "black");
@@ -730,6 +748,9 @@ export class SubwayComponent {
 
 
   timelineSwapDragged(event: any, timelines: Timeline[]) {
+    if(timelines.length <= 1){
+      return
+    }
     const selectedElementiD = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     const CurrentSelectedTimelineElement: any = d3.select(document.getElementById(selectedElementiD));
     const rectElement = CurrentSelectedTimelineElement.select("rect");
@@ -965,6 +986,9 @@ export class SubwayComponent {
 
   timelineSwapDragEnded(element: any, timelines: Timeline[], event: MouseEvent, timeline: Timeline) {
     d3.select(element._groups[0][0]).raise().attr("stroke", "none");
+    if(timelines.length <= 1){
+      return
+    }
 
     this.selectedTimeline.order = this.timelineOrderToUpdate;
 
@@ -996,9 +1020,9 @@ export class SubwayComponent {
         })
     })
 
-    updateTimelinesApi.forEach(element => {
-      element.unsubscribe()
-    });
+    // updateTimelinesApi.forEach(element => {
+    //   element.unsubscribe()
+    // });
 
 
 

@@ -52,8 +52,8 @@ export class ApiService {
   removeConnection(body: Connection):Observable<Connection>  {
     return this.http.post<Connection>('http://localhost:9090/removeConnection', body)
   }
-  removeTimeline(id: string):Observable<Timeline>  {
-    return this.http.delete<Timeline>(`http://localhost:9090/removeConnection?id=${id}`)
+  deleteTimeline(id: string):Observable<Timeline>  {
+    return this.http.delete<Timeline>(`http://localhost:9090/deleteTimeline?id=${id}`)
   }
   createStoryLine(body: StoryLine):Observable<StoryLine>  {
    return this.http.post<StoryLine>('http://localhost:9090/createStoryline', body)

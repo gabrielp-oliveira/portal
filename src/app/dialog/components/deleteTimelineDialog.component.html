@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>delete timeline {{data.timeline.name}}</h2>
+<mat-dialog-content>
+  <p>Are you sure that you want to remove the {{data.timeline.name}} timeline?</p>
+  <p>the positon of the chapters in the subway will not change.</p>
+  <p>thet will be "trow" to the next one.</p>
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+    <label for="confirm">I confirm: </label>
+    <input type="checkbox" id="confirm" name="confirm"  formControlName="confirm"  />
+   
+  
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>
