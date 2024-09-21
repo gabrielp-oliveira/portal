@@ -146,6 +146,7 @@ export class SubwayComponent {
     // Cria um grupo (g) para cada capítulo
     let eleEnter = svg.selectAll("g.chapter-group")
       .data(chapters)
+      .raise()
       .enter()
       .append("g")
       .attr("id", (c: Chapter) => `${c.id}-chapter-group`)  // Adiciona um ID único para cada grupo de capítulos
@@ -155,6 +156,7 @@ export class SubwayComponent {
 
     eleEnter
       .append("circle")
+      .raise()
       .attr("cx", (chp: Chapter) => chp.width)
       .attr("cy", (chp: Chapter) => chp.height)
       .attr("r", () => NODE_RADIUS)
@@ -191,6 +193,8 @@ export class SubwayComponent {
     // Labels (Texto)
     eleEnter
       .append("text")
+      .raise()
+
       .attr("dx", (node: Chapter) => node.width)
       .attr("dy", (node: Chapter) => node.height + 15)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
@@ -423,92 +427,97 @@ export class SubwayComponent {
     cnn: Connection[]
   ) {
     if (cnn.length <= 0) {
-      return
+      return;
     }
-    svg.selectAll("g")
+  
+    // Cria um grupo específico para as conexões
+    const connectionsGroup = svg.append("g").attr("class", "connections");
+  
+    const connectionPaths = connectionsGroup
+      .selectAll("path")
       .data(cnn)
+      .enter()
       .append("path")
-      .attr("id", (c) => c.id + "-connections-group")
-      .raise()
+      .attr("id", (edge: Connection) => edge.id + "-connections-group")
       .attr("d", (edge: Connection) => {
-
+  
         let source = c.find((data: Chapter) => data.id === edge.sourceChapterID);
         let target = c.find((data: Chapter) => data.id === edge.targetChapterID);
-
-        let y0 = source ? source?.height : 0;
-        let x0 = source ? source?.width : 0;
+  
+        let y0 = source ? source.height : 0;
+        let x0 = source ? source.width : 0;
         let x1 = target ? target.width : 0;
-        let y1 = target ? target?.height : 0;
-
-
+        let y1 = target ? target.height : 0;
+  
         const CONSTANT_CONTROL_POINT = 5;
         const HORIZONTAL_THRESHOLD = 3;
-
-
+  
         let isHorizontal = Math.abs(y0 - y1) < HORIZONTAL_THRESHOLD;
         let isVertical = Math.abs(x0 - x1) < HORIZONTAL_THRESHOLD;
-
+  
         let controlPointX = (isHorizontal ? x1 : x1 + CONSTANT_CONTROL_POINT * ((x1 - x0) / (y1 - y0)) + MARGIN);
         let controlPointY = isVertical ? y1 : y1 - CONSTANT_CONTROL_POINT * ((y1 - y0) / (x1 - x0));
-
-        let pathData = ""
-
-        if (isVertical == true) {
-
-          // const distance = (controlPointY / 50) * 15
+  
+        let pathData = "";
+  
+        if (isVertical) {
           pathData = `M ${x0} ${y0} Q ${x0} ${y0} ${x1} ${y1}`;
-
         } else {
           pathData = this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal);
         }
-        return pathData
+        return pathData;
       })
       .attr("fill", "none")
       .attr("stroke", EDGE_BORDER_COLOR_DEFAULT)
       .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
       .attr("cursor", "pointer")
-      .on('contextmenu', (ev: MouseEvent, connection: Connection) => {
+      .on("contextmenu", (ev: MouseEvent, connection: Connection) => {
         ev.preventDefault();
-
-        // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
-
         this.trggerConnectionMenu.openMenu();
-        const menu = document.querySelector("#" + this.trggerConnectionMenu.menu?.panelId)
         const menuElement = document.querySelector("#" + this.trggerConnectionMenu.menu?.panelId) as HTMLElement;
-
         if (menuElement) {
-          // Defina o estilo de posicionamento
-          menuElement.style.position = 'absolute';
+          menuElement.style.position = "absolute";
           menuElement.style.left = `${ev.x + 5}px`;
           menuElement.style.top = `${ev.y + 5}px`;
         }
-        this.selectedConnection = connection
-        const target = this.chapters.filter((chp) => chp.id == connection.targetChapterID)[0]
-        target.color = "red"
-        const source = this.chapters.filter((chp) => chp.id == connection.sourceChapterID)[0]
-        source.color = "red"
-        this.wd.updateChapter(target)
-        this.wd.updateChapter(source)
-
+        this.selectedConnection = connection;
+  
+        // Atualiza a cor dos capítulos conectados
+        const target = this.chapters.find(chp => chp.id === connection.targetChapterID);
+        const source = this.chapters.find(chp => chp.id === connection.sourceChapterID);
+  
+        if (target) {
+          target.color = "red";
+          this.wd.updateChapter(target);
+        }
+        if (source) {
+          source.color = "red";
+          this.wd.updateChapter(source);
+        }
       })
-      .on('mouseover', function (event, d) {
+      .on("mouseover", function () {
         d3.select(this)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2)
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
       })
-      .on('mouseout', function (event, d) {
+      .on("mouseout", function () {
         d3.select(this)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
-      })
-
-
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+      });
+  
+    // Garante que as conexões estejam no topo
+    connectionPaths.raise();
   }
-
+  
   renderStoryLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     str: StoryLine[]
   ) {
-    // Seleciona um grupo exclusivo para as storylines
-
     const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
     
     
@@ -538,7 +547,6 @@ export class SubwayComponent {
       .attr("fill", "none")
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado
       .style("stroke", "rgba(0, 0, 0, 0.25)")  // Define a cor da linha
-      .lower();
 
     el.append("text")
       .attr("dx", () => MARGIN)
@@ -569,6 +577,7 @@ export class SubwayComponent {
     // Seleciona os grupos existentes e associa os dados
     let el: d3.Selection<SVGGElement, Timeline, SVGGElement, unknown> = svg
       .selectAll<SVGGElement, Timeline>("g.timeline-group")
+      .lower()
       .data(data, (d: Timeline) => d.id);
   
     // Remove os grupos que não estão mais nos dados
@@ -579,20 +588,21 @@ export class SubwayComponent {
       .append<SVGGElement>("g")
       .attr("class", "timeline-group")
       .attr("id", (t: Timeline) => `${CSS.escape(t.id)}-timeline-group`);
-  
-    // Atualiza grupos existentes e novos grupos
-    el = enter.merge(el);
-  
-    // Adiciona ou atualiza os retângulos (o corpo da timeline)
-    el.append("rect")
+      
+      // Atualiza grupos existentes e novos grupos
+      el = enter.merge(el);
+      
+      // Adiciona ou atualiza os retângulos (o corpo da timeline)
+      el.append("rect")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 50)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
-  
-    // Criação do header da timeline
-    const headerTimeline = el
+      
+      // Criação do header da timeline
+      const headerTimeline = el
+      .lower()
       .append<SVGGElement>("g")
       
       // Adiciona o background do header usando 'rect'
@@ -689,7 +699,7 @@ getElementCenter(element: any){
     }
     this.selectedTimeline = t
     const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
-    d3.select(document.getElementById(elementId)).raise().attr("stroke", "black");
+    d3.select(document.getElementById(elementId)).attr("stroke", "black");
 
   }
 
@@ -936,7 +946,7 @@ getElementCenter(element: any){
 
 
   timelineSwapDragEnded(element: any, timelines: Timeline[]) {
-    d3.select(element._groups[0][0]).raise().attr("stroke", "none");
+    d3.select(element._groups[0][0]).attr("stroke", "none");
     if(timelines.length <= 1){
       return
     }
@@ -1089,8 +1099,8 @@ getElementCenter(element: any){
     const { timelines, storyLines, connections, chapters } = data
     this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
-    this.renderChapters(svg, chapters, storyLines, timelines, connections);
     this.renderConnections(svg, chapters, connections);
+    this.renderChapters(svg, chapters, storyLines, timelines, connections);
 
 
 
