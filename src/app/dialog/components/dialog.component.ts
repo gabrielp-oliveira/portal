@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, StoryLine, Timeline } from '../../models/papperTrailTypes';
+import { Chapter, StoryLine, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 
 
@@ -13,11 +13,11 @@ import { combineLatest } from 'rxjs';
 
 
 @Component({
-    selector: 'app-createPapperDialog',
-    templateUrl: './createPapperDialog.component.html',
+    selector: 'app-createPaperDialog',
+    templateUrl: './createPaperDialog.component.html',
     styleUrl: './dialog.component.scss'
   })
-  export class createPapperDialogComponent  {
+  export class createPaperDialogComponent  {
     worldForm: FormGroup;
     worldId:string = ''
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService){
@@ -36,19 +36,18 @@ import { combineLatest } from 'rxjs';
 
       
       body.world_id = this.worldId
-      this.api.createPapper(this.worldForm.value).subscribe((papper) => {
-        if(!!papper.chapter){
-          console.log(papper)
-          this.wd.addChapter(papper.chapter[0])
+      this.api.createPaper(this.worldForm.value).subscribe((paper) => {
+        if(!!paper.chapter){
+          this.wd.addChapter(paper.chapter[0])
         }
-        delete papper.chapter
-        this.wd.addPapper(papper)
+        delete paper.chapter
+        this.wd.addPaper(paper)
       })
     }
   
   }
   @Component({
-    selector: 'app-createPapperDialog',
+    selector: 'app-createPaperDialog',
     templateUrl: './createChapterDialog.component.html',
     styleUrl: './dialog.component.scss'
   })
@@ -60,7 +59,7 @@ import { combineLatest } from 'rxjs';
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        papper_id: ['', [Validators.required]],
+        paper_id: ['', [Validators.required]],
       });
 
       this.wd.world$.subscribe((w) => {
@@ -68,7 +67,7 @@ import { combineLatest } from 'rxjs';
       })
     }
 
-    pappers$ = this.wd.pappers$;
+    papers$ = this.wd.papers$;
     chapters$ = this.wd.chapters$;
     world$ = this.wd.world$;
 
@@ -124,7 +123,7 @@ import { combineLatest } from 'rxjs';
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        papper_id: ['', [Validators.required]],
+        paper_id: ['', [Validators.required]],
         order: ['', [Validators.required]],
         timeline_id: ['', [Validators.required]],
         storyline_id: ['', [Validators.required]],
@@ -135,13 +134,12 @@ import { combineLatest } from 'rxjs';
         const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
         const e = {target: {value: chapter.timeline_id}}
         this.getTimeLineDetails(e)
-        console.log(chapter)
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
           name: chapter.name,
           description: chapter.description,
           order: chapter.order,
-          papper_id: chapter.papper_id,
+          paper_id: chapter.paper_id,
           timeline_id: chapter?.timeline_id,
           storyline_id: chapter?.storyline_id,
           range: chapter?.range,
@@ -152,7 +150,7 @@ import { combineLatest } from 'rxjs';
 
     }
 
-    pappers$ = this.wd.pappers$;
+    papers$ = this.wd.papers$;
     timelines$ = this.wd.timelines$;
     storylines$ = this.wd.storylines$;
     chapters$ = this.wd.chapters$;
@@ -163,7 +161,6 @@ import { combineLatest } from 'rxjs';
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.chapterId
-      console.log(body)
       this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
         
         {
@@ -183,7 +180,6 @@ import { combineLatest } from 'rxjs';
 
     getTimeLineDetails(e:any){
       const val:string = e.target.value
-      console.log(val)
       if( val != null &&val.trim() != ""){
         const result = this.tl.filter((t) => t.id == val)
         this.selectedTl = result[0]
@@ -208,7 +204,7 @@ import { combineLatest } from 'rxjs';
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        papper_id: ['', [Validators.required]],
+        paper_id: ['', [Validators.required]],
         range: [0, [Validators.required]],
       });
 
@@ -444,7 +440,7 @@ import { combineLatest } from 'rxjs';
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        papper_id: ['', [Validators.required]],
+        paper_id: ['', [Validators.required]],
         order: ['', [Validators.required]],
         timeline_id: ['', [Validators.required]],
         storyline_id: ['', [Validators.required]],
@@ -455,13 +451,12 @@ import { combineLatest } from 'rxjs';
         const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
         const e = {target: {value: chapter.timeline_id}}
         this.getTimeLineDetails(e)
-        console.log(chapter)
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
           name: chapter.name,
           description: chapter.description,
           order: chapter.order,
-          papper_id: chapter.papper_id,
+          paper_id: chapter.paper_id,
           timeline_id: chapter?.timeline_id,
           storyline_id: chapter?.storyline_id,
           range: chapter?.range,
@@ -472,7 +467,7 @@ import { combineLatest } from 'rxjs';
 
     }
 
-    pappers$ = this.wd.pappers$;
+    papers$ = this.wd.papers$;
     timelines$ = this.wd.timelines$;
     storylines$ = this.wd.storylines$;
     chapters$ = this.wd.chapters$;
@@ -483,7 +478,6 @@ import { combineLatest } from 'rxjs';
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.chapterId
-      console.log(body)
       this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
         
         {
@@ -503,7 +497,6 @@ import { combineLatest } from 'rxjs';
 
     getTimeLineDetails(e:any){
       const val:string = e.target.value
-      console.log(val)
       if( val != null &&val.trim() != ""){
         const result = this.tl.filter((t) => t.id == val)
         this.selectedTl = result[0]
@@ -513,11 +506,11 @@ import { combineLatest } from 'rxjs';
 
 
   @Component({
-    selector: 'app-updatePapperDialog',
-    templateUrl: './updatePapperDialog.component.html',
+    selector: 'app-updatePaperDialog',
+    templateUrl: './updatePaperDialog.component.html',
     styleUrl: './dialog.component.scss'
   })
-  export class UpdatePapperDialogComponent  {
+  export class UpdatePaperDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
       errorHandler: any;
@@ -530,18 +523,18 @@ import { combineLatest } from 'rxjs';
         order: ['', [Validators.required]],
       });
 
-      this.api.getPapperData(this.data.papperId).subscribe((papper) => {
-        this.worldId = papper.world_id
+      this.api.getPaperData(this.data.papperId).subscribe((paper) => {
+        this.worldId = paper.world_id
         this.worldForm.patchValue({
-          name: papper.name,
-          description: papper.description,
-          order: papper.order,
+          name: paper.name,
+          description: paper.description,
+          order: paper.order,
         });
       })
 
     }
 
-    pappers$ = this.wd.pappers$;
+    papers$ = this.wd.papers$;
     chapters$ = this.wd.chapters$;
 
     onSubmit(){
@@ -550,10 +543,10 @@ import { combineLatest } from 'rxjs';
       body.id = this.data.papperId
       body.order = 2
 
-      this.api.updatePapper(this.data.papperId, this.worldForm.value).subscribe(
+      this.api.updatePaper(this.data.papperId, this.worldForm.value).subscribe(
         
         {
-            next: (data) => this.wd.updatePapper(data),
+            next: (data) => this.wd.updatePaper(data),
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -578,7 +571,6 @@ import { combineLatest } from 'rxjs';
     }
     onSubmit() {
       this.api.Createworld(this.worldForm.value).subscribe((world) => {
-        console.log(world)
       })
     }
   

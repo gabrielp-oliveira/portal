@@ -3,7 +3,7 @@ import { ApiService } from '../../api.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
-import { Papper, world } from '../../../models/papperTrailTypes';
+import { paper, world } from '../../../models/paperTrailTypes';
 import { ErrorService } from '../../error.service';
 import { WorldDataService } from '../world-data.service';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -24,12 +24,11 @@ export class DashboardComponent {
   ) { }
 
   worldList: world[] = []
-  papperList: Papper[] = []
+  papperList: paper[] = []
 
   ngOnInit() {
     this.api.getWorldList().subscribe({
       next: (worldList) => {
-        console.log(worldList);
         this.worldList = worldList
       },
       error: (err) => {
@@ -46,10 +45,9 @@ export class DashboardComponent {
     this.auth.logOut()
   }
 
-  getPapperList(worldId: string) {
-    this.api.getPapperList(worldId).subscribe({
+  getPaperList(worldId: string) {
+    this.api.getPaperList(worldId).subscribe({
       next: (worldList) => {
-        console.log(worldList);
         this.papperList = worldList
       },
       error: (err) => {

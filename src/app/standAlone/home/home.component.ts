@@ -16,6 +16,6 @@ export class HomeComponent {
   constructor(private auth: AuthService){}
   ngOnInit(){
    this.isUserLogged= this.auth.isUserLogged() 
-   console.log(this.isUserLogged)
+
   }
 }

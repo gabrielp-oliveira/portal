@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { world, Papper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine } from '../../models/papperTrailTypes';
+import { world, paper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine } from '../../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,7 @@ import { world, Papper, Chapter, Connection, Timeline, Event, basicWorld, StoryL
 export class WorldDataService {
   // Usamos BehaviorSubjects para armazenar o estado e permitir que os componentes se inscrevam para atualizações
   private worldSubject = new BehaviorSubject<basicWorld | null>(null);
-  private pappersSubject = new BehaviorSubject<Papper[]>([]);
+  private papersSubject = new BehaviorSubject<paper[]>([]);
   private chaptersSubject = new BehaviorSubject<Chapter[]>([]);
   private eventsSubject = new BehaviorSubject<Event[]>([]);
   private timelinesSubject = new BehaviorSubject<Timeline[]>([]);
@@ -17,7 +17,7 @@ export class WorldDataService {
 
   // Observables para os componentes se inscreverem
   world$ = this.worldSubject.asObservable();
-  pappers$ = this.pappersSubject.asObservable();
+  papers$ = this.papersSubject.asObservable();
   chapters$ = this.chaptersSubject.asObservable();
   events$ = this.eventsSubject.asObservable();
   timelines$ = this.timelinesSubject.asObservable();
@@ -36,8 +36,8 @@ export class WorldDataService {
     this.worldSubject.next(world);
   }
 
-  setPappers(pappers: Papper[]): void {
-    this.pappersSubject.next(pappers);
+  setPapers(papers: paper[]): void {
+    this.papersSubject.next(papers);
   }
 
   setChapters(chapters: Chapter[]): void {
@@ -60,9 +60,9 @@ export class WorldDataService {
   }
 
   // Métodos para manipular dados locais
-  addPapper(papper: Papper): void {
-    const pappers = this.pappersSubject.value;
-    this.pappersSubject.next([...pappers, papper]);
+  addPaper(paper: paper): void {
+    const papers = this.papersSubject.value;
+    this.papersSubject.next([...papers, paper]);
   }
   addStoryline(storyline: StoryLine): void {
     const storylines = this.storylinesSubject.value;
@@ -85,11 +85,11 @@ export class WorldDataService {
     );
     this.timelinesSubject.next(timelines);
   }
-  updatePapper(papper: Papper): void {
-    const pappers = this.pappersSubject.value.map(existingPapper => 
-      existingPapper.id === papper.id ? papper : existingPapper
+  updatePaper(paper: paper): void {
+    const papers = this.papersSubject.value.map(existingPaper => 
+      existingPaper.id === paper.id ? paper : existingPaper
     );
-    this.pappersSubject.next(pappers);
+    this.papersSubject.next(papers);
   }
   getChapterLink(id: string): string{
     return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
@@ -111,9 +111,9 @@ export class WorldDataService {
     this.connectionsSubject.next([...connections, connection]);
   }
 
-  removePapper(papperId: string): void {
-    const pappers = this.pappersSubject.value.filter(p => p.id !== papperId);
-    this.pappersSubject.next(pappers);
+  removePaper(papperId: string): void {
+    const papers = this.papersSubject.value.filter(p => p.id !== papperId);
+    this.papersSubject.next(papers);
   }
 
   removeChapter(chapterId: string): void {
@@ -143,7 +143,7 @@ export class WorldDataService {
       name: data.name
   }
   this.setWorld(basicworldInfo)
-  this.setPappers(data.pappers)
+  this.setPapers(data.papers)
   this.setChapters(data.chapters)
   this.setConnections(data.connections)
   this.setEvents(data.Events)

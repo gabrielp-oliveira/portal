@@ -6,7 +6,7 @@ export type world = {
     Events: Event[],
     connections: Connection[],
     timelines: Timeline[],
-    pappers: Papper[]
+    papers: paper[]
     storyLines: StoryLine[]
 }
 export type basicWorld = {
@@ -16,7 +16,7 @@ export type basicWorld = {
 }
 
 
-export type Papper = {
+export type paper = {
     id: string,
     name: string,
     description: string,
@@ -37,7 +37,7 @@ export type Chapter = {
     name: string,
     description: string,
     createdAt: string,
-    papper_id: string,
+    paper_id: string,
     EventID: string,
     timeline_id: string,
     storyline_id: string,

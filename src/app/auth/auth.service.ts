@@ -22,7 +22,6 @@ export class AuthService {
   microsoftLogin() {
     this.http.get<{ url: string }>('http://localhost:8080/auth/microsoft/getUrl').subscribe(response => {
       const url: any = response
-      console.log(url)
       window.location.href = url;
     });
   }
@@ -72,8 +71,6 @@ export class AuthService {
   }
   login(body:any){
     this.http.post<{ url: string }>('http://localhost:8080/login', body).subscribe(response => {
-      console.log(response)
-
       this.router.navigate(['/dashboard'])
     }, (err) => {
       console.error(err.message)

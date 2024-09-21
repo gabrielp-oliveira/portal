@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, Connection, Papper, StoryLine, Timeline, world } from '../models/papperTrailTypes';
+import { Chapter, Connection, paper, StoryLine, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +16,8 @@ export class ApiService {
   getWorldList() :Observable<world[]>{
     return this.http.get<world[]>('http://localhost:9090/getWorldsList')
   }
-  getPapperList(worldId: string) :Observable<Papper[]>{
-    return this.http.get<Papper[]>(`http://localhost:9090/getPapperList?id=${worldId}`)
+  getPaperList(worldId: string) :Observable<paper[]>{
+    return this.http.get<paper[]>(`http://localhost:9090/getPaperList?id=${worldId}`)
   }
   getWorldData(worldId: string): Observable<world> {
     return this.http.get<world>(`http://localhost:9090/world?id=${worldId}`);
@@ -28,11 +28,11 @@ export class ApiService {
   getChapteData(chapterId: string): Observable<Chapter> {
     return this.http.get<Chapter>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
-  getPapperData(papperId: string): Observable<Papper> {
-    return this.http.get<Papper>(`http://localhost:9090/papper?id=${papperId}`);
+  getPaperData(papperId: string): Observable<paper> {
+    return this.http.get<paper>(`http://localhost:9090/paper?id=${papperId}`);
   }
-  updatePapper(papperId: string, body:Papper): Observable<Papper> {
-    return this.http.put<Papper>(`http://localhost:9090/updatePapper?id=${papperId}`, body);
+  updatePaper(papperId: string, body:paper): Observable<paper> {
+    return this.http.put<paper>(`http://localhost:9090/updatePaper?id=${papperId}`, body);
   }
   updateChapter(chapterId: string, body:Chapter): Observable<Chapter> {
     return this.http.put<Chapter>(`http://localhost:9090/updateChapter?id=${chapterId}`, body);
@@ -40,8 +40,8 @@ export class ApiService {
   Createworld(body: any):Observable<world>  {
    return this.http.post<world>('http://localhost:9090/createWorld', body)
   }
-  createPapper(body: any):Observable<Papper>  {
-   return this.http.post<Papper>('http://localhost:9090/createPapper', body)
+  createPaper(body: any):Observable<paper>  {
+   return this.http.post<paper>('http://localhost:9090/createPaper', body)
   }
   createChapter(body: Chapter):Observable<Chapter>  {
    return this.http.post<Chapter>('http://localhost:9090/createChapter', body)

@@ -5,10 +5,11 @@ import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY
 import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, StoryLine, Timeline } from '../../../models/papperTrailTypes';
+import { Chapter, Connection, StoryLine, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
+import { NumberInput } from '@angular/cdk/coercion';
 
 const D3_ROOT_ELEMENT_ID = "subway";
 
@@ -22,6 +23,7 @@ export class SubwayComponent {
 
   width: number;
   height: number;
+  zoom: number = 1;
   timeLineTxtHeight: number = 20
 
   selectedChapter: Chapter | undefined;
@@ -31,7 +33,7 @@ export class SubwayComponent {
   currentSelectTimelineLeftGap: number;
 
   isCreateConnectionSet: boolean;
-  timelineEdit: boolean = true
+  timelineEdit: boolean = false
   gridWidth = 100
   gridHeight = 50
   totalGridHeight = 0
@@ -45,7 +47,7 @@ export class SubwayComponent {
   storylines$ = this.wd.storylines$;
   timelines$ = this.wd.timelines$;
   chapters$ = this.wd.chapters$;
-  pappers$ = this.wd.pappers$;
+  papers$ = this.wd.papers$;
   connections$ = this.wd.connections$;
 
   graphHeigh: number = 0
@@ -75,12 +77,12 @@ export class SubwayComponent {
     })
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
-      "chapters": this.chapters$, "pappers": this.pappers$, "connections": this.connections$
+      "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$
     }).subscribe((data) => {
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
 
 
-      let { chapters, pappers, storyLines, timelines, connections } = data
+      let { chapters, papers, storyLines, timelines, connections } = data
       this.connections = connections
       data.timelines = timelines.sort((a, b) => a.order - b.order);
 
@@ -88,7 +90,7 @@ export class SubwayComponent {
         c.width = 0
         const str = storyLines.filter((s) => s.id == c.storyline_id)[0]
         const tl = timelines.filter((t) => t.id == c.timeline_id)[0]
-        const pp = pappers.filter((p) => p.id == c.papper_id)[0]
+        const pp = papers.filter((p) => p.id == c.paper_id)[0]
 
         if (!c.selected) {
           c.color = this.numberToRGB(pp.order)
@@ -554,174 +556,116 @@ export class SubwayComponent {
     data: Timeline[],
     height: number
   ) {
-    console.log(data[0]?.range)
     const gridHeight = (height * this.gridHeight) + 20;
-
     this.totalGridHeight = gridHeight;
-
-
-
+  
     // Seleciona os grupos existentes e associa os dados
     let el: d3.Selection<SVGGElement, Timeline, SVGGElement, unknown> = svg
       .selectAll<SVGGElement, Timeline>("g.timeline-group")
       .data(data, (d: Timeline) => d.id);
-
+  
     // Remove os grupos que não estão mais nos dados
     el.exit().remove();
-
+  
     // Cria novos grupos para novos dados
     const enter = el.enter()
       .append<SVGGElement>("g")
       .attr("class", "timeline-group")
       .attr("id", (t: Timeline) => `${CSS.escape(t.id)}-timeline-group`);
-
+  
     // Atualiza grupos existentes e novos grupos
     el = enter.merge(el);
-
-    // Adiciona ou atualiza os retângulos
+  
+    // Adiciona ou atualiza os retângulos (o corpo da timeline)
     el.append("rect")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
-      .attr("y", 0)
+      .attr("y", 50)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
-
-    // Adiciona ou atualiza os textos se o modo de edição estiver ativo
-    if (this.timelineEdit) {
-      el.append("text")
-        .attr("class", "timeline-txt")
-        .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data))
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-        .attr("text-anchor", "middle")
-        .text((tl: Timeline) => tl.name);
-    }
-
-    // Adiciona ou atualiza os ícones de edição
-    el.append("text")
-      .attr("class", "timeline-edit")
-      .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data))
-      .attr("y", this.timeLineTxtHeight * 2)
+  
+    // Criação do header da timeline
+    const headerTimeline = el
+      .append<SVGGElement>("g")
+      
+      // Adiciona o background do header usando 'rect'
+      headerTimeline
+      .append("rect")
+      .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
+      .attr("y", 0) // Posiciona no topo
+      .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
+      .attr("height", 50) // Altura do header
+      .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
+      .style("stroke", "#000")  // Adiciona uma borda se necessário
+      .attr("class", "timeline-header")
+      .style("stroke-width", "1px");
+  
+    // Define o espaçamento relativo à largura da timeline
+    const headerWidth = (tl: Timeline) => (tl.range * 20) - 5; // Largura específica de cada timeline
+    const buttonCount = 3; // Quantidade de botões: grab, del, update
+  
+    // Posições para cada botão, distribuídas uniformemente dentro da largura
+    const buttonPositions = (tl: Timeline, index: number) => {
+      const width = headerWidth(tl);
+      const spacing = width / (buttonCount + 1); // Espaçamento proporcional entre os botões
+      return this.calculateEditIconPosition(tl, data) + spacing * (index + 1); // Calcula a posição proporcional
+    };
+  
+    // Botão de "grab" (movimentação)
+    headerTimeline.append("text")
+      .attr("class", `timeline-drag`)
+      .attr("x", (tl: Timeline) => buttonPositions(tl, 0)) // Posição proporcional
+      .attr("y", this.timeLineTxtHeight)
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("cursor", "pointer")
+      .text("grb")
+      .call(
+        d3.drag<SVGTextElement, Timeline>()
+          .on("start", (event, t) => this.timelineSwapDragStart(t, data))
+          .on("drag", (event, t) => this.timelineSwapDragged(event, data))
+          .on("end", (event, t) => this.timelineSwapDragEnded(svg, data))
+      );
+  
+    // Botão de deletar no header
+    headerTimeline.append("text")
+      .attr("class", "timeline-delete")
+      .attr("x", (tl: Timeline) => buttonPositions(tl, 1)) // Posição proporcional
+      .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
       .attr("font-size", "12px")
       .attr("cursor", "pointer")
-      .text("✎")
-      .on("click", (ev: MouseEvent, tl: Timeline) => this.showEditButtons(el, tl, data, !this.timelineEdit));
-
-    // Se o modo de edição estiver ativo e houver uma linha selecionada, mostra os botões de edição
-    if (this.timelineEdit && this.selectedTimeline) {
-      this.showEditButtons(el, this.selectedTimeline, data, this.timelineEdit);
-    }
+      .text("del")
+      .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
+  
+    // Botão de atualizar no header
+    headerTimeline.append("text")
+      .attr("class", "timeline-update")
+      .attr("x", (tl: Timeline) => buttonPositions(tl, 2)) // Posição proporcional
+      .attr("y", this.timeLineTxtHeight)
+      .attr("font-family", "Arial")
+      .attr("font-size", "12px")
+      .attr("cursor", "pointer")
+      .text("upd")
+      .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
+  
+    // Nome da timeline no header, centralizado abaixo dos botões
+    headerTimeline.append("text")
+      .attr("class", "timeline-txt")
+      .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data)) // Centralizado
+      .attr("y", this.timeLineTxtHeight + 20) // Abaixo dos botões
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("text-anchor", "middle")
+      .text((tl: Timeline) => tl.name);
   }
+  
+  
+  
 
-
-  private showEditButtons(edit: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
-    if (this.selectedTimeline && this.selectedTimeline.id !== timeline.id) {
-
-      const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
-      const lastElement = d3.select(document.getElementById(elementId));
-
-      lastElement.append("text") // Reinsere o texto original do retângulo anterior
-        .attr("class", `timeline-txt`)
-        .attr("x", () => {
-          let range = 100;
-          const currentOrder = timelines.filter((t: Timeline) => t.order <= this.selectedTimeline.order);
-          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-
-          return ((anteriorRange - this.selectedTimeline.range) * 20) + range + ((this.selectedTimeline.range / 2) * 20);
-        })
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-        .attr("text-anchor", "middle")
-        .text((tl: any) => this.selectedTimeline.name);
-      lastElement.select(".timeline-drag").remove(); // Remove o botão de edição
-    }
-    if (this.selectedTimeline?.id != timeline.id) {
-      this.timelineEdit = true;
-    } else {
-      this.timelineEdit = show;
-    }
-
-
-    const elementId = `${CSS.escape(timeline.id)}-timeline-group`;
-    const element = d3.select(document.getElementById(elementId));
-
-
-    if (this.timelineEdit) {
-      edit._groups[0].forEach((element: any) => {
-        if (element.__data__.id !== timeline.id) {
-          d3.select(element).select(".timeline-drag").remove();
-        }
-      });
-      element.select(".timeline-txt").remove(); // Remove o texto para abrir o modo de edição
-    } else {
-      element.append("text")
-        .attr("class", `timeline-txt`)
-        .attr("x", () => {
-          let range = 100;
-          const currentOrder = timelines.filter((t: Timeline) => t.order <= timeline.order);
-          const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-          return ((anteriorRange - timeline.range) * 20) + range + ((timeline.range / 2) * 20);
-        })
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-        .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-        .attr("text-anchor", "middle")
-        .text((tl: any) => timeline.name);
-    }
-
-    this.selectedTimeline = timeline;
-    this.showGrabTimeline(element, timeline, timelines, this.timelineEdit);
-  }
-
-  private showGrabTimeline(element: any, timeline: Timeline, timelines: Timeline[], show: boolean) {
-    if (show) {
-      element.append("text")
-        .attr("class", `timeline-drag`)
-        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) + 20)
-
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", "Arial")
-        .attr("font-size", "12px")
-        .attr("cursor", "pointer")
-        .text("grab")
-        .call(
-          d3.drag<SVGCircleElement, Timeline>()
-            .on("start", (_, t) => this.timelineSwapDragStart(t, timelines))
-            .on("drag", (event, t) => this.timelineSwapDragged(event, timelines))
-            .on("end", (event, t) => this.timelineSwapDragEnded(element, timelines, event, t))
-        );
-      element.append("text")
-        .attr("class", `timeline-delete`)
-        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) - 20)
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", "Arial")
-        .attr("font-size", "12px")
-        .attr("cursor", "pointer")
-        .text("del")
-        .on("click", (e:any) =>this.dialog.openDeleteTimelineDialog({timeline:timeline, timelines:timelines, chapters:this.chapters}, "150ms","150ms"))
-        
-      element.append("text")
-        .attr("class", `timeline-update`)
-        .attr("x", () => (this.calculateEditIconPosition(timeline, timelines) + (element.node().getBoundingClientRect().width) / 2) - 55)
-        .attr("y", this.timeLineTxtHeight)
-        .attr("font-family", "Arial")
-        .attr("font-size", "12px")
-        .attr("cursor", "pointer")
-        .text("upd")
-        .on("click", (e:any) =>this.dialog.openUpdateTimelineDialog(timeline, "150ms","150ms"))
-        
-
-    } else {
-      element.select(".timeline-drag").remove();
-    }
-  }
-
-
-
-
+getElementCenter(element: any){
+  return (element.node().getBoundingClientRect().width / this.zoom) / 2
+}
 
   private calculateEditIconPosition(tl: Timeline, data: Timeline[]): number {
     let range = 100;
@@ -789,7 +733,7 @@ export class SubwayComponent {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation + (rectElement.node().getBoundingClientRect().width) / 2);
+          .attr('x', otherElementLocation + this.getElementCenter(rectElement) / 2);
       });
 
 
@@ -811,7 +755,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', otherElementLocation + (prevRectElement.node().getBoundingClientRect().width) / 2);
+            .attr('x', otherElementLocation +  this.getElementCenter(prevRectElement));
         });
 
 
@@ -829,7 +773,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', otherElementLocation + (this.selectedTimeline.range * 20) + (newRectElement.node().getBoundingClientRect().width) / 2);
+            .attr('x', otherElementLocation + (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
         });
 
       }
@@ -848,7 +792,7 @@ export class SubwayComponent {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ (rectElement.node().getBoundingClientRect().width) / 2));
+          .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
       });
 
 
@@ -871,7 +815,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location +  (prevRectElement.node().getBoundingClientRect().width) / 2);
+            .attr('x', Location + this.getElementCenter(prevRectElement));
         });
 
 
@@ -887,7 +831,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + (newRectElement.node().getBoundingClientRect().width) / 2);
+            .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
         });
 
       }
@@ -915,7 +859,7 @@ export class SubwayComponent {
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location + (prevRectElement.node().getBoundingClientRect().width) / 2);
+            .attr('x', Location + this.getElementCenter(prevRectElement) );
         });
 
 
@@ -944,7 +888,7 @@ export class SubwayComponent {
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', Location +  (prevRectElement.node().getBoundingClientRect().width) / 2);
+              .attr('x', Location + this.getElementCenter(prevRectElement) )
           });
 
           let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
@@ -984,7 +928,7 @@ export class SubwayComponent {
   }
 
 
-  timelineSwapDragEnded(element: any, timelines: Timeline[], event: MouseEvent, timeline: Timeline) {
+  timelineSwapDragEnded(element: any, timelines: Timeline[]) {
     d3.select(element._groups[0][0]).raise().attr("stroke", "none");
     if(timelines.length <= 1){
       return
@@ -1108,6 +1052,7 @@ export class SubwayComponent {
       }
     }
 
+    this.zoom = transform.k
 
   }
 

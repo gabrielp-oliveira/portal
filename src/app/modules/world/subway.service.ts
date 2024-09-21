@@ -49,7 +49,6 @@ export class SubwayService {
       edge.source.id = _.isNil(edge.source.id) ? `${index}-source-node` : edge.source.id;
       edge.target.id = _.isNil(edge.target.id) ? `${index}-target-node` : edge.target.id;
     });
-    console.log(newData)
     return newData;
   }
 }

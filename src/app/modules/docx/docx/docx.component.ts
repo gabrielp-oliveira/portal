@@ -25,7 +25,7 @@ export class DocxComponent {
       this.chapterId = String(params.get('chapterId'))
 
       this.api.getChapterUrl(this.chapterId).subscribe((a) => {
-        console.log(a)
+
       })
       this.docLink = this.wd.getChapterLink(this.chapterId)
     });

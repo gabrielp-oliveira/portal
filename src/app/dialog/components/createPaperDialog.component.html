@@ -1,12 +1,12 @@
-<h2 mat-dialog-title>Create new papper</h2>
+<h2 mat-dialog-title>Create new paper</h2>
 <mat-dialog-content>
-  chose your papper name
+  chose your paper name
 </mat-dialog-content>
 <mat-dialog-content>
   <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">papper Name: </label>
+    <label for="Name">paper Name: </label>
     <input id="Name" type="Name" formControlName="Name" />
-    <label for="description">papper description: </label>
+    <label for="description">paper description: </label>
     <input id="description" type="description" formControlName="description" />
     <mat-dialog-actions>
       <button mat-button mat-dialog-close>cancel</button>

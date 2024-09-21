@@ -1,4 +1,4 @@
-<div *ngIf="world$ | async as world">
+<!-- <div *ngIf="world$ | async as world">
   <div>
 
     <p>world component works!</p>
@@ -6,17 +6,17 @@
     <p>ID: {{ world.id }}</p>
     <p>Created At: {{ world.created_at }}</p>
   </div>
-  <button mat-raised-button (click)="callCreatePapperDialog('150ms', '150ms')">Create new papper</button>
+  <button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')">Create new paper</button>
 
   <ul>
-    papper list
+    paper list
     <br>
-    <li *ngFor="let papper of pappers$">
-      <span [ngStyle]="papperBackgroundColor(papper.order)">
+    <li *ngFor="let paper of papers$">
+      <span [ngStyle]="papperBackgroundColor(paper.order)">
         <span>
 
-          {{ papper.name }} - {{ papper.description }}
-          <button (click)="updatePapper(papper.id)">Update</button>
+          {{ paper.name }} - {{ paper.description }}
+          <button (click)="updatePaper(paper.id)">Update</button>
         </span>
       </span>
     </li>
@@ -26,7 +26,7 @@
     chapter list
     <br>
     <li *ngFor="let chapter of chapters$">
-      <span [ngStyle]="chapterBackgroundColor(chapter.papper_id)">
+      <span [ngStyle]="chapterBackgroundColor(chapter.paper_id)">
         {{ chapter.name }} - {{ chapter.description }}
         <button (click)="openChapter(world.id, chapter.id)">Open</button>
         <button (click)="updateChapter(chapter.id)">update</button>
@@ -37,7 +37,7 @@
   <br>
   <br>
   <button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')">Create new chapter</button>
-</div>
+</div> -->
 
 <div class="buttonns">
   <button (click)="createStoryline()">Create Story line</button>

@@ -6,7 +6,7 @@ import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
-import { Chapter, Papper } from '../../../models/papperTrailTypes';
+import { Chapter, paper } from '../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-world',
@@ -24,7 +24,7 @@ export class WorldComponent {
     private errorHandler: ErrorService
   ) { }
 
-  pappers$: Papper[];
+  papers$: paper[];
   world$ = this.wd.world$;
   chapters$: Chapter[]
 
@@ -37,8 +37,8 @@ export class WorldComponent {
       this.wd.chapters$.subscribe((c) => {
         this.chapters$ = c
       })
-      this.wd.pappers$.subscribe((p) => {
-        this.pappers$ = p
+      this.wd.papers$.subscribe((p) => {
+        this.papers$ = p
       })
   }
 
@@ -49,8 +49,7 @@ export class WorldComponent {
   }
   chapterBackgroundColor(id: string){
 
-    const a = this.pappers$.filter((p) => p.id == id)[0]
-
+    const a = this.papers$.filter((p) => p.id == id)[0]
     return {
       'background-color': this.numberToRGB(a.order)
     }
@@ -76,8 +75,8 @@ export class WorldComponent {
     this.dialog.openUpdateChapterDialog('150ms', '150ms', pachapterId) 
   }
 
-  updatePapper(papperId: string){
-    this.dialog.openUpdatePapperrDialog('150ms', '150ms', papperId) 
+  updatePaper(papperId: string){
+    this.dialog.openUpdatePaperrDialog('150ms', '150ms', papperId) 
   }
   private loadWorldData(id: string): void {
     this.api.getWorldData(id).subscribe({
@@ -86,8 +85,8 @@ export class WorldComponent {
     });
   }
 
-  callCreatePapperDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.openCreatePapperDialog(enterAnimationDuration, exitAnimationDuration)
+  callCreatePaperDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.openCreatePaperDialog(enterAnimationDuration, exitAnimationDuration)
   }
   callCreteChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.openCreateChapterDialog(enterAnimationDuration, exitAnimationDuration)

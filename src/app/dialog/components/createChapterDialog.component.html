@@ -7,11 +7,11 @@
     <label for="description">Chapter Description: </label>
     <input id="description" type="text" formControlName="description" />
     
-    <label for="papper">Choose a papper to save your new chapter: </label>
-    <select id="papper" formControlName="papper_id">
-      <option value="">Choose a papper</option>
-      <option *ngFor="let papper of pappers$ | async" [value]="papper.id">
-        {{ papper.name }} - {{ papper.description }}
+    <label for="paper">Choose a paper to save your new chapter: </label>
+    <select id="paper" formControlName="paper_id">
+      <option value="">Choose a paper</option>
+      <option *ngFor="let paper of papers$ | async" [value]="paper.id">
+        {{ paper.name }} - {{ paper.description }}
       </option>
     </select>
     
