@@ -508,6 +508,13 @@ export class SubwayComponent {
     str: StoryLine[]
   ) {
     // Seleciona um grupo exclusivo para as storylines
+
+    const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
+    
+    
+    const widthChapter =    this.chapters
+    .sort((a, b) =>  b.width - a.width)[0]?.width
+    const width = widthTimelines > widthChapter ? widthTimelines : widthChapter
     let el = svg.selectAll("g.storyline-group")
       .data(str)
       .enter()
@@ -519,14 +526,14 @@ export class SubwayComponent {
         var g = d3.select(`#${D3_ROOT_ELEMENT_ID}`)
           .select('svg g')
           .node();
-        const strHeight = st.order * this.gridHeight;
+        const strHeight = (st.order * this.gridHeight);
         this.graphHeigh += this.gridHeight
         if (g && g instanceof SVGGraphicsElement) {
 
 
-          return this.createEdge(MARGIN + 50, strHeight, (g.parentElement?.clientWidth || this.width) + (MARGIN * 10), strHeight, (g.parentElement?.clientWidth || this.width), strHeight, true);
+          return this.createEdge(MARGIN + 50, strHeight, width, strHeight, width, strHeight, true);
         }
-        return this.createEdge(MARGIN + 50, strHeight, this.width + (MARGIN * 10), strHeight, this.width, strHeight, true);
+        return this.createEdge(MARGIN + 50, strHeight, width, strHeight, width, strHeight, true);
       })
       .attr("fill", "none")
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado
@@ -594,7 +601,7 @@ export class SubwayComponent {
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 0) // Posiciona no topo
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
-      .attr("height", 50) // Altura do header
+      .attr("height", 45) // Altura do header
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
       .attr("class", "timeline-header")
