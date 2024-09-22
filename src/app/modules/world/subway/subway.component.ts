@@ -566,6 +566,12 @@ export class SubwayComponent {
   };
 
 
+  buttonPositions  (tl: Timeline, timelines: Timeline[], index: number) {
+    const width = (tl.range * 20) - 5;
+    const spacing = width / (3 + 1); // Espaçamento proporcional entre os botões
+    return this.calculateEditIconPosition(tl, timelines) + spacing * (index + 1); // Calcula a posição proporcional
+  };
+
   renderTimeLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     data: Timeline[],
@@ -594,11 +600,13 @@ export class SubwayComponent {
       
       // Adiciona ou atualiza os retângulos (o corpo da timeline)
       el.append("rect")
+      .attr("class", "timeline-body")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 50)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
+
       
       // Criação do header da timeline
       const headerTimeline = el
@@ -608,30 +616,20 @@ export class SubwayComponent {
       // Adiciona o background do header usando 'rect'
       headerTimeline
       .append("rect")
+      .attr("class", "timeline-header")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 0) // Posiciona no topo
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
       .attr("height", 45) // Altura do header
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
-      .attr("class", "timeline-header")
       .style("stroke-width", "1px");
   
-    // Define o espaçamento relativo à largura da timeline
-    const headerWidth = (tl: Timeline) => (tl.range * 20) - 5; // Largura específica de cada timeline
-    const buttonCount = 3; // Quantidade de botões: grab, del, update
-  
-    // Posições para cada botão, distribuídas uniformemente dentro da largura
-    const buttonPositions = (tl: Timeline, index: number) => {
-      const width = headerWidth(tl);
-      const spacing = width / (buttonCount + 1); // Espaçamento proporcional entre os botões
-      return this.calculateEditIconPosition(tl, data) + spacing * (index + 1); // Calcula a posição proporcional
-    };
   
     // Botão de "grab" (movimentação)
     headerTimeline.append("text")
       .attr("class", `timeline-drag`)
-      .attr("x", (tl: Timeline) => buttonPositions(tl, 0)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data,  0)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
@@ -647,7 +645,7 @@ export class SubwayComponent {
     // Botão de deletar no header
     headerTimeline.append("text")
       .attr("class", "timeline-delete")
-      .attr("x", (tl: Timeline) => buttonPositions(tl, 1)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 1)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
       .attr("font-size", "12px")
@@ -658,7 +656,7 @@ export class SubwayComponent {
     // Botão de atualizar no header
     headerTimeline.append("text")
       .attr("class", "timeline-update")
-      .attr("x", (tl: Timeline) => buttonPositions(tl, 2)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 2)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
       .attr("font-size", "12px")
@@ -714,7 +712,8 @@ getElementCenter(element: any){
     }
     const selectedElementiD = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     const CurrentSelectedTimelineElement: any = d3.select(document.getElementById(selectedElementiD));
-    const rectElement = CurrentSelectedTimelineElement.select("rect");
+    const rectElement = CurrentSelectedTimelineElement.select(".timeline-body");
+    const rectElementHeader = CurrentSelectedTimelineElement.select(".timeline-header");
     const textElement = CurrentSelectedTimelineElement.selectAll("text");
 
 
@@ -727,7 +726,8 @@ getElementCenter(element: any){
 
     const selectedNewElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
     const newTimelineElement: any = d3.select(document.getElementById(selectedNewElementiD));
-    const newRectElement = newTimelineElement.select("rect");
+    const newRectElement = newTimelineElement.select(".timeline-body");
+    const newRectheaderElement = newTimelineElement.select(".timeline-header");
     const newTextElement = newTimelineElement.selectAll("text");
 
     const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
@@ -744,13 +744,20 @@ getElementCenter(element: any){
         .ease(d3.easeCubic)
         .attr('x', otherElementLocation)
 
+        rectElementHeader
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('x', otherElementLocation)
 
-      textElement._groups[0].forEach((element: any) => {
+
+      textElement._groups[0].forEach((element: any, i:number) => {
+        const pos = i >= 3 ? 1 : i
         d3.select(element)
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('x', otherElementLocation + this.getElementCenter(rectElement) / 2);
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
       });
 
 
@@ -759,20 +766,28 @@ getElementCenter(element: any){
 
         const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
         const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
-        const prevRectElement = prevTimelineElement.select("rect");
+        const prevRectElement = prevTimelineElement.select(".timeline-body");
+        const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
         const prevtextElement = prevTimelineElement.selectAll("text");
+
         prevRectElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
+          prevRectheaderElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
 
-        prevtextElement._groups[0].forEach((element: any) => {
+        prevtextElement._groups[0].forEach((element: any, i:number) => {
+          const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', otherElementLocation +  this.getElementCenter(prevRectElement));
+            .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
         });
 
 
@@ -784,13 +799,20 @@ getElementCenter(element: any){
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
 
+        newRectheaderElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
 
-        newTextElement._groups[0].forEach((element: any) => {
+
+        newTextElement._groups[0].forEach((element: any, i:number) => {
+          const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', otherElementLocation + (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
+            .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
         });
 
       }
@@ -802,14 +824,23 @@ getElementCenter(element: any){
         .duration(100)
         .ease(d3.easeCubic)
         .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+      rectElementHeader
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
 
 
-      textElement._groups[0].forEach((element: any) => {
+      textElement._groups[0].forEach((element: any, i:number) => {
+        const pos = i >= 3 ? 1 : i
+
         d3.select(element)
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
+          .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
+
+          // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
       });
 
 
@@ -819,20 +850,31 @@ getElementCenter(element: any){
         const range = this.prevTimeline?.range
         const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
         const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
-        const prevRectElement = prevTimelineElement.select("rect");
+        const prevRectElement = prevTimelineElement.select(".timeline-body");
+        const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
         const prevtextElement = prevTimelineElement.selectAll("text");
+
         prevRectElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', Location);
 
-        prevtextElement._groups[0].forEach((element: any) => {
+          prevRectheaderElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', Location);
+
+        prevtextElement._groups[0].forEach((element: any, i:number) => {
+          const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location + this.getElementCenter(prevRectElement));
+            .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline , timelines, pos)) 
+
+            // .attr('x', Location + this.getElementCenter(prevRectElement));
         });
 
 
@@ -843,14 +885,24 @@ getElementCenter(element: any){
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
 
-        newTextElement._groups[0].forEach((element: any) => {
+        newRectheaderElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
+
+        newTextElement._groups[0].forEach((element: any, i: any) => {
+          
+          const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
-        });
+            .attr("x", () => this.buttonPositions(this.selectedTimeline, timelines, pos)) // Posição proporcional
 
+            // .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
+        });
+        console.log('-----------')
       }
 
 
@@ -861,7 +913,8 @@ getElementCenter(element: any){
 
         const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
         const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
-        const prevRectElement = prevTimelineElement.select("rect");
+        const prevRectElement = prevTimelineElement.select(".timeline-body");
+        const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
         const prevtextElement = prevTimelineElement.selectAll("text");
 
         prevRectElement
@@ -870,13 +923,23 @@ getElementCenter(element: any){
           .ease(d3.easeCubic)
           .attr('x', Location);
 
+          prevRectheaderElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('x', Location);
 
-        prevtextElement._groups[0].forEach((element: any) => {
+
+        prevtextElement._groups[0].forEach((element: any, i:number) => {
+          const pos = i >= 3 ? 1 : i
+
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('x', Location + this.getElementCenter(prevRectElement) );
+            .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline, timelines, pos)) 
+
+            // .attr('x', Location + this.getElementCenter(prevRectElement) );
         });
 
 
@@ -890,7 +953,8 @@ getElementCenter(element: any){
 
           const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
           const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
-          const prevRectElement = prevTimelineElement.select("rect");
+          const prevRectElement = prevTimelineElement.select(".timeline-body");
+          const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
           const prevtextElement = prevTimelineElement.selectAll("text");
           const range = this.prevTimeline?.range
 
@@ -899,13 +963,23 @@ getElementCenter(element: any){
             .duration(100)
             .ease(d3.easeCubic)
             .attr('x', Location);
+            
+            prevRectheaderElement
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('x', Location);
 
-          prevtextElement._groups[0].forEach((element: any) => {
+          prevtextElement._groups[0].forEach((element: any, i:number) => {
+            const pos = i >= 3 ? 1 : i
+
             d3.select(element)
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', Location + this.getElementCenter(prevRectElement) )
+              .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline, timelines, pos)) 
+
+              // .attr('x', Location + this.getElementCenter(prevRectElement) )
           });
 
           let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
@@ -915,13 +989,18 @@ getElementCenter(element: any){
             .ease(d3.easeCubic)
             .attr('x', toWalk);
 
-          textElement._groups[0].forEach((element: any) => {
+          textElement._groups[0].forEach((element: any, i:number) => {
+            const pos = i >= 3 ? 1 : i
+
             d3.select(element)
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
               .attr('x', () => {
                 if (this.prevTimeline) {
-                  return this.calculateXPosition(this.prevTimeline, timelines) 
+                  return this.buttonPositions(this.prevTimeline, timelines, pos)
                 } else {
-                  return this.calculateXPosition(this.selectedTimeline, timelines)
+                  return this.buttonPositions(this.selectedTimeline, timelines, pos)
                 }
               });
           });
