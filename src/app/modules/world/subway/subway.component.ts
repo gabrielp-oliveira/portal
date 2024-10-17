@@ -152,8 +152,23 @@ export class SubwayComponent {
 
   }
 
+  getFillColor(chp: Chapter): string {
+    if (chp.focus) {
+      return d3.color(chp.color)?.brighter(0.5)?.toString() || chp.color; // Aumenta a claridade da cor
+    }
+    return chp.color;
+  }
 
+  focusChapter ( c: Chapter, focus:boolean)  {
+      c.focus = focus
+      console.log(focus)
+      if(!focus){
+        console.log(c)
 
+      }
+      this.wd.updateChapter(c)  
+      return 
+  }
   private renderChapters(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     chapters: Chapter[],
@@ -174,12 +189,13 @@ export class SubwayComponent {
 
     eleEnter
       .append("circle")
+      .attr("id", (c: Chapter) => `${c.id}-chapter-circle`)  // Adiciona um ID único para cada grupo de capítulos
       .raise()
       .attr("cx", (chp: Chapter) => chp.width)
       .attr("cy", (chp: Chapter) => chp.height)
       .attr("r", () => NODE_RADIUS)
-      .attr("fill", (chp: Chapter) => chp.color)
-      .attr("stroke", (chp: Chapter) => chp.color)
+      .attr("fill", (chp: Chapter) => this.getFillColor(chp)) // Cor ajustada dinamicamente
+      .attr("stroke", (chp: Chapter) => "black") // Cor da borda ajustada dinamicamente
       .attr("stroke-width", NODE_BORDER_WIDTH_DEFAULT)
       .attr("cursor", "pointer")
       .call(
@@ -207,7 +223,33 @@ export class SubwayComponent {
         this.selectedChapter = c
 
       })
+      .on("mouseover", (_: MouseEvent, c: Chapter) => {
+        if(!c.focus){
 
+          c.focus = true;
+          this.wd.updateChapter(c); // Update the state
+          
+          const element = document.getElementById(`${c.id}-chapter-circle`);
+          d3.select(element)
+          .transition()
+          .duration(200)
+          .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color); // Lighten the color
+        }
+      })
+      .on("mouseout", (_: MouseEvent, c: Chapter) => {
+        if(c.focus){
+        
+        c.focus = false;
+        this.wd.updateChapter(c); // Update the state
+    
+        const element = document.getElementById(`${c.id}-chapter-circle`);
+
+        d3.select(element)
+          .transition()
+          .duration(200)
+          .attr("fill", this.getFillColor(c)); // Restore the original color based on state
+        }
+      });
     // Labels (Texto)
     eleEnter
       .append("text")

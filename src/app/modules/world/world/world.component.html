@@ -1,4 +1,4 @@
-<!-- <div *ngIf="world$ | async as world">
+<div *ngIf="world$ | async as world">
   <div>
 
     <p>world component works!</p>
@@ -8,11 +8,11 @@
   </div>
   <button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')">Create new paper</button>
 
-  <ul>
+  <ul class="papperList">
     paper list
     <br>
     <li *ngFor="let paper of papers$">
-      <span [ngStyle]="papperBackgroundColor(paper.order)">
+      <span [ngStyle]="papperBackgroundColor(paper)" (mouseenter)="hoverPappeer(paper)" (mouseleave)="hoverPappeer(paper)">
         <span>
 
           {{ paper.name }} - {{ paper.description }}
@@ -22,11 +22,11 @@
     </li>
 
   </ul>
-  <ul>
+  <ul class="chapterList">
     chapter list
     <br>
     <li *ngFor="let chapter of chapters$">
-      <span [ngStyle]="chapterBackgroundColor(chapter.paper_id)">
+      <span [ngStyle]="chapterBackgroundColor(chapter)"  (mouseenter)="hooverChapter(chapter)" (mouseleave)="hooverChapter(chapter)">
         {{ chapter.name }} - {{ chapter.description }}
         <button (click)="openChapter(world.id, chapter.id)">Open</button>
         <button (click)="updateChapter(chapter.id)">update</button>
@@ -37,7 +37,7 @@
   <br>
   <br>
   <button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')">Create new chapter</button>
-</div> -->
+</div>
 
 <div class="buttonns">
   <button (click)="createStoryline()">Create Story line</button>

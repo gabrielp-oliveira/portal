@@ -14,6 +14,7 @@ import { Chapter, paper } from '../../../models/paperTrailTypes';
   styleUrl: './world.component.scss'
 })
 export class WorldComponent {
+papper: paper;
 
   constructor(
     private router: Router,
@@ -42,16 +43,19 @@ export class WorldComponent {
       })
   }
 
-  papperBackgroundColor(order: number){
+  papperBackgroundColor(pp: paper){
     return {
-      'background-color': this.numberToRGB(order)
+      'background-color': this.numberToRGB(pp.order),
+      "filter": pp.focus? "brightness(1.2)" : "brightness(1)",
     }
   }
-  chapterBackgroundColor(id: string){
+  chapterBackgroundColor(chapter: Chapter){
 
-    const a = this.papers$.filter((p) => p.id == id)[0]
+    const pp = this.papers$.filter((p) => p.id == chapter.paper_id)[0]
     return {
-      'background-color': this.numberToRGB(a.order)
+      'background-color': this.numberToRGB(pp.order),
+      "filter": (pp.focus || chapter.focus)? "brightness(1.2)" : "brightness(1)"
+
     }
   }
   numberToRGB(num: number): string {
@@ -104,6 +108,14 @@ export class WorldComponent {
 
   }
   
+  hoverPappeer(pp: paper){
+    pp.focus = !!!pp.focus
+    this.wd.updatePaper(pp)
+  }
+  hooverChapter(cpt: Chapter){
+    cpt.focus = !!!cpt.focus
+    this.wd.updateChapter(cpt)
+  }
 
 }
 

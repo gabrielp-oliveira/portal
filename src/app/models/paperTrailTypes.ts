@@ -24,7 +24,8 @@ export type paper = {
     Created_at: string,
     world_id: string,
     chapter?: Chapter[],
-    order: number
+    order: number,
+    focus: boolean 
 }
 
 
@@ -44,7 +45,8 @@ export type Chapter = {
     range: number,
     order: number,
     color: string,
-    selected: boolean
+    selected: boolean,
+    focus: boolean
 }
 
 export type ChapterTimeline =  {
