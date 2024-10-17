@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
 import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, NODE_RADIUS, PATH_ROOT_MARGIN_BOTTOM, PATH_ROOT_MARGIN_LEFT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap } from '../../../models/graphsTypes';
@@ -43,7 +43,15 @@ export class SubwayComponent {
   gridHeight = 50
   totalGridHeight = 0
 
+  buttonsSpacing :any={
+
+   0: -25,
+   1: 0,
+   2:25
+
+  }
   @ViewChild('chapterMenuTrigger') chapterMenuTrigger!: MatMenuTrigger;
+  @ViewChild('storylineMenuTrigger') storylineMenuTrigger!: MatMenuTrigger;
   @ViewChild("connectionMenuTrigger") trggerConnectionMenu!: MatMenuTrigger;
 
   bodyElement: HTMLElement = document.body;
@@ -68,7 +76,8 @@ export class SubwayComponent {
   constructor(
     private dialog: DialogService,
     private wd: WorldDataService,
-    private api: ApiService
+    private api: ApiService,
+    private renderer: Renderer2
   ) {
     this.cleanItemsOnSvg();
 
@@ -134,7 +143,7 @@ export class SubwayComponent {
   }
 
   private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-    const width = this.width < 1000? this.width : 1000
+    const width = this.width < 1500? this.width : 1500
     return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
       .append("svg")
       .attr("width", width)
@@ -225,6 +234,10 @@ export class SubwayComponent {
       this.wd.updateChapter(this.selectedChapter)
       alert("chose a chapter to connect.")
     }
+
+  }
+
+  removeStoryline(){
 
   }
   removeConnection() {
@@ -564,7 +577,26 @@ export class SubwayComponent {
           .on("start", (event, str) => this.storyLineSwapDragStart(str, strs))
           .on("drag", (event, str) => this.storyLineSwapDragged(event, strs))
           .on("end", (event, str) => this.storyLineSwapDragEnded(svg, strs))
-      );
+      )
+      .on('contextmenu', (ev: MouseEvent, str: StoryLine) => {
+        ev.preventDefault();
+
+
+        // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
+
+        this.storylineMenuTrigger.openMenu();
+        const menu = document.querySelector("#" + this.storylineMenuTrigger.menu?.panelId)
+        const menuElement = document.querySelector("#" + this.storylineMenuTrigger.menu?.panelId) as HTMLElement;
+
+        if (menuElement) {
+          // Defina o estilo de posicionamento
+          menuElement.style.position = 'absolute';
+          menuElement.style.left = `${ev.x + 10}px`;
+          menuElement.style.top = `${ev.y + 5}px`;
+        }
+        this.storylineSelected = str
+
+      })
   }
 
   storyLineSwapDragStart(str: StoryLine, strs: StoryLine[]){
@@ -798,9 +830,15 @@ export class SubwayComponent {
 
 
   buttonPositions (tl: Timeline, timelines: Timeline[], index: number) {
-    const width = (tl.range * 20) - 5;
-    const spacing = width / (3 + 1); // Espaçamento proporcional entre os botões
-    return this.calculateEditIconPosition(tl, timelines) + spacing * (index + 1); // Calcula a posição proporcional
+    const width = (tl.range * 20) ;
+    const spacing = width / (3); // Espaçamento proporcional entre os botões
+
+    // if(tl.name == "terceira"){
+    //   console.log(spacing * (index + 1))
+    // }
+
+
+    return this.calculateEditIconPosition(tl, timelines) + (tl.range * 10) - 10 + this.buttonsSpacing[index] ; // Calcula a posição proporcional
   };
 
   renderTimeLines(
@@ -863,9 +901,9 @@ export class SubwayComponent {
       .attr("x", (tl: Timeline) => this.buttonPositions(tl,data,  0)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("font-size", (LABEL_FONT_SIZE_DEFAULT))
       .attr("cursor", "pointer")
-      .text("grb")
+      .text("↹")
       .call(
         d3.drag<SVGTextElement, Timeline>()
           .on("start", (event, t) => this.timelineSwapDragStart(t, data))
@@ -879,9 +917,9 @@ export class SubwayComponent {
       .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 1)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
-      .attr("font-size", "12px")
+      .attr("font-size", ("20px"))
       .attr("cursor", "pointer")
-      .text("del")
+      .text("🗑")
       .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
   
     // Botão de atualizar no header
@@ -890,9 +928,9 @@ export class SubwayComponent {
       .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 2)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
-      .attr("font-size", "12px")
+      .attr("font-size", ("20px"))
       .attr("cursor", "pointer")
-      .text("upd")
+      .text("🖉")
       .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
   
     // Nome da timeline no header, centralizado abaixo dos botões
@@ -967,7 +1005,9 @@ getElementCenter(element: any){
     // console.log(rectElement.node().getBoundingClientRect().width) / 2
     if (!isSame && this.selectedTimeline.order > newTimeline.order) {
       // 1
-      console.log(1)
+      // console.log(1)
+      const diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
+
       rectElement
         .transition()
         .duration(100)
@@ -987,7 +1027,7 @@ getElementCenter(element: any){
         .transition()
         .duration(100)
         .ease(d3.easeCubic)
-        .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
+        .attr("x", () => this.buttonPositions(newTimeline, timelines, pos) + diff) 
       });
 
 
@@ -1019,62 +1059,67 @@ getElementCenter(element: any){
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
+            .attr("x", () => this.buttonPositions(timelines[newTimeline.order -2], timelines, pos)) 
         });
 
 
       } else {
 // 3
 console.log(3)
-
+        const elPos = otherElementLocation + (this.selectedTimeline.range * 20)
         newRectElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
+          .attr('x', elPos);
 
         newRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation + (this.selectedTimeline.range * 20));
+          .attr('x', elPos);
 
 
-        newTextElement._groups[0].forEach((element: any, i:number) => {
+          let diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
+
+          newTextElement._groups[0].forEach((element: any, i:number) => {
           const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
+            .attr("x", () => (elPos + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
+
         });
 
       }
 
     } else if (!isSame &&this.selectedTimeline.order < newTimeline.order) {
 // 4
-console.log(4)
+// console.log(4)
 
+      const elPosition = currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20
       rectElement
         .transition()
         .duration(100)
         .ease(d3.easeCubic)
-        .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+        .attr('x', elPosition);
       rectElementHeader
         .transition()
         .duration(100)
         .ease(d3.easeCubic)
-        .attr('x', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
+        .attr('x', elPosition);
 
+        textElement._groups[0].forEach((element: any, i:number) => {
+          const pos = i >= 3 ? 1 : i
+          
+          const tl = timelines[newTimeline.order]? timelines[newTimeline.order] : timelines[newTimeline.order-1]
 
-      textElement._groups[0].forEach((element: any, i:number) => {
-        const pos = i >= 3 ? 1 : i
-
-        d3.select(element)
+          d3.select(element)
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("x", () => this.buttonPositions(newTimeline, timelines, pos)) 
+          .attr("x", () => (elPosition + (this.selectedTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
 
           // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
       });
@@ -1110,7 +1155,7 @@ console.log(5)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline , timelines, pos)) 
+            .attr("x", () => (Location + (range * 10) - 7 + this.buttonsSpacing[pos])) 
 
             // .attr('x', Location + this.getElementCenter(prevRectElement));
         });
@@ -1118,37 +1163,39 @@ console.log(5)
 
       } else {
     // 6
-    console.log(6)
+    // console.log(6)
+    const elPosition = otherElementLocation - (this.selectedTimeline.range * 20)
+
 
         newRectElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
+          .attr('x', elPosition );
 
         newRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation - (this.selectedTimeline.range * 20));
+          .attr('x', elPosition );
 
         newTextElement._groups[0].forEach((element: any, i: any) => {
           
           const pos = i >= 3 ? 1 : i
+
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(this.selectedTimeline, timelines, pos)) // Posição proporcional
+            .attr("x", () => (elPosition + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
 
-            // .attr('x',otherElementLocation - (this.selectedTimeline.range * 20) + this.getElementCenter(newRectElement));
         });
       }
 
 
     } else if (isSame && this.selectedTimeline.order == newTimeline.order) {
 // 7
-console.log(7)
+// console.log(7)
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
     // 8
@@ -1192,11 +1239,11 @@ console.log(7)
 
       } else {
 // 9
-console.log(9)
+// console.log(9)
 
         if (this.prevTimeline != undefined) {
           // 10
-console.log(10)
+// console.log(10)
           const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
 
           const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
@@ -1225,7 +1272,7 @@ console.log(10)
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline, timelines, pos)) 
+              .attr('x', () => this.buttonPositions(this.prevTimeline?? this.selectedTimeline, timelines, pos));
 
               // .attr('x', Location + this.getElementCenter(prevRectElement) )
           });
@@ -1244,13 +1291,7 @@ console.log(10)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-              .attr('x', () => {
-                if (this.prevTimeline) {
-                  return this.buttonPositions(this.prevTimeline, timelines, pos)
-                } else {
-                  return this.buttonPositions(this.selectedTimeline, timelines, pos)
-                }
-              });
+              .attr('x', () => this.buttonPositions(this.selectedTimeline, timelines, pos));
           });
         }
 

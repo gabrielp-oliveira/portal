@@ -15,3 +15,10 @@
   <button mat-menu-item (click)="removeConnection()">remove connection</button>
 </mat-menu>
 
+<button id="menuBtn" mat-button [matMenuTriggerFor]="menuStoryline" #storylineMenuTrigger="matMenuTrigger" style="display: none;"></button>
+
+<mat-menu #menuStoryline="matMenu" yPosition="above">
+  <button mat-menu-item>details</button>
+  <button mat-menu-item (click)="removeStoryline()">remove storyline</button>
+</mat-menu>
+

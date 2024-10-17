@@ -40,16 +40,7 @@ $portal-theme: mat.define-light-theme((
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-.timeline {
-  pointer-events: none;
-}
 
-.chapter-group {
-  background-color: red;
-  z-index: 10!important;
-}
-
-.chapter-group {
-  background-color: red;
-  z-index: 0!important;
+.timeline-drag {
+  cursor: grab;
 }

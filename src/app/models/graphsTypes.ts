@@ -90,7 +90,7 @@ export const NODE_BORDER_WIDTH_HIGHLIGHTED = 2;
 //edge
 export const EDGE_BORDER_WIDTH_DEFAULT = 4;
 export const EDGE_BORDER_COLOR_DEFAULT = "#999";
-export const LABEL_FONT_SIZE_DEFAULT = "12px";
+export const LABEL_FONT_SIZE_DEFAULT = "14px";
 export const LABEL_FONT_SIZE_GROUP = 12;
 export const TIMELINE_MARGIN = 12;
 

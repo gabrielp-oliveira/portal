@@ -9,6 +9,10 @@ import { SubwayService } from './subway.service';
 import { LoadingService } from '../loading.service';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatButtonModule} from '@angular/material/button';
+
+import { MatIconModule } from '@angular/material/icon'; // Importar o módulo de ícones
+
+
 const routes: Routes = [
   {
     path: '',
@@ -24,6 +28,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     MatMenuModule,
     MatButtonModule,
+    MatIconModule, // Adicione o módulo de ícones aqui
     RouterModule.forChild(routes)
   ],
   providers: [SubwayService, LoadingService]
