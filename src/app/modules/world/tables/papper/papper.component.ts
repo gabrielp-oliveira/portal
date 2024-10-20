@@ -9,17 +9,7 @@ import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
-export interface Person {
-  name: string;
-  age: number;
-}
 
-const ELEMENT_DATA: Person[] = [
-  { name: 'Alice', age: 25 },
-  { name: 'Bob', age: 30 },
-  { name: 'Charlie', age: 35 },
-  { name: 'David', age: 40 },
-];
 
 @Component({
   selector: 'app-papper',
@@ -47,6 +37,8 @@ export class PapperComponent implements OnInit {
   orderSearchValue: string = ""
   nameSearchValue: string = ""
   dateSearchValue: string = ""
+  startDateSearchValue: string = ""
+  endDateSearchValue: string = ""
 
   constructor(
     private wd: WorldDataService,
@@ -68,7 +60,7 @@ export class PapperComponent implements OnInit {
   }
 
   // Função para reorganizar os itens da tabela
-  drop(event: CdkDragDrop<Person[]> | any) {
+  drop(event: CdkDragDrop<paper[]> | any) {
     const prevIndex = this.dataSource.data.findIndex(
       (d) => d === event.item.data
     );
@@ -115,6 +107,10 @@ export class PapperComponent implements OnInit {
 
   callInputSearch(columnName: string) {
     this.searchInputs[columnName] = !this.searchInputs[columnName]
+    if(columnName == "created_at"){
+      this.dialog.openDataPickerDialog("150ms",'150ms')
+
+    }
   }
   searchPapper(key: string) {
     switch (key) {
@@ -139,6 +135,7 @@ export class PapperComponent implements OnInit {
         return
       case 'created_at':
         console.log(this.dateSearchValue)
+        this.dialog.openDataPickerDialog("150ms",'150ms')
         return
       default:
         return
@@ -176,28 +173,28 @@ export class PapperComponent implements OnInit {
 
   papperBackgroundColor(pp: paper) {
     return {
-      'background-color': this.numberToRGB(pp.created_at),
+      'background-color': this.numberToRGB(pp.id),
       "filter": pp.focus ? "brightness(1.2)" : "brightness(1)",
     }
   }
-
-  numberToRGB(dateString: string): string {
-    // Converte a string da data em um número baseado nos caracteres da data
+  numberToRGB(id: string): string {
+    // Converte o ID em um número baseado nos caracteres do ID
     let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-      hash = dateString.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-
+  
     // Garante que o hash seja positivo
     hash = Math.abs(hash);
-
+  
     // Extrai valores de R, G, B a partir do hash
     const r = (hash & 0xFF0000) >> 16;
     const g = (hash & 0x00FF00) >> 8;
     const b = (hash & 0x0000FF);
-
+  
     return `rgb(${r}, ${g}, ${b})`;
   }
+  
 
 
   hoverPappeer(pp: paper) {

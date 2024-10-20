@@ -1,10 +1,357 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatSort } from '@angular/material/sort';
+import { WorldDataService } from '../../../dashboard/world-data.service';
+import { Chapter, paper, StoryLine, Timeline } from '../../../../models/paperTrailTypes';
+import { ErrorService } from '../../../error.service';
+import { DialogService } from '../../../../dialog/dialog.service';
+import { ApiService } from '../../../api.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest, distinctUntilChanged,  } from 'rxjs';
+import { PapperComponent } from '../papper/papper.component';
+
+
+interface ExtendedChapter extends Chapter {
+  papperName: string,
+  timelineName: string,
+  storylineName: string
+}
+
+interface allData {
+  timelines: Timeline[];
+  storyLines: StoryLine[];
+  chapters: Chapter[];
+  papers: paper[];
+}
+
 
 @Component({
   selector: 'app-chapter',
   templateUrl: './chapter.component.html',
   styleUrl: './chapter.component.scss'
 })
-export class ChapterComponent {
+export class ChapterComponent implements OnInit {
+  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName', 'update'];
+  dataSource = new MatTableDataSource<ExtendedChapter>([]);
+
+  @ViewChild(MatSort) sort!: MatSort;
+
+  chapter$: ExtendedChapter[];
+  paper$: paper[];
+  sortDirection: boolean = true
+  filterValues: any = {
+    order: '',
+    name: '',
+    created_at: '',
+    papperName: '',
+    timelineName: '',
+    storylineName: ''
+  };
+  searchInputs: any = {
+    order: false,
+    name: false,
+    created_at: false,
+    papperName: false,
+    timelineName: false,
+    storylineName: false
+
+  };
+
+
+
+  orderSearchValue: string = ""
+  nameSearchValue: string = ""
+  dateSearchValue: string = ""
+  papperNameSearchValue:String = ""
+  timelineNameSearchValue:String = ""
+  storylineNameSearchValue:String = ""
+
+  startDateSearchValue: string = ""
+  endDateSearchValue: string = ""
+
+  constructor(
+    private wd: WorldDataService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private api: ApiService,
+    private dialog: DialogService,
+    private errorHandler: ErrorService
+  ) { }
+
+  compareUpdates(prevData:allData, currData: allData): boolean {
+    // Comparar se houve mudanças no capítulo sem incluir a propriedade 'focus'
+
+    
+    const prevChapters = prevData.chapters.map((c) => {
+      const { focus, ...rest } = c; 
+      return rest;
+    });
+  
+    const currChapters = currData.chapters.map((c) => {
+      const { focus, ...rest } = c; 
+      return rest;
+    });
+  
+    // Comparar se houve mudanças no paper sem incluir 'focus'
+    const prevPapers = prevData.papers.map((p) => {
+      const { focus, ...rest } = p; 
+      return rest;
+    });
+  
+    const currPapers = currData.papers.map((p) => {
+      const { focus, ...rest } = p; 
+      return rest;
+    });
+  
+    // Compara as outras entidades também, ou mantenha como quiser
+    return JSON.stringify(prevChapters) === JSON.stringify(currChapters) &&
+           JSON.stringify(prevPapers) === JSON.stringify(currPapers);
+  }
+
+  ngOnInit() {
+
+
+    combineLatest({
+      "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$,
+      "chapters": this.wd.chapters$, "papers": this.wd.papers$
+    }).pipe(
+      distinctUntilChanged((prev, curr) => this.compareUpdates(prev, curr))
+    ).subscribe((data) => {
+      console.log(this.chapter$)
+      let { chapters, papers, storyLines, timelines } = data
+
+      const chp:ExtendedChapter[] = chapters.map((c) => {
+        const data:any = c
+        const cht:ExtendedChapter = data
+        
+        const pp = papers.find((pp) => pp.id == c.paper_id)
+        cht.papperName = pp?.name || ''
+
+        const stl = storyLines.find((pp) => pp.id == c.storyline_id)
+        cht.storylineName = stl?.name?stl.name:  ''
+        
+        const tl = timelines.find((pp) => pp.id == c.timeline_id)
+        cht.timelineName = tl?.name || ''
+        
+        
+        return cht
+      })
+      this.dataSource.data = chp
+      this.chapter$ = chp
+    })
+    
+
+    this.dataSource.sort = this.sort;
+  }
+
+  // Função para reorganizar os itens da tabela
+  drop(event: CdkDragDrop<Chapter[]> | any) {
+    const prevIndex = this.dataSource.data.findIndex(
+      (d) => d === event.item.data
+    );
+    moveItemInArray(this.dataSource.data, prevIndex, event.currentIndex);
+    this.dataSource._updateChangeSubscription(); // Atualiza a tabela
+
+    const data: Chapter[] = this.dataSource.data.map((pp, idx) => {
+      pp.order = idx + 1
+      return pp
+    })
+    this.api.updateChapterList(data).subscribe((a) => {
+      data.forEach((c) => {
+        this.wd.updateChapter(c)
+      })
+
+    })
+
+  }
+
+
+  sortByOrder(a: Chapter, b: Chapter): number {
+    console.log(this.sortDirection)
+    if (this.sortDirection) {
+      return a.order - b.order;
+    } else {
+      return b.order - a.order;
+    }
+  }
+  sortByDate(a: Chapter, b: Chapter): number {
+    if (this.sortDirection) {
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    } else {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+  }
+  sortByName(a: Chapter, b: Chapter): number {
+    if (this.sortDirection) {
+      return a.name.localeCompare(b.name)
+    } else {
+      return b.name.localeCompare(a.name)
+    }
+  }
+  sortByPapperName(a: ExtendedChapter, b: ExtendedChapter): number {
+    if (this.sortDirection) {
+      return a.papperName.localeCompare(b.papperName)
+    } else {
+      return b.papperName.localeCompare(a.papperName)
+    }
+  }
+  sortByTimelineName(a: ExtendedChapter, b: ExtendedChapter): number {
+    if (this.sortDirection) {
+      return a.timelineName.localeCompare(b.timelineName)
+    } else {
+      return b.timelineName.localeCompare(a.timelineName)
+    }
+  }
+  sortBystoryLineName(a: ExtendedChapter, b: ExtendedChapter): number {
+    if (this.sortDirection) {
+      return a.storylineName.localeCompare(b.storylineName)
+    } else {
+      return b.storylineName.localeCompare(a.storylineName)
+    }
+  }
+
+  callInputSearch(columnName: string) {
+    this.searchInputs[columnName] = !this.searchInputs[columnName]
+    if(columnName == "created_at"){
+      this.dialog.openDataPickerDialog("150ms",'150ms')
+    }
+  }
+  searchChapter(key: string) {
+    switch (key) {
+      case 'order':
+        let val = Number(this.orderSearchValue)
+        if (val && val > 0) {
+          this.dataSource.data = this.dataSource.data.filter((a) => a.order == Number(this.orderSearchValue));
+          return
+        }
+        this.dataSource.data = this.chapter$
+        return
+      case 'name':
+        let nameVal = this.nameSearchValue.toLowerCase(); // Normalizar para minúsculas
+        if (nameVal && nameVal != "") {
+          this.dataSource.data = this.dataSource.data.filter((c: Chapter) =>
+            c.name.toLowerCase().includes(nameVal)
+          );          
+          return
+        }
+        this.dataSource.data = this.chapter$
+        return
+      case 'papperName':
+        let papperName = this.papperNameSearchValue.toLowerCase(); // Normalizar para minúsculas
+        console.log(papperName)
+        if (papperName && papperName != "") {
+          this.dataSource.data = this.dataSource.data.filter((c) =>
+            c.papperName?.toLowerCase().includes(papperName)
+          );          
+          return
+        }
+        this.dataSource.data = this.chapter$
+        return
+      case 'storylineName':
+        let storylineName = this.storylineNameSearchValue.toLowerCase(); // Normalizar para minúsculas
+        if (storylineName && storylineName != "") {
+          this.dataSource.data = this.dataSource.data.filter((c) =>
+            c.storylineName?.toLowerCase().includes(storylineName)
+          );          
+          return
+        }else{
+          console.log(this.dataSource.data)
+        }
+        this.dataSource.data = this.chapter$
+        return
+      case 'timelineName':
+        let timelineName = this.timelineNameSearchValue.toLowerCase(); // Normalizar para minúsculas
+        if (timelineName && timelineName != "") {
+          this.dataSource.data = this.dataSource.data.filter((c) =>
+            c.timelineName?.toLowerCase().includes(timelineName)
+          );          
+          return
+        }
+        this.dataSource.data = this.chapter$
+        return
+      case 'created_at':
+        this.dialog.openDataPickerDialog("150ms",'150ms')
+        return
+      default:
+        return
+    }
+  }
+  applyFilter(trg: any, column: string) {
+    const value = trg.value
+    this.filterValues[column] = value;
+    this.dataSource.filter = JSON.stringify(this.filterValues);
+  }
+
+  sortChapters(criteria: string) {
+    this.sortDirection = !this.sortDirection
+    switch (criteria) {
+      case 'order':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByOrder(a, b));
+        return
+      case 'date':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByDate(a, b));
+        return
+      case 'name':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByName(a, b));
+        return
+      case 'papperName':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByPapperName(a, b));
+        return
+      case 'timelineName':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByTimelineName(a, b));
+        return
+      case 'storylineName':
+        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortBystoryLineName(a, b));
+        return
+      default:
+        this.dataSource.data = this.dataSource.data;
+        return
+    }
+  }
+
+
+
+
+  callCreteChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.openCreateChapterDialog(enterAnimationDuration, exitAnimationDuration)
+  }
+
+
+  chapterBackgroundColor(c: Chapter) {
+    return {
+      'background-color': this.numberToRGB(c.paper_id),
+      "filter": c.focus ? "brightness(1.2)" : "brightness(1)",
+    }
+  }
+
+  numberToRGB(id: string): string {
+    // Converte o ID em um número baseado nos caracteres do ID
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+  
+    // Garante que o hash seja positivo
+    hash = Math.abs(hash);
+  
+    // Extrai valores de R, G, B a partir do hash
+    const r = (hash & 0xFF0000) >> 16;
+    const g = (hash & 0x00FF00) >> 8;
+    const b = (hash & 0x0000FF);
+  
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  
+
+
+  hoverChapter(pp: Chapter) {
+    pp.focus = !!!pp.focus
+
+    this.wd.updateChapter(pp)
+  }
+  updateChapter(chpId: string) {
+    this.dialog.openUpdateChapterDialog('150ms', '150ms', chpId)
+  }
 
 }

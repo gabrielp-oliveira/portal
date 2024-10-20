@@ -37,7 +37,7 @@ export type Chapter = {
     world_id: string,
     name: string,
     description: string,
-    createdAt: string,
+    created_at: string,
     paper_id: string,
     EventID: string,
     timeline_id: string,

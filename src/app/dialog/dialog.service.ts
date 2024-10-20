@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, deleteTimelineDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Chapter, Timeline } from '../models/paperTrailTypes';
 
@@ -102,6 +102,13 @@ export class DialogService {
       enterAnimationDuration,
       exitAnimationDuration,
       data: {papperId: papperId}
+    });
+  }
+  openDataPickerDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(DataPickerDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
     });
   }
   openCreateChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {

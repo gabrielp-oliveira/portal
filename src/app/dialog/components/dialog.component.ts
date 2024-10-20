@@ -576,3 +576,13 @@ import { combineLatest } from 'rxjs';
   
   }
 
+  @Component({
+    selector: 'app-dataPickerDialog',
+    templateUrl: './dataPickerDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class DataPickerDialogComponent {
+
+    selected: Date | null;  
+  }
+

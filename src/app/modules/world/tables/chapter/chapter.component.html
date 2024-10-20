@@ -1,1 +1,156 @@
-<p>chapter works!</p>
+<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')">Create new Chapter</button>
+
+<div
+  cdkDropList
+  (cdkDropListDropped)="drop($event)"
+  [cdkDropListData]="dataSource.data"
+  class="drop-list"
+>
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    matSort
+    class="mat-elevation-z8 papperTable"
+    cdkDropListGroup
+  >
+    <!-- Coluna para Drag & Drop -->
+    <ng-container matColumnDef="order">
+      <th mat-header-cell *matHeaderCellDef > 
+        <div>
+
+          <span class="tableHeader">
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('order')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('order')">order</span>
+          </span> 
+          <input type="text" *ngIf="searchInputs.order" placeholder="search Order" (input)="searchChapter('order')"  [(ngModel)]="orderSearchValue" >
+        </div>
+         </th>
+      <td mat-cell *matCellDef="let chapter" class="order" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        
+        <span >
+          {{chapter.order}}
+          <mat-icon class="drag-handle" cdkDragHandle>drag_handle</mat-icon>
+        </span>
+      </td>
+    </ng-container>
+   
+
+    <!-- Coluna Nome -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('name')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('name')">Name</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.name" placeholder="search name" (input)="searchChapter('name')"  [(ngModel)]="nameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.name }}
+      </td>
+    </ng-container>
+
+    <!-- Coluna Nome -->
+    <ng-container matColumnDef="papperName">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('papperName')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('papperName')">papper Name</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.papperName" placeholder="search name" (input)="searchChapter('papperName')"  [(ngModel)]="papperNameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.papperName }}
+      </td>
+    </ng-container>
+
+
+    <ng-container matColumnDef="timelineName">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('timelineName')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('timelineName')">timeline</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.timelineName" placeholder="search name" (input)="searchChapter('timelineName')"  [(ngModel)]="timelineNameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.timelineName }}
+      </td>
+    </ng-container>
+    <!-- Coluna Nome -->
+    <ng-container matColumnDef="storylineName">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('storylineName')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('storylineName')">story line</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.storylineName" placeholder="search name" (input)="searchChapter('storylineName')"  [(ngModel)]="storylineNameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.storylineName }}
+      </td>
+    </ng-container>
+
+    <!-- Coluna Idade -->
+    <ng-container matColumnDef="created_at">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('created_at')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('created_at')">creation Date</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.created_at" placeholder="search date" (input)="searchChapter('created_at')"  [(ngModel)]="dateSearchValue">
+        </div>
+
+        </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.created_at  | date: 'MM-dd-yy' }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="update">
+      
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            update
+          </span>
+        </div>
+           </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        <button mat-flat-button (click)="updateChapter(chapter.id)" class="editButton">
+          
+          <mat-icon style="margin: 0px;">edit</mat-icon>
+
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns;"
+      cdkDrag
+      cdkDragLockAxis="y"
+      [cdkDragData]="row"
+    ></tr>
+  </table>
+</div>

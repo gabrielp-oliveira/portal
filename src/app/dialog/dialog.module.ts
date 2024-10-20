@@ -3,8 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
-import { createPaperDialogComponent, createChapterDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent, createStorylineDialogComponent, deleteTimelineDialogComponent } from './components/dialog.component';
+import { createPaperDialogComponent, createChapterDialogComponent, createWorldDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent, createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatCardModule } from '@angular/material/card';
+
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core'; 
+
+
 
 
 
@@ -13,13 +19,17 @@ import { MatSliderModule } from '@angular/material/slider';
   declarations: [createPaperDialogComponent, createChapterDialogComponent, createWorldDialogComponent,
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
      UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
-     createStorylineDialogComponent, deleteTimelineDialogComponent
+     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent
   ],
   providers: [],
   imports: [
     CommonModule,
     MatDialogModule,
     ReactiveFormsModule,
+    MatCardModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatNativeDateModule, // Aqui está o adaptador de data nativo
     MatSliderModule
   ]
 })

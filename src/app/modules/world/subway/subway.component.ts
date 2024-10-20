@@ -110,7 +110,7 @@ export class SubwayComponent {
 
         this.svgHeight = storyLines.length
         if (!c.selected) {
-          c.color = this.numberToRGB(pp?.created_at)
+          c.color = this.numberToRGB(pp?.id)
         }
         c.height = (str?.order * this.gridHeight) || 0
 
@@ -1523,11 +1523,11 @@ console.log(5)
   }
 
 
-  numberToRGB(dateString: string): string {
-    // Converte a string da data em um número baseado nos caracteres da data
+  numberToRGB(id: string): string {
+    // Converte o ID em um número baseado nos caracteres do ID
     let hash = 0;
-    for (let i = 0; i < dateString?.length; i++) {
-      hash = dateString?.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
   
     // Garante que o hash seja positivo
@@ -1540,6 +1540,7 @@ console.log(5)
   
     return `rgb(${r}, ${g}, ${b})`;
   }
+  
   
 
   private cleanItemsOnSvg() {
