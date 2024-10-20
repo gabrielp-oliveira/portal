@@ -523,6 +523,7 @@ import { combineLatest } from 'rxjs';
         order: ['', [Validators.required]],
       });
 
+      console.log(this.data)
       this.api.getPaperData(this.data.papperId).subscribe((paper) => {
         this.worldId = paper.world_id
         this.worldForm.patchValue({
@@ -541,7 +542,6 @@ import { combineLatest } from 'rxjs';
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.papperId
-      body.order = 2
 
       this.api.updatePaper(this.data.papperId, this.worldForm.value).subscribe(
         

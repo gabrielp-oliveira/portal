@@ -44,3 +44,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .timeline-drag {
   cursor: grab;
 }
+.mdc-data-table__table {
+  min-width: min-content!important; /* Faz a tabela ocupar toda a largura do container */
+}

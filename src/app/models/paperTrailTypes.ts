@@ -21,7 +21,7 @@ export type paper = {
     name: string,
     description: string,
     Path: string,
-    Created_at: string,
+    created_at: string,
     world_id: string,
     chapter?: Chapter[],
     order: number,

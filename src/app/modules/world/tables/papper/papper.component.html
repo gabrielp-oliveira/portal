@@ -1,0 +1,102 @@
+<button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')">Create new paper</button>
+
+<div
+  cdkDropList
+  (cdkDropListDropped)="drop($event)"
+  [cdkDropListData]="dataSource.data"
+  class="drop-list"
+>
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    matSort
+    class="mat-elevation-z8 papperTable"
+    cdkDropListGroup
+  >
+    <!-- Coluna para Drag & Drop -->
+    <ng-container matColumnDef="order">
+      <th mat-header-cell *matHeaderCellDef > 
+        <div>
+
+          <span class="tableHeader">
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('order')">search</mat-icon>
+            <span mat-sort-header (click)="sortPapers('order')">order</span>
+          </span> 
+          <input type="text" *ngIf="searchInputs.order" placeholder="search Order" (input)="searchPapper('order')"  [(ngModel)]="orderSearchValue" >
+        </div>
+         </th>
+      <td mat-cell *matCellDef="let papper" class="order" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
+        
+        <span >
+          {{papper.order}}
+          <mat-icon class="drag-handle" cdkDragHandle>drag_handle</mat-icon>
+        </span>
+      </td>
+    </ng-container>
+   
+
+    <!-- Coluna Nome -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('name')">search</mat-icon>
+            <span mat-sort-header (click)="sortPapers('name')">Name</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.name" placeholder="search name" (input)="searchPapper('name')"  [(ngModel)]="nameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
+        {{ papper.name }}
+      </td>
+    </ng-container>
+
+    <!-- Coluna Idade -->
+    <ng-container matColumnDef="created_at">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('created_at')">search</mat-icon>
+            <span mat-sort-header (click)="sortPapers('created_at')">creation Date</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.created_at" placeholder="search date" (input)="searchPapper('created_at')"  [(ngModel)]="dateSearchValue">
+        </div>
+
+        </th>
+      <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
+        {{ papper.created_at  | date: 'MM-dd-yy' }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="update">
+      
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            update
+          </span>
+        </div>
+           </th>
+      <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
+        <button mat-flat-button (click)="updatePaper(papper.id)" class="editButton">
+          
+          <mat-icon style="margin: 0px;">edit</mat-icon>
+
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns;"
+      cdkDrag
+      cdkDragLockAxis="y"
+      [cdkDragData]="row"
+    ></tr>
+  </table>
+</div>

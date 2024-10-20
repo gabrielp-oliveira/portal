@@ -5,7 +5,7 @@ import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY
 import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, StoryLine, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, paper, StoryLine, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -67,6 +67,7 @@ export class SubwayComponent {
 
   chapters: Chapter[] = [];
   connections: Connection[] = [];
+  papers: paper[]
   svgHeight:number = 1
   timelines: Timeline[] = [];
   timelineOrderToUpdate: number
@@ -97,11 +98,10 @@ export class SubwayComponent {
     }).subscribe((data) => {
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
 
-
       let { chapters, papers, storyLines, timelines, connections } = data
+      this.papers = papers
       this.connections = connections
       data.timelines = timelines.sort((a, b) => a.order - b.order);
-
       data.chapters = chapters.map((c) => {
         c.width = 0
         const str = storyLines.filter((s) => s.id == c.storyline_id)[0]
@@ -110,7 +110,7 @@ export class SubwayComponent {
 
         this.svgHeight = storyLines.length
         if (!c.selected) {
-          c.color = this.numberToRGB(pp.order)
+          c.color = this.numberToRGB(pp?.created_at)
         }
         c.height = (str?.order * this.gridHeight) || 0
 
@@ -153,19 +153,29 @@ export class SubwayComponent {
   }
 
   getFillColor(chp: Chapter): string {
-    if (chp.focus) {
+    const pps = this.papers
+    const papper= pps.filter((p) => p.id == chp.paper_id)[0]
+    if (chp?.focus) {
       return d3.color(chp.color)?.brighter(0.5)?.toString() || chp.color; // Aumenta a claridade da cor
+    }else if(papper?.focus){
+      const result = this.chapters.filter((chp) => chp.paper_id == papper.id)
+
+      result.forEach((c) => {
+        const element = document.getElementById(`${c.id}-chapter-circle`);
+        d3.select(element)
+        .transition()
+        .duration(200)
+        .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color);
+      })
     }
     return chp.color;
   }
 
   focusChapter ( c: Chapter, focus:boolean)  {
+    if(this.selectedChapter){
+      return
+    }
       c.focus = focus
-      console.log(focus)
-      if(!focus){
-        console.log(c)
-
-      }
       this.wd.updateChapter(c)  
       return 
   }
@@ -224,7 +234,10 @@ export class SubwayComponent {
 
       })
       .on("mouseover", (_: MouseEvent, c: Chapter) => {
-        if(!c.focus){
+        if( this.selectedChapter ){
+          return
+        }
+        if(!c?.focus){
 
           c.focus = true;
           this.wd.updateChapter(c); // Update the state
@@ -237,7 +250,10 @@ export class SubwayComponent {
         }
       })
       .on("mouseout", (_: MouseEvent, c: Chapter) => {
-        if(c.focus){
+        if( this.selectedChapter ){
+          return
+        }
+        if(c?.focus){
         
         c.focus = false;
         this.wd.updateChapter(c); // Update the state
@@ -337,6 +353,7 @@ export class SubwayComponent {
 
       return
     }
+    this.selectedChapter = d
 
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
@@ -348,19 +365,30 @@ export class SubwayComponent {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
 
-    if (event.x < 100 || event.y < 50 || event.y > this.graphHeigh) {
+    const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+
+    const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
+
+    const relativeX = event.sourceEvent.clientX - (boundingBox?.left || 0);
+    const relativeY = event.sourceEvent.clientY - (boundingBox?.top || 0);
+
+    
+    if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
       return
     }
 
+
+    d.width = relativeX
+    d.height = relativeY
     d3.select(elementCircleId)
-      .attr("cx", d.width = event.x)
-      .attr("cy", d.height = event.y);
+      .attr("cx", relativeX)
+      .attr("cy", relativeY);
 
     d3.select(elementtextId)
       .attr("dx", d.width)
       .attr("dy", d.height + 15)
-      .attr("cx", d.width = event.x)
-      .attr("cy", d.height = event.y)
+      .attr("cx", d.width )
+      .attr("cy", d.height)
       .attr("stroke", d.color)
 
 
@@ -409,16 +437,24 @@ export class SubwayComponent {
   private dragEnded(s: StoryLine[], t: Timeline[], event: any, d: Chapter) {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
-
     // erro ao criar connection, programa esta jogando o chapter point para o ultimo storyline.
     d3.select(elementCircleId).attr("stroke", d.color);
     d3.select(elementtextId).attr("stroke", 'black');
 
+    const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+
+    const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
+
+    const relativeX = event.sourceEvent.clientX - (boundingBox?.left || 0);
+    const relativeY = event.sourceEvent.clientY - (boundingBox?.top || 0);
+
+
+
     // Após o movimento, você pode capturar a nova posição do chapter, timeline e storyline
 
-    const newTimeline = this.findTimelineForChapter(t, event.x);
-    const newStoryline = this.findStorylineForChapter(s, event.y);
-
+    const newTimeline = this.findTimelineForChapter(t, relativeX);
+    const newStoryline = this.findStorylineForChapter(s, relativeY);
+    console.log(newTimeline.timeline.name)
     let newStorylineId
     if (newStoryline) {
       newStorylineId = newStoryline.id
@@ -439,6 +475,7 @@ export class SubwayComponent {
         error: (err) => console.error(err)
       }
     )
+    this.selectedChapter = undefined
 
   }
 
@@ -475,7 +512,7 @@ export class SubwayComponent {
     }
     return result;
   }
-  private findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
+  private  findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
     let range = Math.round((y - 50) / this.gridHeight)
     if (range >= s.length - 1) {
       range = s.length - 1
@@ -653,6 +690,7 @@ export class SubwayComponent {
   
   storyLineSwapDragged(ev: MouseEvent, strs: StoryLine[]) {
     if(strs.length <= 1){
+      console.log('aqui')
       return
     }
 
@@ -789,7 +827,7 @@ export class SubwayComponent {
             .attr('y', ((newStrl.order)* this.gridHeight))
 
             this.reset = true
-
+          console.log('aqui 22')
           return
 
           }
@@ -1485,17 +1523,24 @@ console.log(5)
   }
 
 
-  numberToRGB(num: number): string {
-    // Função hash simples para garantir que cores sejam geradas consistentemente
-    const hash = num * 2654435761 % 2 ** 32;
-
+  numberToRGB(dateString: string): string {
+    // Converte a string da data em um número baseado nos caracteres da data
+    let hash = 0;
+    for (let i = 0; i < dateString?.length; i++) {
+      hash = dateString?.charCodeAt(i) + ((hash << 5) - hash);
+    }
+  
+    // Garante que o hash seja positivo
+    hash = Math.abs(hash);
+  
     // Extrai valores de R, G, B a partir do hash
     const r = (hash & 0xFF0000) >> 16;
     const g = (hash & 0x00FF00) >> 8;
     const b = (hash & 0x0000FF);
-
+  
     return `rgb(${r}, ${g}, ${b})`;
   }
+  
 
   private cleanItemsOnSvg() {
     this.graphHeigh = 0

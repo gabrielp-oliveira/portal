@@ -34,6 +34,9 @@ export class ApiService {
   updatePaper(papperId: string, body:paper): Observable<paper> {
     return this.http.put<paper>(`http://localhost:9090/updatePaper?id=${papperId}`, body);
   }
+  updatePaperList(body:paper[]): Observable<paper> {
+    return this.http.put<paper>(`http://localhost:9090/updatePaperList?id=${body[0].id}`, body);
+  }
   updateChapter(chapterId: string, body:Chapter): Observable<Chapter> {
     return this.http.put<Chapter>(`http://localhost:9090/updateChapter?id=${chapterId}`, body);
   }

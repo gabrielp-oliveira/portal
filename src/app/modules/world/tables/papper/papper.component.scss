@@ -1,0 +1,81 @@
+.drag-handle {
+    cursor: move;
+  }
+  
+  .cdk-drag-preview {
+    display: table; /* Certifica que o preview do arrasto seja tratado como uma tabela */
+    width: 100%; /* Para garantir que o preview ocupe o mesmo espaço da linha */
+  }
+  
+  .cdk-drag-preview td {
+    padding: 10px; /* Mantém o espaçamento consistente entre as células */
+    height: 90px;
+    background-color: rgba(255, 255, 255, 0.9); /* Fundo branco levemente transparente para o item arrastado */
+  }
+
+  .editButton {
+    background-color: white;
+    transition: ease-in-out 200ms;
+  }
+  .editButton:hover {
+    background-color: antiquewhite;
+  }
+  
+  .cdk-drag-placeholder {
+    display: none; /* Remove o placeholder visual durante o arrasto */
+  }
+  
+  .cdk-drag {
+    display: table-row; /* Faz com que os itens arrastáveis mantenham a estrutura de linha de tabela */
+  }
+  
+
+  
+  td, th {
+    padding: 10px 5px; /* Certifica que o espaçamento das células seja consistente */
+  }
+
+  td {
+    color: white;
+  }
+  th {
+    height: 77px;
+    div {
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: start;
+      height: 100%;
+    }
+  input {
+    width: 75px;
+  }
+  }
+  
+  .tableHeader {
+    display: flex;
+    justify-content: start;
+    padding: 5px;
+    align-items: start;
+    justify-content: start;
+  }
+  tr {
+    padding: 2px;
+    margin-bottom: 2px;
+
+  }
+
+  .order {
+    span {
+      display: flex;
+      align-items: center;
+      width: 40px;
+      justify-content: space-around;
+      margin: 4px;
+    }
+  }
+
+
+ 
+
+  
