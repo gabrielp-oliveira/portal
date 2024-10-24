@@ -585,4 +585,64 @@ import { combineLatest } from 'rxjs';
 
     selected: Date | null;  
   }
+  @Component({
+    selector: 'app-chapterDescriptionDialog',
+    templateUrl: './chapterDescriptionDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class chapteDescriptionDialogComponent {
+
+    constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter ){
+  }
+  }
+
+  
+  @Component({
+    selector: 'app-strEdit',
+    templateUrl: './strEditDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class strEditDialogComponent  {
+    worldForm: FormGroup;
+    worldId:string | undefined= ''
+      errorHandler: any;
+
+    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+      @Inject(MAT_DIALOG_DATA) public data: StoryLine
+    ){
+
+ 
+      this.worldForm = this.fb.group({
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        description: ['', [Validators.required]],
+      });
+
+        this.worldForm.patchValue({
+          name: data.name,
+          description: data.description,
+        });
+
+
+
+    }
+
+    
+
+    onSubmit(){
+      const body = {...this.data, ...this.worldForm.value, }
+      // this.api.updateTimeline(body).subscribe(
+        
+      //   {
+      //       next: (tl) => this.wd.updateTimeline(tl),
+      //       error: (err) =>this.errorHandler.errHandler(err)
+      //     }
+      // )
+    }
+
+
+
+
+
+  }
+  
 

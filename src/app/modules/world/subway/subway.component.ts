@@ -10,6 +10,7 @@ import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
 import { NumberInput } from '@angular/cdk/coercion';
+import { Router } from '@angular/router';
 
 const D3_ROOT_ELEMENT_ID = "subway";
 
@@ -24,6 +25,8 @@ export class SubwayComponent {
   width: number;
   height: number;
   zoom: number = 1;
+  tiltX:number = 1
+  tiltY:number = 1
   timeLineTxtHeight: number = 20
 
   selectedChapter: Chapter | undefined;
@@ -78,10 +81,11 @@ export class SubwayComponent {
     private dialog: DialogService,
     private wd: WorldDataService,
     private api: ApiService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private router: Router,
+
   ) {
     this.cleanItemsOnSvg();
-
   }
 
   ngAfterViewInit(): void {
@@ -165,10 +169,28 @@ export class SubwayComponent {
         d3.select(element)
         .transition()
         .duration(200)
-        .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color);
+        .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color)
+        .attr("r", this.getDiameter(chp))
+
       })
     }
     return chp.color;
+  }
+
+  onMenuClosed(){
+    if(this.selectedChapter){
+      this.selectedChapter.focus = false
+      this.wd.updateChapter(this.selectedChapter)
+      this.selectedChapter = undefined
+    }
+
+  }
+  getDiameter(chp: Chapter): number {
+    if (chp?.focus) {
+      return 10
+    }else{
+      return 8 
+    }
   }
 
   focusChapter ( c: Chapter, focus:boolean)  {
@@ -203,7 +225,7 @@ export class SubwayComponent {
       .raise()
       .attr("cx", (chp: Chapter) => chp.width)
       .attr("cy", (chp: Chapter) => chp.height)
-      .attr("r", () => NODE_RADIUS)
+      .attr("r", (c) => this.getDiameter(c))
       .attr("fill", (chp: Chapter) => this.getFillColor(chp)) // Cor ajustada dinamicamente
       .attr("stroke", (chp: Chapter) => "black") // Cor da borda ajustada dinamicamente
       .attr("stroke-width", NODE_BORDER_WIDTH_DEFAULT)
@@ -214,8 +236,8 @@ export class SubwayComponent {
           .on("drag", (event, d) => this.dragged(svg, event, d, c, chapters))
           .on("end", (event, d) => this.dragEnded(s, t, event, d))
       )
-      .on('contextmenu', (ev: MouseEvent, c: Chapter) => {
-        ev.preventDefault();
+      .on('contextmenu', (event: MouseEvent, c: Chapter) => {
+        event.preventDefault();
 
 
         // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
@@ -227,8 +249,8 @@ export class SubwayComponent {
         if (menuElement) {
           // Defina o estilo de posicionamento
           menuElement.style.position = 'absolute';
-          menuElement.style.left = `${ev.x + 5}px`;
-          menuElement.style.top = `${ev.y + 5}px`;
+          menuElement.style.left = `${event.x + 5}px`;
+          menuElement.style.top = `${event.y + 5}px`;
         }
         this.selectedChapter = c
 
@@ -246,7 +268,9 @@ export class SubwayComponent {
           d3.select(element)
           .transition()
           .duration(200)
-          .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color); // Lighten the color
+          .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
+          .attr("r", this.getDiameter(c))
+
         }
       })
       .on("mouseout", (_: MouseEvent, c: Chapter) => {
@@ -263,7 +287,8 @@ export class SubwayComponent {
         d3.select(element)
           .transition()
           .duration(200)
-          .attr("fill", this.getFillColor(c)); // Restore the original color based on state
+          .attr("fill", this.getFillColor(c)) // Restore the original color based on state
+          .attr("r", this.getDiameter(c))
         }
       });
     // Labels (Texto)
@@ -369,8 +394,9 @@ export class SubwayComponent {
 
     const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
-    const relativeX = event.sourceEvent.clientX - (boundingBox?.left || 0);
-    const relativeY = event.sourceEvent.clientY - (boundingBox?.top || 0);
+
+    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) / this.zoom - this.tiltX);
+    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) / this.zoom) - this.tiltY;
 
     
     if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
@@ -445,8 +471,8 @@ export class SubwayComponent {
 
     const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
-    const relativeX = event.sourceEvent.clientX - (boundingBox?.left || 0);
-    const relativeY = event.sourceEvent.clientY - (boundingBox?.top || 0);
+    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) / this.zoom - this.tiltX);
+    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) / this.zoom) - this.tiltY;
 
 
 
@@ -454,7 +480,6 @@ export class SubwayComponent {
 
     const newTimeline = this.findTimelineForChapter(t, relativeX);
     const newStoryline = this.findStorylineForChapter(s, relativeY);
-    console.log(newTimeline.timeline.name)
     let newStorylineId
     if (newStoryline) {
       newStorylineId = newStoryline.id
@@ -522,6 +547,34 @@ export class SubwayComponent {
 
 
 
+  openChapter(){
+    const id = this.selectedChapter?.id || ''
+    const url = `/world/${this.wd.worldId}/chapter/${id}`;
+    window.open(url, '_blank');
+   }
+
+   removeFromSubway(){
+
+     if(this.selectedChapter != undefined){
+      this.selectedChapter.timeline_id = ""
+      this.selectedChapter.storyline_id = ""
+      this.selectedChapter.EventID = ""
+
+      const elementId = `${CSS.escape(this.selectedChapter.id)}-chapter-circle`;
+      const elementTxtId = `${CSS.escape(this.selectedChapter.id)}-chapter-group-txt`;
+
+      const chp = d3.select(elementId).remove()
+      d3.select(elementTxtId).remove()
+
+      this.api.updateChapter(this.selectedChapter.id, this.selectedChapter).subscribe((c) => {
+        this.wd.updateChapter(c)
+        this.selectedChapter = undefined
+      })
+    }
+
+   }
+
+
   private renderConnections(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     c: Chapter[],
@@ -572,14 +625,14 @@ export class SubwayComponent {
       .attr("stroke", EDGE_BORDER_COLOR_DEFAULT)
       .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
       .attr("cursor", "pointer")
-      .on("contextmenu", (ev: MouseEvent, connection: Connection) => {
-        ev.preventDefault();
+      .on("contextmenu", (event: MouseEvent, connection: Connection) => {
+        event.preventDefault();
         this.trggerConnectionMenu.openMenu();
         const menuElement = document.querySelector("#" + this.trggerConnectionMenu.menu?.panelId) as HTMLElement;
         if (menuElement) {
           menuElement.style.position = "absolute";
-          menuElement.style.left = `${ev.x + 5}px`;
-          menuElement.style.top = `${ev.y + 5}px`;
+          menuElement.style.left = `${event.x + 5}px`;
+          menuElement.style.top = `${event.y + 5}px`;
         }
         this.selectedConnection = connection;
   
@@ -613,6 +666,13 @@ export class SubwayComponent {
   
     // Garante que as conexões estejam no topo
     connectionPaths.raise();
+  }
+
+
+  callPreviewDialog(){
+    if(this.selectedChapter){
+      this.dialog.openPreview(this.selectedChapter,`150ms`,`150ms`)
+    }
   }
   
   renderStoryLines(
@@ -653,13 +713,12 @@ export class SubwayComponent {
       .text((node: any) => node.name)
       .call(
         d3.drag<SVGTextElement, StoryLine>()
-          .on("start", (event, str) => this.storyLineSwapDragStart(str, strs))
+          .on("start", (event, str) =>  this.storyLineSwapDragStart(str, strs))
           .on("drag", (event, str) => this.storyLineSwapDragged(event, strs))
           .on("end", (event, str) => this.storyLineSwapDragEnded(svg, strs))
       )
-      .on('contextmenu', (ev: MouseEvent, str: StoryLine) => {
-        ev.preventDefault();
-
+      .on('contextmenu', (event: MouseEvent, str: StoryLine) => {
+        event.preventDefault();
 
         // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
 
@@ -670,8 +729,8 @@ export class SubwayComponent {
         if (menuElement) {
           // Defina o estilo de posicionamento
           menuElement.style.position = 'absolute';
-          menuElement.style.left = `${ev.x + 10}px`;
-          menuElement.style.top = `${ev.y + 5}px`;
+          menuElement.style.left = `${event.x + 10}px`;
+          menuElement.style.top = `${event.y + 5}px`;
         }
         this.storylineSelected = str
 
@@ -682,51 +741,61 @@ export class SubwayComponent {
     if(strs.length <= 1){
       return
     }
+    this.storylineOrderToUpdate = str.order
+
     this.storylineSelected = str
     const elementId = `${CSS.escape(str.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "20");
 
   }  
   
-  storyLineSwapDragged(ev: MouseEvent, strs: StoryLine[]) {
+  openStrDetails(){
+    console.log(this.storylineSelected)
+    if(this.storylineSelected){
+      this.dialog.openChapterDescription(this.storylineSelected, '150ms','150ms')
+    }
+  }
+  openStrEdit(){
+    console.log(this.storylineSelected)
+    if(this.storylineSelected){
+      this.dialog.openStorylineEditDialog(this.storylineSelected, '150ms','150ms')
+    }
+  }
+  storyLineSwapDragged(event: MouseEvent, strs: StoryLine[]) {
     if(strs.length <= 1){
-      console.log('aqui')
       return
     }
 
+    
+    const y =( event.y / this.zoom) - this.tiltY
     this.reset = false
         // Cálculo da posição do mouse em relação aos StoryLines
-        let mousePos = (Math.round((ev.y - 0.2) / 50) - 1) < 0 ? 0 : Math.round((ev.y - 0.2) / 50) - 1;
+        let mousePos = (Math.round((y - 0.2) / 50) - 1) < 0 ? 0 : Math.round((y - 0.2) / 50) - 1;
         mousePos = mousePos > strs.length - 1 ? strs.length - 1 : mousePos;
         this.nextStorylineSelected = mousePos <= 0? 1 : mousePos +1
         this.nextStorylineSelected = this.nextStorylineSelected == strs.length ? strs.length - 2 : this.nextStorylineSelected
         let newStrl :StoryLine= strs[mousePos];
-        // console.log(newStrl)
-      
+        if(!newStrl.order){
+          return
+        }
+        console.log(newStrl.name)
         const selectedElementText = d3.select(document.getElementById(`${CSS.escape(this.storylineSelected.id)}-storyline-group`)).select("text");
         const isSame = this.storylineSelected.id == newStrl.id
 
 
-
         const selectedNewElementiD = `${CSS.escape(newStrl.id)}-storyline-group`;
         const newstrlElement: any = d3.select(document.getElementById(selectedNewElementiD)).select("text");
-
         let toWalk = newStrl.order - this.prevStoryline?.order
         toWalk = toWalk <= 0 ? 1 : toWalk
         if (!isSame && this.storylineSelected.order > newStrl.order) {
-          // 1
-          // console.log('1')
 
           selectedElementText
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('y', () => (( newStrl.order ) * this.gridHeight) + 2)
-          // mover str e chapters seleciondo para as posicoes corretas
           
           if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
-            // 2
-            console.log('2')
             const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
             const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
             prevTimelineElement
@@ -734,32 +803,22 @@ export class SubwayComponent {
             .duration(100)
             .ease(d3.easeCubic)
             .attr('y', ((this.prevStoryline.order ) * this.gridHeight)) 
-            // mover prevs linhas e chapters para as posicoes corretas.
             
           }else {
-            // 3
-            // console.log('3')
             newstrlElement
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
             .attr('y', () => ((this.prevStoryline.order +1 ) * this.gridHeight) - 2)
-            // mover o storyline afetado, linhas e chapters para as posicoes corretas.
           }
         } else if (!isSame &&this.storylineSelected.order < newStrl.order) {
-            // 4
-            console.log('4') 
           selectedElementText
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('y', (newStrl.order * this.gridHeight) + 2)
-          // .attr('y', currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20);
-          // mover str e chapters seleciondo para as posicoes corretas
         
           if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-            // 5
-            console.log('5')
 
             const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
             const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
@@ -771,45 +830,30 @@ export class SubwayComponent {
             .attr('y', ((this.prevStoryline.order ) * this.gridHeight)) 
 
           }else{
-            // 6
-            console.log('6')
             newstrlElement
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
             .attr('y', () => ((this.prevStoryline.order - 1) * this.gridHeight) - 2)
-            // mover o storyline afetado, linhas e chapters para as posicoes corretas.
 
 
           }
         }
        else if (isSame && this.storylineSelected.order == newStrl.order) {
-         // 7
-        //  console.log('7')
          if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-          // 8
-          console.log('8')
           const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
           const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
           prevTimelineElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          // .attr('y', otherElementLocation - (this.prevTimeline?.range * 20));
-          // mover prevs linhas e chapters para as posicoes corretas.
           
         }else {
-          // 9
-          // console.log('9')
           if (this.prevStoryline != undefined) {
-          // 10
-
-          // let newStorylineToChange :StoryLine = newStrl
           if(newStrl.id == this.storylineSelected.id){
             newStrl = strs[this.nextStorylineSelected]
           }
           
-          console.log('10', newStrl.name)
             const prevNewElementiD = `${CSS.escape(newStrl?.id)}-storyline-group`;
             const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
            
@@ -827,14 +871,13 @@ export class SubwayComponent {
             .attr('y', ((newStrl.order)* this.gridHeight))
 
             this.reset = true
-          console.log('aqui 22')
           return
 
           }
         }
        }
        if (this.storylineOrderToUpdate == 0) {
-        this.storylineOrderToUpdate = this.storylineSelected.order
+        this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
     }
   
     if (this.storylineOrderToUpdate != 0) {
@@ -844,7 +887,6 @@ export class SubwayComponent {
   
         // Verificar se o Story
 
-        console.log('---')
   }
   
 
@@ -852,6 +894,11 @@ export class SubwayComponent {
   storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]){
     const elementId = `${CSS.escape(this.storylineSelected.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "12");
+    console.log(this.storylineOrderToUpdate)
+    if(!this.storylineSelected){
+      return
+    }
+    console.log(this.storylineSelected)
     this.storylineSelected.order = this.storylineOrderToUpdate;
 
     const reordenadas: StoryLine[] = [];
@@ -875,29 +922,20 @@ export class SubwayComponent {
 
         if(this.reset){
 
-          strs.forEach(timeline => {
-            this.wd.updateStoryline(timeline)
-          });
+          this.api.updateStoryLineList(strs).subscribe((data) => {
+            data.forEach(str => {
+              this.wd.updateStoryline(str)
+            });
+
+          })
         }else {
-          reordenadas.forEach(timeline => {
-            this.wd.updateStoryline(timeline)
-          });
+          this.api.updateStoryLineList(reordenadas).subscribe((data) => {
+            data.forEach(str => {
+              this.wd.updateStoryline(str)
+            });
+          })
 
         }
-      const updateTimelinesApi = reordenadas.map((t) => {
-        // return this.api.updateTimeline(t).subscribe((e) => {
-        //   this.wd.updateTimeline(e)
-        // })
-    })
-
-    // updateTimelinesApi.forEach(element => {
-    //   element.unsubscribe()
-    // });
-
-
-
-
-    // Resetar prevTimeline
     this.prevTimeline = undefined;
 
   }
@@ -911,13 +949,6 @@ export class SubwayComponent {
 
   buttonPositions (tl: Timeline, timelines: Timeline[], index: number) {
     const width = (tl.range * 20) ;
-    const spacing = width / (3); // Espaçamento proporcional entre os botões
-
-    // if(tl.name == "terceira"){
-    //   console.log(spacing * (index + 1))
-    // }
-
-
     return this.calculateEditIconPosition(tl, timelines) + (tl.range * 10) - 10 + this.buttonsSpacing[index] ; // Calcula a posição proporcional
   };
 
@@ -1066,7 +1097,9 @@ getElementCenter(element: any){
     const textElement = CurrentSelectedTimelineElement.selectAll("text");
 
 
-    const newTimeline = this.findTimelineForChapter(timelines, event.x).timeline
+    const x = (event.x / this.zoom) - this.tiltX
+    
+    const newTimeline = this.findTimelineForChapter(timelines, x).timeline
 
     const isSame = this.selectedTimeline.id == newTimeline.id
 
@@ -1082,10 +1115,7 @@ getElementCenter(element: any){
     const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
     const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines)
 
-    // console.log(rectElement.node().getBoundingClientRect().width) / 2
     if (!isSame && this.selectedTimeline.order > newTimeline.order) {
-      // 1
-      // console.log(1)
       const diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
 
       rectElement
@@ -1113,8 +1143,6 @@ getElementCenter(element: any){
 
       //  aqui ---------------------------
       if (this.prevTimeline != undefined && this.prevTimeline.order < newTimeline.order) {
-        // 2
-        console.log(2)
 
         const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
         const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD));
@@ -1144,8 +1172,6 @@ getElementCenter(element: any){
 
 
       } else {
-// 3
-console.log(3)
         const elPos = otherElementLocation + (this.selectedTimeline.range * 20)
         newRectElement
           .transition()
@@ -1175,8 +1201,6 @@ console.log(3)
       }
 
     } else if (!isSame &&this.selectedTimeline.order < newTimeline.order) {
-// 4
-// console.log(4)
 
       const elPosition = currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20
       rectElement
@@ -1206,8 +1230,6 @@ console.log(3)
 
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
-// 5
-console.log(5)
 
         const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
         const range = this.prevTimeline?.range
@@ -1242,8 +1264,6 @@ console.log(5)
 
 
       } else {
-    // 6
-    // console.log(6)
     const elPosition = otherElementLocation - (this.selectedTimeline.range * 20)
 
 
@@ -1274,12 +1294,8 @@ console.log(5)
 
 
     } else if (isSame && this.selectedTimeline.order == newTimeline.order) {
-// 7
-// console.log(7)
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
-    // 8
-    console.log(8)
 
         const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
 
@@ -1318,12 +1334,8 @@ console.log(5)
 
 
       } else {
-// 9
-// console.log(9)
 
         if (this.prevTimeline != undefined) {
-          // 10
-// console.log(10)
           const Location = this.calculateEditIconPosition(this.prevTimeline, timelines)
 
           const prevNewElementiD = `${CSS.escape(this.prevTimeline?.id)}-timeline-group`;
@@ -1354,7 +1366,6 @@ console.log(5)
               .ease(d3.easeCubic)
               .attr('x', () => this.buttonPositions(this.prevTimeline?? this.selectedTimeline, timelines, pos));
 
-              // .attr('x', Location + this.getElementCenter(prevRectElement) )
           });
 
           let toWalk = this.calculateEditIconPosition(this.selectedTimeline, timelines)
@@ -1379,14 +1390,16 @@ console.log(5)
       }
 
     }
-    console.log('-----------')
 
     // newTimeline.order = this.selectedTimeline.order
     if (this.timelineOrderToUpdate == 0) {
+      
+      console.log(this.selectedTimeline)
       this.timelineOrderToUpdate = this.selectedTimeline.order
-  }
-
-  if (this.timelineOrderToUpdate != 0) {
+    }
+    
+    if (this.timelineOrderToUpdate != 0) {
+    console.log(newTimeline)
       this.timelineOrderToUpdate = newTimeline.order
   }
     this.prevTimeline = newTimeline
@@ -1504,8 +1517,10 @@ console.log(5)
       .attr('transform', restrictedTransform.toString())
       .node()
 
+      this.tiltX = restrictedTransform.x
+      this.tiltY = restrictedTransform.y
 
-    if (g && g instanceof SVGGraphicsElement) {
+      if (g && g instanceof SVGGraphicsElement) {
       const bbox = g.getBBox();  // Obtém as dimensões do <g> usando getBBox
       const gWidth = bbox.width * transform.k;  // Largura do elemento <g> com zoom
       const gheight = bbox.height * transform.k;  // Largura do elemento <g> com zoom

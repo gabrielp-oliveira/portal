@@ -10,7 +10,7 @@
     mat-table
     [dataSource]="dataSource"
     matSort
-    class="mat-elevation-z8 papperTable"
+    class="mat-elevation-z8 paperTable"
     cdkDropListGroup
   >
     <!-- Coluna para Drag & Drop -->
@@ -84,7 +84,24 @@
       <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
         <button mat-flat-button (click)="updatePaper(papper.id)" class="editButton">
           
-          <mat-icon style="margin: 0px;">edit</mat-icon>
+          <mat-icon style="margin: 0px;" [ngStyle]="iconColors(papper)">edit</mat-icon>
+
+        </button>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="description">
+      
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            description
+          </span>
+        </div>
+           </th>
+      <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" (mouseenter)="hoverPappeer(papper)" (mouseleave)="hoverPappeer(papper)">
+        <button mat-flat-button (click)="openPapperDescription(papper)" class="editButton">
+          
+          <mat-icon style="margin: 0px;" [ngStyle]="iconColors(papper)">description</mat-icon>
 
         </button>
       </td>

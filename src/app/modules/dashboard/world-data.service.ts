@@ -100,6 +100,9 @@ export class WorldDataService {
   getChapterLink(id: string): string{
     return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
   }
+  getChapterPreview(id: string): string{
+    return `https://docs.google.com/document/d/${id}/preview?usp=drivesdk`
+  }
   
 
   addEvent(event: Event): void {

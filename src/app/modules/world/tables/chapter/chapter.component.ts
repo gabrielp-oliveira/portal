@@ -32,7 +32,7 @@ interface allData {
   styleUrl: './chapter.component.scss'
 })
 export class ChapterComponent implements OnInit {
-  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName', 'update'];
+  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','description', 'update', 'open'];
   dataSource = new MatTableDataSource<ExtendedChapter>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -40,6 +40,9 @@ export class ChapterComponent implements OnInit {
   chapter$: ExtendedChapter[];
   paper$: paper[];
   sortDirection: boolean = true
+
+  sortCriteria:string = "sort"
+
   filterValues: any = {
     order: '',
     name: '',
@@ -79,46 +82,48 @@ export class ChapterComponent implements OnInit {
     private errorHandler: ErrorService
   ) { }
 
-  compareUpdates(prevData:allData, currData: allData): boolean {
-    // Comparar se houve mudanças no capítulo sem incluir a propriedade 'focus'
+  openChapter(papperId: string){
+    const url = `/world/${this.wd.worldId}/chapter/${papperId}`;
+    window.open(url, '_blank');
+   }
 
+   openDescription(c:Chapter){
+    this.dialog.openChapterDescription(c, '150ms','150ms')
+   }
+  compareUpdates(): boolean {
+    const valOrder = this.orderSearchValue ==  ""
+    const valName = this.nameSearchValue ==  ""
+    const valDate = this.dateSearchValue ==  ""
+    const valPapperName = this.papperNameSearchValue == ""
+    const valTlName = this.timelineNameSearchValue == ""
+    const valStName = this.storylineNameSearchValue == ""
     
-    const prevChapters = prevData.chapters.map((c) => {
-      const { focus, ...rest } = c; 
-      return rest;
-    });
-  
-    const currChapters = currData.chapters.map((c) => {
-      const { focus, ...rest } = c; 
-      return rest;
-    });
-  
-    // Comparar se houve mudanças no paper sem incluir 'focus'
-    const prevPapers = prevData.papers.map((p) => {
-      const { focus, ...rest } = p; 
-      return rest;
-    });
-  
-    const currPapers = currData.papers.map((p) => {
-      const { focus, ...rest } = p; 
-      return rest;
-    });
-  
-    // Compara as outras entidades também, ou mantenha como quiser
-    return JSON.stringify(prevChapters) === JSON.stringify(currChapters) &&
-           JSON.stringify(prevPapers) === JSON.stringify(currPapers);
+    const searchCondition = !valOrder || !valName || !valPapperName || !valTlName || !valStName
+    const sortCondition =  (this.sortCriteria !== "order" && !this.sortDirection) || (this.sortCriteria !== "order" && !this.sortDirection)
+    if(searchCondition || sortCondition ){
+      return true
+    }else {
+      return false
+    }
+    
   }
 
+  iconColors(c:Chapter){
+    return {
+      'color': this.numberToRGB(c.paper_id),
+    }
+  }
   ngOnInit() {
 
 
     combineLatest({
       "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$,
       "chapters": this.wd.chapters$, "papers": this.wd.papers$
-    }).pipe(
-      distinctUntilChanged((prev, curr) => this.compareUpdates(prev, curr))
-    ).subscribe((data) => {
-      console.log(this.chapter$)
+    })
+    .pipe(
+      distinctUntilChanged(() => this.compareUpdates())
+    )
+    .subscribe((data) => {
       let { chapters, papers, storyLines, timelines } = data
 
       const chp:ExtendedChapter[] = chapters.map((c) => {
@@ -137,12 +142,14 @@ export class ChapterComponent implements OnInit {
         
         return cht
       })
-      this.dataSource.data = chp
-      this.chapter$ = chp
+
+      this.dataSource.data =this.returnSortChapters(this.sortCriteria, chp)
+      this.chapter$ =this.returnSortChapters(this.sortCriteria, chp)
     })
     
 
     this.dataSource.sort = this.sort;
+
   }
 
   // Função para reorganizar os itens da tabela
@@ -168,7 +175,6 @@ export class ChapterComponent implements OnInit {
 
 
   sortByOrder(a: Chapter, b: Chapter): number {
-    console.log(this.sortDirection)
     if (this.sortDirection) {
       return a.order - b.order;
     } else {
@@ -239,7 +245,6 @@ export class ChapterComponent implements OnInit {
         return
       case 'papperName':
         let papperName = this.papperNameSearchValue.toLowerCase(); // Normalizar para minúsculas
-        console.log(papperName)
         if (papperName && papperName != "") {
           this.dataSource.data = this.dataSource.data.filter((c) =>
             c.papperName?.toLowerCase().includes(papperName)
@@ -255,8 +260,6 @@ export class ChapterComponent implements OnInit {
             c.storylineName?.toLowerCase().includes(storylineName)
           );          
           return
-        }else{
-          console.log(this.dataSource.data)
         }
         this.dataSource.data = this.chapter$
         return
@@ -285,28 +288,29 @@ export class ChapterComponent implements OnInit {
 
   sortChapters(criteria: string) {
     this.sortDirection = !this.sortDirection
+    this.sortCriteria = criteria
+
+
+    this.dataSource.data = this.returnSortChapters(criteria, this.dataSource.data)
+    return
+  }
+
+  returnSortChapters(criteria: string, data:ExtendedChapter[]) {
     switch (criteria) {
       case 'order':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByOrder(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByOrder(a, b));
       case 'date':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByDate(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByDate(a, b));
       case 'name':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByName(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByName(a, b));
       case 'papperName':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByPapperName(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByPapperName(a, b));
       case 'timelineName':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByTimelineName(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByTimelineName(a, b));
       case 'storylineName':
-        this.dataSource.data = this.dataSource.data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortBystoryLineName(a, b));
-        return
+        return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortBystoryLineName(a, b));
       default:
-        this.dataSource.data = this.dataSource.data;
-        return
+        return data;
     }
   }
 

@@ -40,7 +40,7 @@ export type Chapter = {
     created_at: string,
     paper_id: string,
     EventID: string,
-    timeline_id: string,
+    timeline_id: string | null,
     storyline_id: string,
     range: number,
     order: number,

@@ -1,11 +1,12 @@
 <div id="subway" #subway></div>
 
-<button id="menuBtn" mat-button [matMenuTriggerFor]="menu" #chapterMenuTrigger="matMenuTrigger" style="display: none;"></button>
+<button id="menuBtn" mat-button [matMenuTriggerFor]="menu" #chapterMenuTrigger="matMenuTrigger" style="display: none;" ></button>
 
-<mat-menu #menu="matMenu" yPosition="above">
-  <button mat-menu-item>open</button>
-  <button mat-menu-item>details</button>
+<mat-menu #menu="matMenu" yPosition="above" (closed)="onMenuClosed()">
+  <button mat-menu-item (click)="openChapter()">open</button>
+  <button mat-menu-item (click)="callPreviewDialog()">preview</button>
   <button mat-menu-item (click)="createConnection()">create connection</button>
+  <button mat-menu-item (click)="removeFromSubway()">Remove</button>
 </mat-menu>
 
 <button id="menuBtn" mat-button [matMenuTriggerFor]="menuConnection" #connectionMenuTrigger="matMenuTrigger" style="display: none;"></button>
@@ -18,7 +19,8 @@
 <button id="menuBtn" mat-button [matMenuTriggerFor]="menuStoryline" #storylineMenuTrigger="matMenuTrigger" style="display: none;"></button>
 
 <mat-menu #menuStoryline="matMenu" yPosition="above">
-  <button mat-menu-item>details</button>
+  <button mat-menu-item (click)="openStrDetails()">details</button>
+  <button mat-menu-item (click)="openStrEdit()">edit</button>
   <button mat-menu-item (click)="removeStoryline()">remove storyline</button>
 </mat-menu>
 

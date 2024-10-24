@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Chapter, Timeline } from '../models/paperTrailTypes';
+import { Chapter, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
+import { DocxComponent } from '../modules/docx/docx/docx.component';
+import { PreviewComponent } from '../modules/docx/preview/preview.component';
 
 @Injectable({
   providedIn: 'root'
@@ -118,6 +120,32 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
+  openChapterDescription(data:Chapter | paper | StoryLine, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(chapteDescriptionDialogComponent, {
+      width: '500',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data:data
+    });
+  }
+  openStorylineEditDialog(data: StoryLine, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(strEditDialogComponent, {
+      width: '500',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data:data
+    });
+  }
+  openPreview(data:Chapter, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(PreviewComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data:data
+    });
+  }
+
+
 
 
 }

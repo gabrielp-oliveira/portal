@@ -10,7 +10,7 @@
     mat-table
     [dataSource]="dataSource"
     matSort
-    class="mat-elevation-z8 papperTable"
+    class="mat-elevation-z8 chapterTable"
     cdkDropListGroup
   >
     <!-- Coluna para Drag & Drop -->
@@ -138,8 +138,40 @@
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
         <button mat-flat-button (click)="updateChapter(chapter.id)" class="editButton">
           
-          <mat-icon style="margin: 0px;">edit</mat-icon>
+          <mat-icon style="margin: 0px;" [ngStyle]="iconColors(chapter)">edit</mat-icon>
 
+        </button>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="open">
+      
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            Open
+          </span>
+        </div>
+           </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        <button mat-flat-button (click)="openChapter(chapter.id)" class="editButton">
+          
+          <mat-icon style="margin: 0px;" [ngStyle]="iconColors(chapter)">open_in_new</mat-icon>
+
+        </button>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="description">
+      
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+          <span class="tableHeader">
+            description
+          </span>
+        </div>
+           </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        <button mat-flat-button (click)="openDescription(chapter)" class="editButton"  style="margin-left: 10px;">
+          <mat-icon  [ngStyle]="iconColors(chapter)" style="margin-left: 10px;">description</mat-icon>
         </button>
       </td>
     </ng-container>

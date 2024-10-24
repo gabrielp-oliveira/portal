@@ -8,6 +8,7 @@ import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { distinctUntilChanged } from 'rxjs';
 
 
 
@@ -17,12 +18,13 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./papper.component.scss'],
 })
 export class PapperComponent implements OnInit {
-  displayedColumns: string[] = ['order', 'name', 'created_at', 'update'];
+  displayedColumns: string[] = ['order', 'name', 'created_at','description', 'update'];
   dataSource = new MatTableDataSource<paper>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
 
   papers$: paper[];
+  chapters$: Chapter[];
   sortDirection: boolean = true
   filterValues: any = {
     order: '',
@@ -49,13 +51,32 @@ export class PapperComponent implements OnInit {
     private errorHandler: ErrorService
   ) { }
 
+  openPapperDescription(pp:paper){
+    this.dialog.openChapterDescription(pp, '150ms','150ms')
+  }
   ngOnInit() {
 
-    this.wd.papers$.subscribe((p) => {
+    this.wd.papers$.pipe(
+      distinctUntilChanged(() => {
+        const valOrder = this.orderSearchValue ==  ""
+        const valName = this.nameSearchValue ==  ""
+        const valDate = this.dateSearchValue ==  ""
+    
+        
+        if(!valOrder || !valName){
+          return true
+        }else {
+          return false
+        }
+      })
+    ).subscribe((p) => {
       this.dataSource.data = p
       this.papers$ = p
     })
 
+    this.wd.chapters$.subscribe((c) => {
+      this.chapters$ = c
+    })
     this.dataSource.sort = this.sort;
   }
 
@@ -112,6 +133,12 @@ export class PapperComponent implements OnInit {
 
     }
   }
+
+  iconColors(p:paper){
+    return {
+      'color': this.numberToRGB(p.id),
+    }
+  }
   searchPapper(key: string) {
     switch (key) {
       case 'order':
@@ -134,7 +161,6 @@ export class PapperComponent implements OnInit {
         this.dataSource.data = this.papers$
         return
       case 'created_at':
-        console.log(this.dateSearchValue)
         this.dialog.openDataPickerDialog("150ms",'150ms')
         return
       default:
@@ -200,6 +226,13 @@ export class PapperComponent implements OnInit {
   hoverPappeer(pp: paper) {
     pp.focus = !!!pp.focus
 
+    const chpts = this.chapters$.filter((c) => {
+      return c.paper_id == pp.id
+    })
+    chpts.forEach((c) => {
+      c.focus = !c.focus
+      this.wd.updateChapter(c)
+    })
     this.wd.updatePaper(pp)
   }
   updatePaper(papperId: string) {
