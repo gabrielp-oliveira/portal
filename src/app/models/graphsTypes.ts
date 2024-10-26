@@ -93,6 +93,10 @@ export const EDGE_BORDER_COLOR_DEFAULT = "#999";
 export const LABEL_FONT_SIZE_DEFAULT = "14px";
 export const LABEL_FONT_SIZE_GROUP = 12;
 export const TIMELINE_MARGIN = 12;
+export const SUBWAY_LEFT_MARGIN = 100;
+export const RANGE_GAP = 20;
+export const TIMELINE_TOP_MARGIN = 20;
+
 
 //label
 export const LABEL_FONT_FAMILY_DEFAULT = "Arial ";

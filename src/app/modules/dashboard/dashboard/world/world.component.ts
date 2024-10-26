@@ -23,9 +23,9 @@ export class WorldComponent {
     // Captura o parâmetro 'id' da rota
     this.route.paramMap.subscribe(params => {
       this.worldId = params.get('id') || "";
-      this.api.getWorldData(this.worldId).subscribe((worldInfo) => {
-        console.log(worldInfo)
-      })
+      // this.api.getWorldData(this.worldId).subscribe((worldInfo) => {
+      //   console.log(worldInfo)
+      // })
       combineLatest({ "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$
    }).subscribe(() => {
       this.isDiff = this.wd.checkStoryTimeLineAndEvents()

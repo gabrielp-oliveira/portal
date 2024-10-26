@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, Connection, paper, StoryLine, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, Connection, Event, paper, StoryLine, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +34,9 @@ export class ApiService {
   updatePaper(papperId: string, body:paper): Observable<paper> {
     return this.http.put<paper>(`http://localhost:9090/updatePaper?id=${papperId}`, body);
   }
+  updateEvent(body:Event): Observable<Event> {
+    return this.http.put<Event>(`http://localhost:9090/updateEvent?id=${body.id}`, body);
+  }
   updatePaperList(body:paper[]): Observable<paper> {
     return this.http.put<paper>(`http://localhost:9090/updatePaperList?id=${body[0].id}`, body);
   }
@@ -58,8 +61,17 @@ export class ApiService {
   createConnection(body: Connection):Observable<Connection>  {
     return this.http.post<Connection>('http://localhost:9090/createConnection', body)
   }
+  createEvent(body: Event):Observable<Event>  {
+    return this.http.post<Event>('http://localhost:9090/createEvent', body)
+  }
   removeConnection(body: Connection):Observable<Connection>  {
     return this.http.post<Connection>('http://localhost:9090/removeConnection', body)
+  }
+  deleteStoryline(id: string, body: StoryLine): Observable<world> {
+    const options = {
+      body: body
+    };
+    return this.http.delete<world>(`http://localhost:9090/deleteStoryline?id=${id}`, options);
   }
   deleteTimeline(id: string):Observable<Timeline>  {
     return this.http.delete<Timeline>(`http://localhost:9090/deleteTimeline?id=${id}`)

@@ -97,6 +97,12 @@ export class WorldDataService {
     );
     this.papersSubject.next(papers);
   }
+  updateEvent(event: Event): void {
+    const events = this.eventsSubject.value.map(existingEvent => 
+      existingEvent.id === event.id ? event : existingEvent
+    );
+    this.eventsSubject.next(events);
+  }
   getChapterLink(id: string): string{
     return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
   }
@@ -129,6 +135,10 @@ export class WorldDataService {
     const chapters = this.chaptersSubject.value.filter(c => c.id !== chapterId);
     this.chaptersSubject.next(chapters);
   }
+  removeStoryLine(strId: string): void {
+    const storylines = this.storylinesSubject.value.filter(c => c.id !== strId);
+    this.storylinesSubject.next(storylines);
+  }
 
   removeEvent(eventId: string): void {
     const events = this.eventsSubject.value.filter((e: Event) => e.id !== eventId);
@@ -155,7 +165,7 @@ export class WorldDataService {
   this.setPapers(data.papers)
   this.setChapters(data.chapters)
   this.setConnections(data.connections)
-  this.setEvents(data.Events)
+  this.setEvents(data.events)
   this.setTimelines(data.timelines)
   this.setStorylines(data.storyLines)
   }

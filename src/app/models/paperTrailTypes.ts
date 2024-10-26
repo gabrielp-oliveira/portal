@@ -3,7 +3,7 @@ export type world = {
     name?: string,
     created_at?: string,
     chapters: Chapter[],
-    Events: Event[],
+    events: Event[],
     connections: Connection[],
     timelines: Timeline[],
     papers: paper[]
@@ -66,9 +66,10 @@ export type Connection = {
 export type Event = {
     id: string,
     name: string,
-    Start_date: string,
-    End_date: string,
-    World_id: string,
+    description: string,
+    world_id: string,
+    range: number,
+    startRange: number
 }
 
 
@@ -91,7 +92,7 @@ export type Timeline = {
 
 export type StoryLine = {
     id: string,
-    WorldsID: string,
+    world_id: string,
     name: string,
     description: string,
     Created_at: string,

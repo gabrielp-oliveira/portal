@@ -1,11 +1,11 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
-import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, NODE_RADIUS, PATH_ROOT_MARGIN_BOTTOM, PATH_ROOT_MARGIN_LEFT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap } from '../../../models/graphsTypes';
+import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap } from '../../../models/graphsTypes';
 import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, paper, StoryLine, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, Event, paper, StoryLine, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -25,9 +25,10 @@ export class SubwayComponent {
   width: number;
   height: number;
   zoom: number = 1;
-  tiltX:number = 1
-  tiltY:number = 1
+  tiltX: number = 1
+  tiltY: number = 1
   timeLineTxtHeight: number = 20
+  selectedEvent: Event | undefined
 
   selectedChapter: Chapter | undefined;
   selectedConnection: Connection | undefined;
@@ -37,7 +38,7 @@ export class SubwayComponent {
   lastStorylineChanged: StoryLine
   selectedTimeline: Timeline;
   nextStorylineSelected: number;
-  reset:boolean
+  reset: boolean
   currentSelectTimelineLeftGap: number;
 
   isCreateConnectionSet: boolean;
@@ -46,11 +47,11 @@ export class SubwayComponent {
   gridHeight = 50
   totalGridHeight = 0
 
-  buttonsSpacing :any={
+  buttonsSpacing: any = {
 
-   0: -25,
-   1: 0,
-   2:25
+    0: -25,
+    1: 0,
+    2: 25
 
   }
   @ViewChild('chapterMenuTrigger') chapterMenuTrigger!: MatMenuTrigger;
@@ -65,13 +66,14 @@ export class SubwayComponent {
   chapters$ = this.wd.chapters$;
   papers$ = this.wd.papers$;
   connections$ = this.wd.connections$;
+  events$ = this.wd.events$;
 
   graphHeigh: number = 0
 
   chapters: Chapter[] = [];
   connections: Connection[] = [];
   papers: paper[]
-  svgHeight:number = 1
+  svgHeight: number = 1
   timelines: Timeline[] = [];
   timelineOrderToUpdate: number
   storylineOrderToUpdate: number
@@ -98,7 +100,7 @@ export class SubwayComponent {
     })
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
-      "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$
+      "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$
     }).subscribe((data) => {
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
 
@@ -147,7 +149,7 @@ export class SubwayComponent {
   }
 
   private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-    const width = this.width < 1500? this.width : 1500
+    const width = this.width < 1500 ? this.width : 1500
     return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
       .append("svg")
       .attr("width", width)
@@ -158,48 +160,49 @@ export class SubwayComponent {
 
   getFillColor(chp: Chapter): string {
     const pps = this.papers
-    const papper= pps.filter((p) => p.id == chp.paper_id)[0]
+    const papper = pps.filter((p) => p.id == chp.paper_id)[0]
     if (chp?.focus) {
       return d3.color(chp.color)?.brighter(0.5)?.toString() || chp.color; // Aumenta a claridade da cor
-    }else if(papper?.focus){
+    } else if (papper?.focus) {
       const result = this.chapters.filter((chp) => chp.paper_id == papper.id)
 
       result.forEach((c) => {
         const element = document.getElementById(`${c.id}-chapter-circle`);
         d3.select(element)
-        .transition()
-        .duration(200)
-        .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color)
-        .attr("r", this.getDiameter(chp))
+          .transition()
+          .duration(200)
+          .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color)
+          .attr("r", this.getDiameter(chp))
 
       })
     }
     return chp.color;
   }
 
-  onMenuClosed(){
-    if(this.selectedChapter){
+  onMenuClosed() {
+    this.selectedChapter
+    if (this.selectedChapter) {
       this.selectedChapter.focus = false
       this.wd.updateChapter(this.selectedChapter)
-      this.selectedChapter = undefined
+      // this.selectedChapter = undefined
     }
 
   }
   getDiameter(chp: Chapter): number {
     if (chp?.focus) {
       return 10
-    }else{
-      return 8 
+    } else {
+      return 8
     }
   }
 
-  focusChapter ( c: Chapter, focus:boolean)  {
-    if(this.selectedChapter){
+  focusChapter(c: Chapter, focus: boolean) {
+    if (this.selectedChapter) {
       return
     }
-      c.focus = focus
-      this.wd.updateChapter(c)  
-      return 
+    c.focus = focus
+    this.wd.updateChapter(c)
+    return
   }
   private renderChapters(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
@@ -256,39 +259,39 @@ export class SubwayComponent {
 
       })
       .on("mouseover", (_: MouseEvent, c: Chapter) => {
-        if( this.selectedChapter ){
+        if (this.selectedChapter) {
           return
         }
-        if(!c?.focus){
+        if (!c?.focus) {
 
           c.focus = true;
           this.wd.updateChapter(c); // Update the state
-          
+
           const element = document.getElementById(`${c.id}-chapter-circle`);
           d3.select(element)
-          .transition()
-          .duration(200)
-          .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
-          .attr("r", this.getDiameter(c))
+            .transition()
+            .duration(200)
+            .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
+            .attr("r", this.getDiameter(c))
 
         }
       })
       .on("mouseout", (_: MouseEvent, c: Chapter) => {
-        if( this.selectedChapter ){
+        if (this.selectedChapter) {
           return
         }
-        if(c?.focus){
-        
-        c.focus = false;
-        this.wd.updateChapter(c); // Update the state
-    
-        const element = document.getElementById(`${c.id}-chapter-circle`);
+        if (c?.focus) {
 
-        d3.select(element)
-          .transition()
-          .duration(200)
-          .attr("fill", this.getFillColor(c)) // Restore the original color based on state
-          .attr("r", this.getDiameter(c))
+          c.focus = false;
+          this.wd.updateChapter(c); // Update the state
+
+          const element = document.getElementById(`${c.id}-chapter-circle`);
+
+          d3.select(element)
+            .transition()
+            .duration(200)
+            .attr("fill", this.getFillColor(c)) // Restore the original color based on state
+            .attr("r", this.getDiameter(c))
         }
       });
     // Labels (Texto)
@@ -306,6 +309,114 @@ export class SubwayComponent {
       .text((node: Chapter) => node.name);
   }
 
+  private renderEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    events: Event[], chapters: Chapter[], height: number) {
+
+    const gridHeight = (height * this.gridHeight) + 20;
+    this.totalGridHeight = gridHeight;
+
+    // Seleciona os grupos existentes e associa os dados
+    let el: d3.Selection<SVGGElement, Event, SVGGElement, Event> = svg
+      .selectAll<SVGGElement, Event>("g.event-group")
+      .lower()
+      .data(events, (ev: Event) => ev.id);
+    // console.log(el)
+    // Remove os grupos que não estão mais nos dados
+    el.exit().remove();
+
+    // Cria novos grupos para novos dados
+    const enter = el.enter()
+      .append<SVGGElement>("g")
+      .attr("class", "event-group")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-group`);
+
+    // Atualiza grupos existentes e novos grupos
+    el = enter.merge(el);
+
+    // Adiciona ou atualiza os retângulos (o corpo da timeline)
+    el.append("rect")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-body`)
+      .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
+      .attr("y", 50)
+      .attr("width", (ev: Event) => (ev.range * 20) - 5)
+      .attr("height", gridHeight)
+      .style("fill", "rgba(250, 20, 20, 0.2)");
+
+
+    // Criação do header da timeline
+    const bottomEvent = el
+      .lower()
+      .append<SVGGElement>("g")
+
+    // Adiciona o background do header usando 'rect'
+    bottomEvent
+      .append("rect")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
+      .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
+      .attr("y", gridHeight + 50) // Posiciona no topo
+      .attr("width", (ev: Event) => (ev.range * 20) - 5)
+      .attr("height", 45) // Altura do header
+      .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
+      .style("stroke", "#000")  // Adiciona uma borda se necessário
+      .style("stroke-width", "1px");
+
+
+    // Botão de "grab" (movimentação)
+    bottomEvent.append("text")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-drag`)
+      .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+      .attr("y", gridHeight + 85) // Posiciona no topo
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", (LABEL_FONT_SIZE_DEFAULT))
+      .attr("cursor", "pointer")
+      .text("↹")
+      .call(
+        d3.drag<SVGTextElement, Event>()
+          .on("start", (_, e) => this.eventDragStart(e))
+          .on("drag", (event, e) => this.eventDragged(event, e))
+          .on("end", (_, e) => this.eventDragEnd(svg, e))
+      );
+
+    // Botão de deletar no header
+    // headerTimeline.append("text")
+    //   .attr("class", "timeline-delete")
+    //   .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 1)) // Posição proporcional
+    //   .attr("y", this.timeLineTxtHeight)
+    //   .attr("font-family", "Arial")
+    //   .attr("font-size", ("20px"))
+    //   .attr("cursor", "pointer")
+    //   .text("🗑")
+    //   .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
+
+    // Botão de atualizar no header
+    // headerTimeline.append("text")
+    //   .attr("class", "timeline-update")
+    //   .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 2)) // Posição proporcional
+    //   .attr("y", this.timeLineTxtHeight)
+    //   .attr("font-family", "Arial")
+    //   .attr("font-size", ("20px"))
+    //   .attr("cursor", "pointer")
+    //   .text("🖉")
+    //   .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
+
+    // Nome da timeline no header, centralizado abaixo dos botões
+    bottomEvent.append("text")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-txt`)
+      .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+      .attr("y", gridHeight + 65) // Posiciona no topo
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("text-anchor", "middle")
+      .text((ev: Event) => ev.name);
+
+
+
+
+
+
+
+
+  }
 
   createConnection() {
     if (this.selectedChapter) {
@@ -320,8 +431,13 @@ export class SubwayComponent {
 
   }
 
-  removeStoryline(){
+  removeStoryline() {
 
+    this.storylineSelected.world_id = this.wd.worldId
+    this.api.deleteStoryline(this.storylineSelected.id, this.storylineSelected).subscribe({
+      next: (data) => this.wd.setWorldData(data),
+      error: (err) => console.error(err)
+    })
   }
   removeConnection() {
     if (this.selectedConnection != undefined) {
@@ -364,15 +480,18 @@ export class SubwayComponent {
       }
 
       this.api.createConnection(body).subscribe((cnn) => {
-        this.isCreateConnectionSet = false
-        this.chapters = this.chapters.map((c) => {
+        const selected = this.chapters.filter((c) => {
           if (this.selectedChapter != undefined && c.id == this.selectedChapter.id) {
             c.color = c.color
             c.selected = false
+            return c
+          }else {
+            return false
           }
-          return c
         })
-        this.wd.setChapters(this.chapters)
+        this.isCreateConnectionSet =false
+        console.log(selected)
+        this.wd.updateChapter(selected[0])
         this.wd.addConnection(cnn)
       })
 
@@ -395,14 +514,15 @@ export class SubwayComponent {
     const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
 
-    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) / this.zoom - this.tiltX);
-    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) / this.zoom) - this.tiltY;
+    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
+    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
 
-    
+
     if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
       return
     }
 
+    console.log(this.tiltX)
 
     d.width = relativeX
     d.height = relativeY
@@ -413,7 +533,7 @@ export class SubwayComponent {
     d3.select(elementtextId)
       .attr("dx", d.width)
       .attr("dy", d.height + 15)
-      .attr("cx", d.width )
+      .attr("cx", d.width)
       .attr("cy", d.height)
       .attr("stroke", d.color)
 
@@ -461,6 +581,9 @@ export class SubwayComponent {
   }
 
   private dragEnded(s: StoryLine[], t: Timeline[], event: any, d: Chapter) {
+    if(this.isCreateConnectionSet ){
+      return
+    }
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
     // erro ao criar connection, programa esta jogando o chapter point para o ultimo storyline.
@@ -471,8 +594,8 @@ export class SubwayComponent {
 
     const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
-    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) / this.zoom - this.tiltX);
-    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) / this.zoom) - this.tiltY;
+    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
+    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
 
 
 
@@ -537,25 +660,26 @@ export class SubwayComponent {
     }
     return result;
   }
-  private  findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
+  private findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
     let range = Math.round((y - 50) / this.gridHeight)
     if (range >= s.length - 1) {
       range = s.length - 1
     }
-    return s[range];
+    const str = s.filter((s) => s.order == (range + 1))
+    return str[0];
   }
 
 
 
-  openChapter(){
+  openChapter() {
     const id = this.selectedChapter?.id || ''
     const url = `/world/${this.wd.worldId}/chapter/${id}`;
     window.open(url, '_blank');
-   }
+  }
 
-   removeFromSubway(){
+  removeFromSubway() {
 
-     if(this.selectedChapter != undefined){
+    if (this.selectedChapter != undefined) {
       this.selectedChapter.timeline_id = ""
       this.selectedChapter.storyline_id = ""
       this.selectedChapter.EventID = ""
@@ -572,7 +696,7 @@ export class SubwayComponent {
       })
     }
 
-   }
+  }
 
 
   private renderConnections(
@@ -583,10 +707,10 @@ export class SubwayComponent {
     if (cnn.length <= 0) {
       return;
     }
-  
+
     // Cria um grupo específico para as conexões
     const connectionsGroup = svg.append("g").attr("class", "connections");
-  
+
     const connectionPaths = connectionsGroup
       .selectAll("path")
       .data(cnn)
@@ -594,26 +718,26 @@ export class SubwayComponent {
       .append("path")
       .attr("id", (edge: Connection) => edge.id + "-connections-group")
       .attr("d", (edge: Connection) => {
-  
+
         let source = c.find((data: Chapter) => data.id === edge.sourceChapterID);
         let target = c.find((data: Chapter) => data.id === edge.targetChapterID);
-  
+
         let y0 = source ? source.height : 0;
         let x0 = source ? source.width : 0;
         let x1 = target ? target.width : 0;
         let y1 = target ? target.height : 0;
-  
+
         const CONSTANT_CONTROL_POINT = 5;
         const HORIZONTAL_THRESHOLD = 3;
-  
+
         let isHorizontal = Math.abs(y0 - y1) < HORIZONTAL_THRESHOLD;
         let isVertical = Math.abs(x0 - x1) < HORIZONTAL_THRESHOLD;
-  
+
         let controlPointX = (isHorizontal ? x1 : x1 + CONSTANT_CONTROL_POINT * ((x1 - x0) / (y1 - y0)) + MARGIN);
         let controlPointY = isVertical ? y1 : y1 - CONSTANT_CONTROL_POINT * ((y1 - y0) / (x1 - x0));
-  
+
         let pathData = "";
-  
+
         if (isVertical) {
           pathData = `M ${x0} ${y0} Q ${x0} ${y0} ${x1} ${y1}`;
         } else {
@@ -635,11 +759,11 @@ export class SubwayComponent {
           menuElement.style.top = `${event.y + 5}px`;
         }
         this.selectedConnection = connection;
-  
+
         // Atualiza a cor dos capítulos conectados
         const target = this.chapters.find(chp => chp.id === connection.targetChapterID);
         const source = this.chapters.find(chp => chp.id === connection.sourceChapterID);
-  
+
         if (target) {
           target.color = "red";
           this.wd.updateChapter(target);
@@ -663,27 +787,27 @@ export class SubwayComponent {
           .ease(d3.easeCubic)
           .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
       });
-  
+
     // Garante que as conexões estejam no topo
     connectionPaths.raise();
   }
 
 
-  callPreviewDialog(){
-    if(this.selectedChapter){
-      this.dialog.openPreview(this.selectedChapter,`150ms`,`150ms`)
+  callPreviewDialog() {
+    if (this.selectedChapter) {
+      this.dialog.openPreview(this.selectedChapter, `150ms`, `150ms`)
     }
   }
-  
+
   renderStoryLines(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     strs: StoryLine[]
   ) {
     const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
-    
-    
-    const widthChapter =    this.chapters
-    .sort((a, b) =>  b.width - a.width)[0]?.width
+
+
+    const widthChapter = this.chapters
+      .sort((a, b) => b.width - a.width)[0]?.width
     const width = widthTimelines > widthChapter ? widthTimelines : widthChapter
     let el = svg.selectAll("g.storyline-group")
       .data(strs)
@@ -713,7 +837,7 @@ export class SubwayComponent {
       .text((node: any) => node.name)
       .call(
         d3.drag<SVGTextElement, StoryLine>()
-          .on("start", (event, str) =>  this.storyLineSwapDragStart(str, strs))
+          .on("start", (event, str) => this.storyLineSwapDragStart(str, strs))
           .on("drag", (event, str) => this.storyLineSwapDragged(event, strs))
           .on("end", (event, str) => this.storyLineSwapDragEnded(svg, strs))
       )
@@ -737,8 +861,8 @@ export class SubwayComponent {
       })
   }
 
-  storyLineSwapDragStart(str: StoryLine, strs: StoryLine[]){
-    if(strs.length <= 1){
+  storyLineSwapDragStart(str: StoryLine, strs: StoryLine[]) {
+    if (strs.length <= 1) {
       return
     }
     this.storylineOrderToUpdate = str.order
@@ -747,195 +871,190 @@ export class SubwayComponent {
     const elementId = `${CSS.escape(str.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "20");
 
-  }  
-  
-  openStrDetails(){
-    console.log(this.storylineSelected)
-    if(this.storylineSelected){
-      this.dialog.openChapterDescription(this.storylineSelected, '150ms','150ms')
+  }
+
+  openStrDetails() {
+    if (this.storylineSelected) {
+      this.dialog.openChapterDescription(this.storylineSelected, '150ms', '150ms')
     }
   }
-  openStrEdit(){
-    console.log(this.storylineSelected)
-    if(this.storylineSelected){
-      this.dialog.openStorylineEditDialog(this.storylineSelected, '150ms','150ms')
+  openStrEdit() {
+    if (this.storylineSelected) {
+      this.dialog.openStorylineEditDialog(this.storylineSelected, '150ms', '150ms')
     }
   }
   storyLineSwapDragged(event: MouseEvent, strs: StoryLine[]) {
-    if(strs.length <= 1){
+    if (strs.length <= 1) {
       return
     }
 
-    
-    const y =( event.y / this.zoom) - this.tiltY
+
+    const y = (event.y / this.zoom) - this.tiltY
     this.reset = false
-        // Cálculo da posição do mouse em relação aos StoryLines
-        let mousePos = (Math.round((y - 0.2) / 50) - 1) < 0 ? 0 : Math.round((y - 0.2) / 50) - 1;
-        mousePos = mousePos > strs.length - 1 ? strs.length - 1 : mousePos;
-        this.nextStorylineSelected = mousePos <= 0? 1 : mousePos +1
-        this.nextStorylineSelected = this.nextStorylineSelected == strs.length ? strs.length - 2 : this.nextStorylineSelected
-        let newStrl :StoryLine= strs[mousePos];
-        if(!newStrl.order){
-          return
-        }
-        console.log(newStrl.name)
-        const selectedElementText = d3.select(document.getElementById(`${CSS.escape(this.storylineSelected.id)}-storyline-group`)).select("text");
-        const isSame = this.storylineSelected.id == newStrl.id
+    // Cálculo da posição do mouse em relação aos StoryLines
+    let mousePos = (Math.round((y - 0.2) / 50) - 1) < 0 ? 0 : Math.round((y - 0.2) / 50) - 1;
+    mousePos = mousePos > strs.length - 1 ? strs.length - 1 : mousePos;
+    this.nextStorylineSelected = mousePos <= 0 ? 1 : mousePos + 1
+    this.nextStorylineSelected = this.nextStorylineSelected == strs.length ? strs.length - 2 : this.nextStorylineSelected
+    let newStrl: StoryLine = strs[mousePos];
+    if (!newStrl.order) {
+      return
+    }
+    const selectedElementText = d3.select(document.getElementById(`${CSS.escape(this.storylineSelected.id)}-storyline-group`)).select("text");
+    const isSame = this.storylineSelected.id == newStrl.id
 
 
-        const selectedNewElementiD = `${CSS.escape(newStrl.id)}-storyline-group`;
-        const newstrlElement: any = d3.select(document.getElementById(selectedNewElementiD)).select("text");
-        let toWalk = newStrl.order - this.prevStoryline?.order
-        toWalk = toWalk <= 0 ? 1 : toWalk
-        if (!isSame && this.storylineSelected.order > newStrl.order) {
+    const selectedNewElementiD = `${CSS.escape(newStrl.id)}-storyline-group`;
+    const newstrlElement: any = d3.select(document.getElementById(selectedNewElementiD)).select("text");
+    let toWalk = newStrl.order - this.prevStoryline?.order
+    toWalk = toWalk <= 0 ? 1 : toWalk
+    if (!isSame && this.storylineSelected.order > newStrl.order) {
 
-          selectedElementText
+      selectedElementText
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('y', () => ((newStrl.order) * this.gridHeight) + 2)
+
+      if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
+        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
+        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+        prevTimelineElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('y', () => (( newStrl.order ) * this.gridHeight) + 2)
-          
-          if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
-            const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-            const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-            prevTimelineElement
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
-            .attr('y', ((this.prevStoryline.order ) * this.gridHeight)) 
-            
-          }else {
-            newstrlElement
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
-            .attr('y', () => ((this.prevStoryline.order +1 ) * this.gridHeight) - 2)
-          }
-        } else if (!isSame &&this.storylineSelected.order < newStrl.order) {
-          selectedElementText
+          .attr('y', ((this.prevStoryline.order) * this.gridHeight))
+
+      } else {
+        newstrlElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('y', (newStrl.order * this.gridHeight) + 2)
-        
-          if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
+          .attr('y', () => ((this.prevStoryline.order + 1) * this.gridHeight) - 2)
+      }
+    } else if (!isSame && this.storylineSelected.order < newStrl.order) {
+      selectedElementText
+        .transition()
+        .duration(100)
+        .ease(d3.easeCubic)
+        .attr('y', (newStrl.order * this.gridHeight) + 2)
 
-            const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-            const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-           
-            prevStorylineElement
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
-            .attr('y', ((this.prevStoryline.order ) * this.gridHeight)) 
+      if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
 
-          }else{
-            newstrlElement
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
-            .attr('y', () => ((this.prevStoryline.order - 1) * this.gridHeight) - 2)
+        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
+        const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
 
-
-          }
-        }
-       else if (isSame && this.storylineSelected.order == newStrl.order) {
-         if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-          const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-          prevTimelineElement
+        prevStorylineElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          
-        }else {
-          if (this.prevStoryline != undefined) {
-          if(newStrl.id == this.storylineSelected.id){
+          .attr('y', ((this.prevStoryline.order) * this.gridHeight))
+
+      } else {
+        newstrlElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('y', () => ((this.prevStoryline.order - 1) * this.gridHeight) - 2)
+
+
+      }
+    }
+    else if (isSame && this.storylineSelected.order == newStrl.order) {
+      if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
+        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
+        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+        prevTimelineElement
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+
+      } else {
+        if (this.prevStoryline != undefined) {
+          if (newStrl.id == this.storylineSelected.id) {
             newStrl = strs[this.nextStorylineSelected]
           }
-          
-            const prevNewElementiD = `${CSS.escape(newStrl?.id)}-storyline-group`;
-            const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-           
-            selectedElementText
+
+          const prevNewElementiD = `${CSS.escape(newStrl?.id)}-storyline-group`;
+          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+
+          selectedElementText
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr('y', ((this.storylineSelected.order)* this.gridHeight) )
+            .attr('y', ((this.storylineSelected.order) * this.gridHeight))
 
 
-            prevTimelineElement
+          prevTimelineElement
             .transition()
             .duration(50)
             .ease(d3.easeCubic)
-            .attr('y', ((newStrl.order)* this.gridHeight))
+            .attr('y', ((newStrl.order) * this.gridHeight))
 
-            this.reset = true
+          this.reset = true
           return
 
-          }
         }
-       }
-       if (this.storylineOrderToUpdate == 0) {
-        this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
+      }
     }
-  
+    if (this.storylineOrderToUpdate == 0) {
+      this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
+    }
+
     if (this.storylineOrderToUpdate != 0) {
-        this.storylineOrderToUpdate = newStrl.order
+      this.storylineOrderToUpdate = newStrl.order
     }
-      this.prevStoryline = newStrl
-  
-        // Verificar se o Story
+    this.prevStoryline = newStrl
+
+    // Verificar se o Story
 
   }
-  
 
 
-  storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]){
+
+  storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
     const elementId = `${CSS.escape(this.storylineSelected.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "12");
-    console.log(this.storylineOrderToUpdate)
-    if(!this.storylineSelected){
+    if (!this.storylineSelected) {
       return
     }
-    console.log(this.storylineSelected)
     this.storylineSelected.order = this.storylineOrderToUpdate;
 
     const reordenadas: StoryLine[] = [];
 
-    let currentOrder = 1; 
+    let currentOrder = 1;
     strs
-        .sort((a, b) => a.order - b.order) 
-        .forEach((t) => {
-            if (t.id === this.storylineSelected.id) {
-                t.order = this.storylineSelected.order;
-            } else {
-                if (currentOrder === this.storylineSelected.order) {
-                    currentOrder++; 
-                }
-                t.order = currentOrder;
-                currentOrder++;
-            }
-            reordenadas.push(t);
+      .sort((a, b) => a.order - b.order)
+      .forEach((t) => {
+        if (t.id === this.storylineSelected.id) {
+          t.order = this.storylineSelected.order;
+        } else {
+          if (currentOrder === this.storylineSelected.order) {
+            currentOrder++;
+          }
+          t.order = currentOrder;
+          currentOrder++;
+        }
+        reordenadas.push(t);
+      });
+
+
+    if (this.reset) {
+
+      this.api.updateStoryLineList(strs).subscribe((data) => {
+        data.forEach(str => {
+          this.wd.updateStoryline(str)
         });
 
+      })
+    } else {
+      this.api.updateStoryLineList(reordenadas).subscribe((data) => {
+        data.forEach(str => {
+          this.wd.updateStoryline(str)
+        });
+      })
 
-        if(this.reset){
-
-          this.api.updateStoryLineList(strs).subscribe((data) => {
-            data.forEach(str => {
-              this.wd.updateStoryline(str)
-            });
-
-          })
-        }else {
-          this.api.updateStoryLineList(reordenadas).subscribe((data) => {
-            data.forEach(str => {
-              this.wd.updateStoryline(str)
-            });
-          })
-
-        }
+    }
     this.prevTimeline = undefined;
 
   }
@@ -947,9 +1066,9 @@ export class SubwayComponent {
   };
 
 
-  buttonPositions (tl: Timeline, timelines: Timeline[], index: number) {
-    const width = (tl.range * 20) ;
-    return this.calculateEditIconPosition(tl, timelines) + (tl.range * 10) - 10 + this.buttonsSpacing[index] ; // Calcula a posição proporcional
+  buttonPositions(tl: Timeline, timelines: Timeline[], index: number) {
+    const width = (tl.range * 20);
+    return this.calculateEditIconPosition(tl, timelines) + (tl.range * 10) - 10 + this.buttonsSpacing[index]; // Calcula a posição proporcional
   };
 
   renderTimeLines(
@@ -959,27 +1078,27 @@ export class SubwayComponent {
   ) {
     const gridHeight = (height * this.gridHeight) + 20;
     this.totalGridHeight = gridHeight;
-  
+
     // Seleciona os grupos existentes e associa os dados
     let el: d3.Selection<SVGGElement, Timeline, SVGGElement, unknown> = svg
       .selectAll<SVGGElement, Timeline>("g.timeline-group")
       .lower()
       .data(data, (d: Timeline) => d.id);
-  
+
     // Remove os grupos que não estão mais nos dados
     el.exit().remove();
-  
+
     // Cria novos grupos para novos dados
     const enter = el.enter()
       .append<SVGGElement>("g")
       .attr("class", "timeline-group")
       .attr("id", (t: Timeline) => `${CSS.escape(t.id)}-timeline-group`);
-      
-      // Atualiza grupos existentes e novos grupos
-      el = enter.merge(el);
-      
-      // Adiciona ou atualiza os retângulos (o corpo da timeline)
-      el.append("rect")
+
+    // Atualiza grupos existentes e novos grupos
+    el = enter.merge(el);
+
+    // Adiciona ou atualiza os retângulos (o corpo da timeline)
+    el.append("rect")
       .attr("class", "timeline-body")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 50)
@@ -987,14 +1106,14 @@ export class SubwayComponent {
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
 
-      
-      // Criação do header da timeline
-      const headerTimeline = el
+
+    // Criação do header da timeline
+    const headerTimeline = el
       .lower()
       .append<SVGGElement>("g")
-      
-      // Adiciona o background do header usando 'rect'
-      headerTimeline
+
+    // Adiciona o background do header usando 'rect'
+    headerTimeline
       .append("rect")
       .attr("class", "timeline-header")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
@@ -1004,12 +1123,12 @@ export class SubwayComponent {
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
       .style("stroke-width", "1px");
-  
-  
+
+
     // Botão de "grab" (movimentação)
     headerTimeline.append("text")
       .attr("class", `timeline-drag`)
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data,  0)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 0)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", (LABEL_FONT_SIZE_DEFAULT))
@@ -1021,29 +1140,29 @@ export class SubwayComponent {
           .on("drag", (event, t) => this.timelineSwapDragged(event, data))
           .on("end", (event, t) => this.timelineSwapDragEnded(svg, data))
       );
-  
+
     // Botão de deletar no header
     headerTimeline.append("text")
       .attr("class", "timeline-delete")
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 1)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 1)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
       .attr("font-size", ("20px"))
       .attr("cursor", "pointer")
       .text("🗑")
       .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
-  
+
     // Botão de atualizar no header
     headerTimeline.append("text")
       .attr("class", "timeline-update")
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 2)) // Posição proporcional
+      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 2)) // Posição proporcional
       .attr("y", this.timeLineTxtHeight)
       .attr("font-family", "Arial")
       .attr("font-size", ("20px"))
       .attr("cursor", "pointer")
       .text("🖉")
       .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
-  
+
     // Nome da timeline no header, centralizado abaixo dos botões
     headerTimeline.append("text")
       .attr("class", "timeline-txt")
@@ -1054,13 +1173,13 @@ export class SubwayComponent {
       .attr("text-anchor", "middle")
       .text((tl: Timeline) => tl.name);
   }
-  
-  
-  
 
-getElementCenter(element: any){
-  return (element.node().getBoundingClientRect().width / this.zoom) / 2
-}
+
+
+
+  getElementCenter(element: any) {
+    return (element.node().getBoundingClientRect().width / this.zoom) / 2
+  }
 
   private calculateEditIconPosition(tl: Timeline, data: Timeline[]): number {
     let range = 100;
@@ -1072,13 +1191,79 @@ getElementCenter(element: any){
 
 
   timelineSwapDragStart(t: Timeline, timelines: Timeline[]) {
-    if(timelines.length <= 1){
+    if (timelines.length <= 1) {
       return
     }
     this.selectedTimeline = t
     const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     d3.select(document.getElementById(elementId)).attr("stroke", "black");
 
+  }
+  eventDragStart(e: Event) {
+    this.selectedEvent = e
+    const elementId = `${CSS.escape(e.id)}-event-group`;
+    d3.select(document.getElementById(elementId)).attr("stroke", "black");
+  }
+
+  eventDragged(nativeEvent: any, e: Event) {
+    if (this.selectedEvent) {
+      const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
+
+      const eventElementId = `${CSS.escape(e.id)}-event-group`;
+
+      const eventBodyElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-body`));
+      const eventBottomElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-bottom`));
+      const eventDragElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-drag`));
+      const eventTxtElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-txt`));
+
+
+      const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+
+      const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
+
+
+      const relativeX = (((nativeEvent.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom) - (e.range * 10)
+
+
+      if (relativeX < 100 || relativeX > widthTimelines) {
+        return
+      }
+
+
+
+      const rangeStart = (relativeX - 100) / 20
+
+
+      eventBodyElement.attr("x", relativeX)
+      eventBottomElement.attr("x", relativeX)
+      eventDragElement.attr("x", relativeX + (e.range * 10))
+      eventTxtElement.attr("x", relativeX + (e.range * 10))
+
+      console.log(rangeStart / 20)
+      // d3.select(eventElement)
+      //   .attr("dx", d.width)
+      //   .attr("dy", d.height + 15)
+      //   .attr("cx", d.width )
+      //   .attr("cy", d.height)
+      //   .attr("stroke", d.color)
+
+      this.selectedEvent.startRange = Math.round(rangeStart)
+
+
+
+    } else {
+      return
+    }
+  }
+  eventDragEnd(el: any, e: Event) {
+    if (this.selectedEvent) {
+      this.api.updateEvent(this.selectedEvent).subscribe((e) => {
+        this.wd.updateEvent(e)
+      })
+      this.selectedEvent = undefined
+    } else {
+      return
+    }
   }
 
 
@@ -1087,7 +1272,7 @@ getElementCenter(element: any){
 
 
   timelineSwapDragged(event: any, timelines: Timeline[]) {
-    if(timelines.length <= 1){
+    if (timelines.length <= 1) {
       return
     }
     const selectedElementiD = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
@@ -1098,12 +1283,12 @@ getElementCenter(element: any){
 
 
     const x = (event.x / this.zoom) - this.tiltX
-    
+
     const newTimeline = this.findTimelineForChapter(timelines, x).timeline
 
     const isSame = this.selectedTimeline.id == newTimeline.id
 
-    
+
     const beforeSelected = timelines.filter((t) => t.order <= newTimeline.order)
 
     const selectedNewElementiD = `${CSS.escape(newTimeline.id)}-timeline-group`;
@@ -1124,20 +1309,20 @@ getElementCenter(element: any){
         .ease(d3.easeCubic)
         .attr('x', otherElementLocation)
 
-        rectElementHeader
+      rectElementHeader
         .transition()
         .duration(100)
         .ease(d3.easeCubic)
         .attr('x', otherElementLocation)
 
 
-      textElement._groups[0].forEach((element: any, i:number) => {
+      textElement._groups[0].forEach((element: any, i: number) => {
         const pos = i >= 3 ? 1 : i
         d3.select(element)
-        .transition()
-        .duration(100)
-        .ease(d3.easeCubic)
-        .attr("x", () => this.buttonPositions(newTimeline, timelines, pos) + diff) 
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("x", () => this.buttonPositions(newTimeline, timelines, pos) + diff)
       });
 
 
@@ -1155,19 +1340,19 @@ getElementCenter(element: any){
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
-          prevRectheaderElement
+        prevRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
 
-        prevtextElement._groups[0].forEach((element: any, i:number) => {
+        prevtextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(timelines[newTimeline.order -2], timelines, pos)) 
+            .attr("x", () => this.buttonPositions(timelines[newTimeline.order - 2], timelines, pos))
         });
 
 
@@ -1186,21 +1371,21 @@ getElementCenter(element: any){
           .attr('x', elPos);
 
 
-          let diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
+        let diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
 
-          newTextElement._groups[0].forEach((element: any, i:number) => {
+        newTextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (elPos + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
+            .attr("x", () => (elPos + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
 
         });
 
       }
 
-    } else if (!isSame &&this.selectedTimeline.order < newTimeline.order) {
+    } else if (!isSame && this.selectedTimeline.order < newTimeline.order) {
 
       const elPosition = currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20
       rectElement
@@ -1214,18 +1399,18 @@ getElementCenter(element: any){
         .ease(d3.easeCubic)
         .attr('x', elPosition);
 
-        textElement._groups[0].forEach((element: any, i:number) => {
-          const pos = i >= 3 ? 1 : i
-          
-          const tl = timelines[newTimeline.order]? timelines[newTimeline.order] : timelines[newTimeline.order-1]
+      textElement._groups[0].forEach((element: any, i: number) => {
+        const pos = i >= 3 ? 1 : i
 
-          d3.select(element)
+        const tl = timelines[newTimeline.order] ? timelines[newTimeline.order] : timelines[newTimeline.order - 1]
+
+        d3.select(element)
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("x", () => (elPosition + (this.selectedTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
+          .attr("x", () => (elPosition + (this.selectedTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
 
-          // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
+        // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
       });
 
 
@@ -1245,49 +1430,49 @@ getElementCenter(element: any){
           .ease(d3.easeCubic)
           .attr('x', Location);
 
-          prevRectheaderElement
+        prevRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', Location);
 
-        prevtextElement._groups[0].forEach((element: any, i:number) => {
+        prevtextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (Location + (range * 10) - 7 + this.buttonsSpacing[pos])) 
+            .attr("x", () => (Location + (range * 10) - 7 + this.buttonsSpacing[pos]))
 
-            // .attr('x', Location + this.getElementCenter(prevRectElement));
+          // .attr('x', Location + this.getElementCenter(prevRectElement));
         });
 
 
       } else {
-    const elPosition = otherElementLocation - (this.selectedTimeline.range * 20)
+        const elPosition = otherElementLocation - (this.selectedTimeline.range * 20)
 
 
         newRectElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', elPosition );
+          .attr('x', elPosition);
 
         newRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', elPosition );
+          .attr('x', elPosition);
 
         newTextElement._groups[0].forEach((element: any, i: any) => {
-          
+
           const pos = i >= 3 ? 1 : i
 
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (elPosition + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos])) 
+            .attr("x", () => (elPosition + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
 
         });
       }
@@ -1311,23 +1496,23 @@ getElementCenter(element: any){
           .ease(d3.easeCubic)
           .attr('x', Location);
 
-          prevRectheaderElement
+        prevRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('x', Location);
 
 
-        prevtextElement._groups[0].forEach((element: any, i:number) => {
+        prevtextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
 
           d3.select(element)
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(this.prevTimeline??this.selectedTimeline, timelines, pos)) 
+            .attr("x", () => this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos))
 
-            // .attr('x', Location + this.getElementCenter(prevRectElement) );
+          // .attr('x', Location + this.getElementCenter(prevRectElement) );
         });
 
 
@@ -1350,21 +1535,21 @@ getElementCenter(element: any){
             .duration(100)
             .ease(d3.easeCubic)
             .attr('x', Location);
-            
-            prevRectheaderElement
+
+          prevRectheaderElement
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
             .attr('x', Location);
 
-          prevtextElement._groups[0].forEach((element: any, i:number) => {
+          prevtextElement._groups[0].forEach((element: any, i: number) => {
             const pos = i >= 3 ? 1 : i
 
             d3.select(element)
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', () => this.buttonPositions(this.prevTimeline?? this.selectedTimeline, timelines, pos));
+              .attr('x', () => this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos));
 
           });
 
@@ -1375,13 +1560,13 @@ getElementCenter(element: any){
             .ease(d3.easeCubic)
             .attr('x', toWalk);
 
-          textElement._groups[0].forEach((element: any, i:number) => {
+          textElement._groups[0].forEach((element: any, i: number) => {
             const pos = i >= 3 ? 1 : i
 
             d3.select(element)
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
+              .transition()
+              .duration(100)
+              .ease(d3.easeCubic)
               .attr('x', () => this.buttonPositions(this.selectedTimeline, timelines, pos));
           });
         }
@@ -1393,15 +1578,13 @@ getElementCenter(element: any){
 
     // newTimeline.order = this.selectedTimeline.order
     if (this.timelineOrderToUpdate == 0) {
-      
-      console.log(this.selectedTimeline)
+
       this.timelineOrderToUpdate = this.selectedTimeline.order
     }
-    
+
     if (this.timelineOrderToUpdate != 0) {
-    console.log(newTimeline)
       this.timelineOrderToUpdate = newTimeline.order
-  }
+    }
     this.prevTimeline = newTimeline
 
   }
@@ -1409,7 +1592,7 @@ getElementCenter(element: any){
 
   timelineSwapDragEnded(element: any, timelines: Timeline[]) {
     d3.select(element._groups[0][0]).attr("stroke", "none");
-    if(timelines.length <= 1){
+    if (timelines.length <= 1) {
       return
     }
 
@@ -1417,30 +1600,30 @@ getElementCenter(element: any){
 
     const reordenadas: Timeline[] = [];
 
-    let currentOrder = 1; 
+    let currentOrder = 1;
     timelines
-        .sort((a, b) => a.order - b.order) 
-        .forEach((t) => {
-            if (t.id === this.selectedTimeline.id) {
-                t.order = this.selectedTimeline.order;
-            } else {
-                if (currentOrder === this.selectedTimeline.order) {
-                    currentOrder++; 
-                }
-                t.order = currentOrder;
-                currentOrder++;
-            }
-            reordenadas.push(t);
-        });
+      .sort((a, b) => a.order - b.order)
+      .forEach((t) => {
+        if (t.id === this.selectedTimeline.id) {
+          t.order = this.selectedTimeline.order;
+        } else {
+          if (currentOrder === this.selectedTimeline.order) {
+            currentOrder++;
+          }
+          t.order = currentOrder;
+          currentOrder++;
+        }
+        reordenadas.push(t);
+      });
 
 
     reordenadas.forEach(timeline => {
-        this.wd.updateTimeline(timeline)
-      });
-      const updateTimelinesApi = reordenadas.map((t) => {
-        return this.api.updateTimeline(t).subscribe((e) => {
-          this.wd.updateTimeline(e)
-        })
+      this.wd.updateTimeline(timeline)
+    });
+    const updateTimelinesApi = reordenadas.map((t) => {
+      return this.api.updateTimeline(t).subscribe((e) => {
+        this.wd.updateTimeline(e)
+      })
     })
 
     // updateTimelinesApi.forEach(element => {
@@ -1452,7 +1635,7 @@ getElementCenter(element: any){
 
     // Resetar prevTimeline
     this.prevTimeline = undefined;
-}
+  }
 
 
 
@@ -1517,10 +1700,10 @@ getElementCenter(element: any){
       .attr('transform', restrictedTransform.toString())
       .node()
 
-      this.tiltX = restrictedTransform.x
-      this.tiltY = restrictedTransform.y
+    this.tiltX = restrictedTransform.x
+    this.tiltY = restrictedTransform.y
 
-      if (g && g instanceof SVGGraphicsElement) {
+    if (g && g instanceof SVGGraphicsElement) {
       const bbox = g.getBBox();  // Obtém as dimensões do <g> usando getBBox
       const gWidth = bbox.width * transform.k;  // Largura do elemento <g> com zoom
       const gheight = bbox.height * transform.k;  // Largura do elemento <g> com zoom
@@ -1544,19 +1727,19 @@ getElementCenter(element: any){
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-  
+
     // Garante que o hash seja positivo
     hash = Math.abs(hash);
-  
+
     // Extrai valores de R, G, B a partir do hash
     const r = (hash & 0xFF0000) >> 16;
     const g = (hash & 0x00FF00) >> 8;
     const b = (hash & 0x0000FF);
-  
+
     return `rgb(${r}, ${g}, ${b})`;
   }
-  
-  
+
+
 
   private cleanItemsOnSvg() {
     this.graphHeigh = 0
@@ -1565,14 +1748,15 @@ getElementCenter(element: any){
   }
 
   private handleGraphEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
-    data: { "chapters": Chapter[], "storyLines": StoryLine[], "connections": Connection[], "timelines": Timeline[] }) {
+    data: { "chapters": Chapter[], "storyLines": StoryLine[], "connections": Connection[], "timelines": Timeline[], "events": Event[] }) {
 
 
-    const { timelines, storyLines, connections, chapters } = data
+    const { timelines, storyLines, connections, chapters, events } = data
     this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
     this.renderConnections(svg, chapters, connections);
     this.renderChapters(svg, chapters, storyLines, timelines, connections);
+    this.renderEvents(svg, events, chapters, storyLines.length);
 
 
 

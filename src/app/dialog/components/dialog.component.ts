@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, StoryLine, Timeline } from '../../models/paperTrailTypes';
+import { Chapter, Event, StoryLine, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 
 
@@ -417,91 +417,41 @@ import { combineLatest } from 'rxjs';
   })
   export class createEventsDialogComponent  {
     worldForm: FormGroup;
-    worldId:string | undefined= ''
       errorHandler: any;
-      tl: Timeline[]
-      selectedTl: Timeline = {
-        range: 0,
-        id: '',
-        WorldsID: '',
-        name: '',
-        description: '',
-        order: 0,
-        created_at: ''
 
-      }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
+      @Inject(MAT_DIALOG_DATA) private data: string
     ){
 
-      this.timelines$.subscribe((tl) => {
-        this.tl = tl
-      })
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        paper_id: ['', [Validators.required]],
-        order: ['', [Validators.required]],
-        timeline_id: ['', [Validators.required]],
-        storyline_id: ['', [Validators.required]],
-        range: [0, [Validators.required]],
       });
 
-      this.chapters$.subscribe((cpList) => {
-        const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
-        const e = {target: {value: chapter.timeline_id}}
-        this.getTimeLineDetails(e)
-        this.worldId = chapter.world_id
-        this.worldForm.patchValue({
-          name: chapter.name,
-          description: chapter.description,
-          order: chapter.order,
-          paper_id: chapter.paper_id,
-          timeline_id: chapter?.timeline_id,
-          storyline_id: chapter?.storyline_id,
-          range: chapter?.range,
-        });
-      })
-
-
+      this.worldForm.value.range = 20
+      this.worldForm.value.startRange = 0
 
     }
 
-    papers$ = this.wd.papers$;
-    timelines$ = this.wd.timelines$;
-    storylines$ = this.wd.storylines$;
-    chapters$ = this.wd.chapters$;
-    world$ = this.wd.world$;
-    range:number = 1
 
     onSubmit(){
-      const body = this.worldForm.value
-      body.world_id = this.worldId
-      body.id = this.data.chapterId
-      this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
+      const body :Event= this.worldForm.value
+      body.world_id =  this.data
+      body.range = 20
+      body.startRange = 0
+      this.api.createEvent(body).subscribe(
         
         {
-            next: (data) => this.addNewChapter(data),
+            next: (data) => this.addEvent(data),
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
     }
-    addNewChapter(newChapter: Chapter){
-        this.wd.updateChapter(newChapter)
-    }
-    formatLabel(value: number): string {
-      this.range = value
-      return `${value}`;
+    addEvent(event: Event){
+        // this.wd.updateChapter(newChapter)
     }
 
 
-    getTimeLineDetails(e:any){
-      const val:string = e.target.value
-      if( val != null &&val.trim() != ""){
-        const result = this.tl.filter((t) => t.id == val)
-        this.selectedTl = result[0]
-      }
-    }
   }
 
 

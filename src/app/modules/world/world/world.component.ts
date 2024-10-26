@@ -26,12 +26,13 @@ papper: paper;
   ) { }
 
   papers$: paper[];
-  world$ = this.wd.world$;
+  worldId:String;
   chapters$: Chapter[]
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
       if (id) {
+        this.worldId = id
         this.loadWorldData(id);
       }
 
@@ -104,7 +105,7 @@ papper: paper;
 
   }
   createEvents(){
-    this.dialog.opencreateEventsDialog('150ms', '150ms')
+    this.dialog.opencreateEventsDialog( this.worldId , '150ms', '150ms')
 
   }
   

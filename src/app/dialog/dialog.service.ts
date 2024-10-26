@@ -47,11 +47,12 @@ export class DialogService {
       data: t
     });
   }
-  opencreateEventsDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+  opencreateEventsDialog(worldId:String, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createEventsDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,
+      data: worldId
     });
   }
   openCreateStoryline(enterAnimationDuration: string, exitAnimationDuration: string): void {
