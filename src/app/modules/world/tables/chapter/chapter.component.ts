@@ -15,7 +15,8 @@ import { PapperComponent } from '../papper/papper.component';
 interface ExtendedChapter extends Chapter {
   papperName: string,
   timelineName: string,
-  storylineName: string
+  storylineName: string,
+  eventName:string
 }
 
 interface allData {
@@ -32,13 +33,14 @@ interface allData {
   styleUrl: './chapter.component.scss'
 })
 export class ChapterComponent implements OnInit {
-  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','description', 'update', 'open'];
+  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','eventName','description', 'update', 'open'];
   dataSource = new MatTableDataSource<ExtendedChapter>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
 
   chapter$: ExtendedChapter[];
   paper$: paper[];
+  isDrag: boolean = true;
   sortDirection: boolean = true
 
   sortCriteria:string = "sort"
@@ -49,11 +51,13 @@ export class ChapterComponent implements OnInit {
     created_at: '',
     papperName: '',
     timelineName: '',
+    eventName: '',
     storylineName: ''
   };
   searchInputs: any = {
     order: false,
     name: false,
+    eventName: false,
     created_at: false,
     papperName: false,
     timelineName: false,
@@ -68,6 +72,7 @@ export class ChapterComponent implements OnInit {
   dateSearchValue: string = ""
   papperNameSearchValue:String = ""
   timelineNameSearchValue:String = ""
+  eventNameSearchValue:String = ""
   storylineNameSearchValue:String = ""
 
   startDateSearchValue: string = ""
@@ -94,11 +99,12 @@ export class ChapterComponent implements OnInit {
     const valOrder = this.orderSearchValue ==  ""
     const valName = this.nameSearchValue ==  ""
     const valDate = this.dateSearchValue ==  ""
-    const valPapperName = this.papperNameSearchValue == ""
+    const valPaperName = this.papperNameSearchValue == ""
     const valTlName = this.timelineNameSearchValue == ""
+    const valEvtName = this.eventNameSearchValue == ""
     const valStName = this.storylineNameSearchValue == ""
     
-    const searchCondition = !valOrder || !valName || !valPapperName || !valTlName || !valStName
+    const searchCondition = !valOrder || !valName || !valPaperName || !valTlName || !valStName || !valEvtName
     const sortCondition =  (this.sortCriteria !== "order" && !this.sortDirection) || (this.sortCriteria !== "order" && !this.sortDirection)
     if(searchCondition || sortCondition ){
       return true
@@ -118,13 +124,13 @@ export class ChapterComponent implements OnInit {
 
     combineLatest({
       "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$,
-      "chapters": this.wd.chapters$, "papers": this.wd.papers$
+      "chapters": this.wd.chapters$, "papers": this.wd.papers$, "events": this.wd.events$
     })
     .pipe(
       distinctUntilChanged(() => this.compareUpdates())
     )
     .subscribe((data) => {
-      let { chapters, papers, storyLines, timelines } = data
+      let { chapters, papers, storyLines, timelines, events } = data
 
       const chp:ExtendedChapter[] = chapters.map((c) => {
         const data:any = c
@@ -138,6 +144,9 @@ export class ChapterComponent implements OnInit {
         
         const tl = timelines.find((pp) => pp.id == c.timeline_id)
         cht.timelineName = tl?.name || ''
+
+        const evt = events.find((ev) => ev.id == c.event_Id)
+        cht.eventName = evt?.name || ''
         
         
         return cht
@@ -154,6 +163,9 @@ export class ChapterComponent implements OnInit {
 
   // Função para reorganizar os itens da tabela
   drop(event: CdkDragDrop<Chapter[]> | any) {
+    if(!this.isDrag){
+      return 
+    }
     const prevIndex = this.dataSource.data.findIndex(
       (d) => d === event.item.data
     );
@@ -298,18 +310,25 @@ export class ChapterComponent implements OnInit {
   returnSortChapters(criteria: string, data:ExtendedChapter[]) {
     switch (criteria) {
       case 'order':
+        this.isDrag = true
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByOrder(a, b));
-      case 'date':
+        case 'date':
+        this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByDate(a, b));
-      case 'name':
+        case 'name':
+        this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByName(a, b));
-      case 'papperName':
+        case 'papperName':
+        this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByPapperName(a, b));
-      case 'timelineName':
+        case 'timelineName':
+        this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByTimelineName(a, b));
-      case 'storylineName':
+        case 'storylineName':
+        this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortBystoryLineName(a, b));
-      default:
+        default:
+        this.isDrag = false
         return data;
     }
   }

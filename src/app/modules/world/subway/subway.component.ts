@@ -41,6 +41,8 @@ export class SubwayComponent {
   reset: boolean
   currentSelectTimelineLeftGap: number;
 
+  resizeDirection: "left"|"right" | ""
+
   isCreateConnectionSet: boolean;
   timelineEdit: boolean = false
   gridWidth = 100
@@ -312,7 +314,7 @@ export class SubwayComponent {
   private renderEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     events: Event[], chapters: Chapter[], height: number) {
 
-    const gridHeight = (height * this.gridHeight) + 20;
+    const gridHeight = (height * this.gridHeight);
     this.totalGridHeight = gridHeight;
 
     // Seleciona os grupos existentes e associa os dados
@@ -320,7 +322,7 @@ export class SubwayComponent {
       .selectAll<SVGGElement, Event>("g.event-group")
       .lower()
       .data(events, (ev: Event) => ev.id);
-    // console.log(el)
+
     // Remove os grupos que não estão mais nos dados
     el.exit().remove();
 
@@ -333,7 +335,17 @@ export class SubwayComponent {
     // Atualiza grupos existentes e novos grupos
     el = enter.merge(el);
 
-    // Adiciona ou atualiza os retângulos (o corpo da timeline)
+    // Criação do corpo da timeline
+    this.createEventBody(el, gridHeight);
+
+    // Criação do header da timeline
+    this.createEventHeader(el, gridHeight);
+
+    // Criação dos controles de movimento
+    this.createEventControls(el, svg);
+}
+
+private createEventBody(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, gridHeight: number) {
     el.append("rect")
       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-body`)
       .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
@@ -341,82 +353,203 @@ export class SubwayComponent {
       .attr("width", (ev: Event) => (ev.range * 20) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(250, 20, 20, 0.2)");
+}
 
-
-    // Criação do header da timeline
-    const bottomEvent = el
-      .lower()
-      .append<SVGGElement>("g")
+private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, gridHeight: number) {
+    const bottomEvent = el.append<SVGGElement>("g");
 
     // Adiciona o background do header usando 'rect'
-    bottomEvent
-      .append("rect")
+    bottomEvent.append("rect")
       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
       .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
+      .attr("class", 'event-bottom')
       .attr("y", gridHeight + 50) // Posiciona no topo
       .attr("width", (ev: Event) => (ev.range * 20) - 5)
       .attr("height", 45) // Altura do header
       .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
-      .style("stroke-width", "1px");
-
-
-    // Botão de "grab" (movimentação)
-    bottomEvent.append("text")
-      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-drag`)
-      .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
-      .attr("y", gridHeight + 85) // Posiciona no topo
-      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-      .attr("font-size", (LABEL_FONT_SIZE_DEFAULT))
-      .attr("cursor", "pointer")
-      .text("↹")
+      .style("stroke-width", "1px")
       .call(
-        d3.drag<SVGTextElement, Event>()
-          .on("start", (_, e) => this.eventDragStart(e))
-          .on("drag", (event, e) => this.eventDragged(event, e))
-          .on("end", (_, e) => this.eventDragEnd(svg, e))
-      );
+        d3.drag<SVGRectElement, Event>()
+          .on("start", (event, e) => this.eventDragResizeStart(event, e))
+          .on("drag", (event, e) => this.eventResizeDragged(event, e))
+          .on("end", () => this.eventResizeDragEnd(el))
+      )
+      .on("mousemove", (nativeEvent, event:Event) => {
+        if((((nativeEvent.x - 100) - event.startRange * 20)) <= 15) {
+          d3.select("body").style("cursor", "w-resize"); // seta para a esquerda
 
-    // Botão de deletar no header
-    // headerTimeline.append("text")
-    //   .attr("class", "timeline-delete")
-    //   .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 1)) // Posição proporcional
-    //   .attr("y", this.timeLineTxtHeight)
-    //   .attr("font-family", "Arial")
-    //   .attr("font-size", ("20px"))
-    //   .attr("cursor", "pointer")
-    //   .text("🗑")
-    //   .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
+        }else if(((((event.startRange + event.range) * 20) + 100) -  nativeEvent.x) <= 15) {
+          d3.select("body").style("cursor", "e-resize"); // seta para a direita
+        }  else {
+          d3.select("body").style("cursor", "default");
+        }
+      })
+      .on("mouseleave", () => {
+        d3.select("body").style("cursor", "default");
+      })
+      
+}
 
-    // Botão de atualizar no header
-    // headerTimeline.append("text")
-    //   .attr("class", "timeline-update")
-    //   .attr("x", (tl: Timeline) => this.buttonPositions(tl,data, 2)) // Posição proporcional
-    //   .attr("y", this.timeLineTxtHeight)
-    //   .attr("font-family", "Arial")
-    //   .attr("font-size", ("20px"))
-    //   .attr("cursor", "pointer")
-    //   .text("🖉")
-    //   .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
+eventDragResizeStart(nativeEvent:any, e:Event){
+  if((nativeEvent.x - 100) <= 0){
+    return
+  }else {
+    const clickPosition = (nativeEvent.x - 100)
+    let leftClickDiff = Math.abs(clickPosition - (e.startRange * 20));
+    let rightClickDiff = Math.abs(((e.startRange * 20) + (e.range * 20)) - clickPosition);
+    if(leftClickDiff < 15){
+      this.resizeDirection = "left"
+    }else if(rightClickDiff < 15){
+      this.resizeDirection = "right"
+    } 
+  }
+}
+eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
+  // Calcular o novo valor de range com base na posição do mouse
+  const newMouseX = nativeEvent.x - 100;
+  const gridUnit = 20;
 
-    // Nome da timeline no header, centralizado abaixo dos botões
-    bottomEvent.append("text")
-      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-txt`)
-      .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
-      .attr("y", gridHeight + 65) // Posiciona no topo
-      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-      .attr("text-anchor", "middle")
-      .text((ev: Event) => ev.name);
+  // Limite do startRange para não ser menor que zero
+  if (newMouseX <= 0) return;
+
+  if (this.resizeDirection === "left") {
+    // Se o movimento for para a esquerda, diminui o startRange e aumenta o range
+    const newStartRange = Math.floor(newMouseX / gridUnit);
+    if(newStartRange < 0){
+      return
+    }
+    const rangeChange = e.startRange - newStartRange;
+    if (newStartRange >= 0) {
+      if((e.range + rangeChange) <= 5){
+        return
+      }
+      e.startRange = newStartRange;  // Atualiza o início do range
+      e.range = e.range + rangeChange;            // Atualiza o comprimento do range
 
 
+    }
+  } else if (this.resizeDirection === "right") {
+    // Se o movimento for para a direita, aumenta o range e mantém o startRange
+    const newRange = Math.floor(newMouseX / gridUnit) - e.startRange;
+    if (newRange >= 1) { // Mantém o range maior ou igual a 1
+      if(newRange < 5){
+        return
+      }
+      e.range = newRange;
+    }
+  }
+  // console.log(e.range)
 
+  this.selectedEvent = e
+  this.updateEventDisplay(e);
 
+  // Atualiza a visualização com os novos valores de range e startRange
+}
 
+eventResizeDragEnd(svg:any){
+  this.resizeDirection = ""
 
-
+  if(this.selectedEvent){
+    this.resizeEvent(this.selectedEvent)
+    this.api.updateEvent(this.selectedEvent).subscribe((e) => {
+      this.wd.updateEvent(e)
+      // this.selectedEvent = undefined
+    })
 
   }
+}
+
+private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
+  const bottomEvent = el.append<SVGGElement>("g");
+
+  // Botão de "grab" (movimentação)
+  bottomEvent.append("text")
+    .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-drag`)
+    .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+    .attr("y", this.totalGridHeight + 85) // Posiciona no topo
+    .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+    .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+    .attr("cursor", "pointer")
+    .text("↹")
+    .call(
+      d3.drag<SVGTextElement, Event>()
+        .on("start", (_, e) => this.eventDragStart(e))
+        .on("drag", (event, e) => this.eventDragged(event, e))
+        .on("end", (_, e) => this.eventDragEnd(svg, e))
+    );
+
+
+  bottomEvent.append("text")
+    .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-txt`)
+    .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+    .attr("y", this.totalGridHeight + 65) // Posiciona no topo
+    .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+    .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+    .attr("text-anchor", "middle")
+    .text((ev: Event) => ev.name);
+}
+
+private resizeEvent(event: Event) {
+
+  const chaptersRelated = this.chapters.filter((c) => {
+    const range = (c.width - 100) / 20
+    if(range >= event.startRange && range <= (event.startRange + event.range )){
+      if(c.event_Id == event.id){
+        return false
+      }else {
+        c.event_Id = event.id
+        this.wd.updateChapter(c)
+      }
+      return c
+    }else {
+      if(c.event_Id == event.id){
+        c.event_Id = ""
+        return c
+      }
+      return false
+    }
+  })
+
+
+  if(chaptersRelated.length > 0){
+    this.api.updateChapterList(chaptersRelated).subscribe((c) => {
+      return c
+    })
+  }
+}
+
+// Função para atualizar a visualização do evento
+private updateEventDisplay(event: Event) {
+  // Seleciona o retângulo correspondente ao evento e atualiza a largura
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-body`))
+    .attr("width", (event.range * 20) - 5)
+    .attr("x", (event.startRange * 20) + 100)
+
+
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-bottom`))
+    .attr("width", (event.range * 20) - 5)
+    .attr("x", (event.startRange * 20) + 100)
+
+
+  // Atualiza a posição do texto de nome e do botão de arrasto
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-txt`))
+    .attr("x", (event.startRange * 20) + (event.range * 10) + 100);
+
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-drag`))
+    .attr("x", (event.startRange * 20) + (event.range * 10) + 100);
+
+
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-increase`))
+    .attr("x", (event.startRange * 20) + (event.range * 10) + 120);
+
+    
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-decrease`))
+    .attr("x", (event.startRange * 20) + (event.range * 10) + 80);
+
+}
+
+
 
   createConnection() {
     if (this.selectedChapter) {
@@ -490,7 +623,6 @@ export class SubwayComponent {
           }
         })
         this.isCreateConnectionSet =false
-        console.log(selected)
         this.wd.updateChapter(selected[0])
         this.wd.addConnection(cnn)
       })
@@ -521,8 +653,6 @@ export class SubwayComponent {
     if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
       return
     }
-
-    console.log(this.tiltX)
 
     d.width = relativeX
     d.height = relativeY
@@ -682,7 +812,7 @@ export class SubwayComponent {
     if (this.selectedChapter != undefined) {
       this.selectedChapter.timeline_id = ""
       this.selectedChapter.storyline_id = ""
-      this.selectedChapter.EventID = ""
+      this.selectedChapter.event_Id = ""
 
       const elementId = `${CSS.escape(this.selectedChapter.id)}-chapter-circle`;
       const elementTxtId = `${CSS.escape(this.selectedChapter.id)}-chapter-group-txt`;
@@ -1076,7 +1206,7 @@ export class SubwayComponent {
     data: Timeline[],
     height: number
   ) {
-    const gridHeight = (height * this.gridHeight) + 20;
+    const gridHeight = (height * this.gridHeight);
     this.totalGridHeight = gridHeight;
 
     // Seleciona os grupos existentes e associa os dados
@@ -1239,7 +1369,6 @@ export class SubwayComponent {
       eventDragElement.attr("x", relativeX + (e.range * 10))
       eventTxtElement.attr("x", relativeX + (e.range * 10))
 
-      console.log(rangeStart / 20)
       // d3.select(eventElement)
       //   .attr("dx", d.width)
       //   .attr("dy", d.height + 15)
@@ -1260,6 +1389,29 @@ export class SubwayComponent {
       this.api.updateEvent(this.selectedEvent).subscribe((e) => {
         this.wd.updateEvent(e)
       })
+
+      
+      const chaptersRelated = this.chapters.filter((c) => {
+        const range = (c.width - 100) / 20
+        if(this.selectedEvent && range >= this.selectedEvent.startRange && range <= (this.selectedEvent.startRange + this.selectedEvent.range)){
+          c.event_Id = this.selectedEvent.id
+          this.wd.updateChapter(c)
+          return c
+        }else {
+          if(c.event_Id == this.selectedEvent?.id){
+            c.event_Id = ""
+            return c
+          }
+
+          return false
+        }
+      })
+      if(chaptersRelated.length > 0){
+        this.api.updateChapterList(chaptersRelated).subscribe((c) => {
+          return c
+        })
+      }
+
       this.selectedEvent = undefined
     } else {
       return

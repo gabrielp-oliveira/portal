@@ -107,6 +107,23 @@
         {{ chapter.storylineName }}
       </td>
     </ng-container>
+    <ng-container matColumnDef="eventName">
+      <th mat-header-cell *matHeaderCellDef>
+        <div>
+
+          <span class="tableHeader">
+            
+            <mat-icon class="orderSearch" cdkDragHandle (click)="callInputSearch('eventName')">search</mat-icon>
+            <span mat-sort-header (click)="sortChapters('storylineName')">event Name</span>
+          </span>
+          <input type="text" *ngIf="searchInputs.storylineName" placeholder="search name" (input)="searchChapter('eventName')"  [(ngModel)]="storylineNameSearchValue">
+        </div>
+
+      </th>
+      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter)" (mouseleave)="hoverChapter(chapter)">
+        {{ chapter.eventName }}
+      </td>
+    </ng-container>
 
     <!-- Coluna Idade -->
     <ng-container matColumnDef="created_at">

@@ -47,3 +47,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mdc-data-table__table {
   min-width: min-content!important; /* Faz a tabela ocupar toda a largura do container */
 }
+
+.event-bottom:hover {
+  filter: brightness(1.4);
+}
