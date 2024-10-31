@@ -147,6 +147,7 @@ export class SubwayComponent {
   }
 
 
+
   ngOnDestroy() {
     console.log('remove all subscriptions')
   }
@@ -614,7 +615,7 @@ private updateEventDisplay(event: Event) {
     if (this.selectedChapter) {
 
       this.selectedChapter.selected = true
-      this.selectedChapter.color = "blue"
+      this.selectedChapter.color = "white"
       this.isCreateConnectionSet = true
 
       this.wd.updateChapter(this.selectedChapter)
@@ -634,10 +635,10 @@ private updateEventDisplay(event: Event) {
   removeConnection() {
     if (this.selectedConnection != undefined) {
       const target = this.chapters.filter((chp) => chp.id == this.selectedConnection?.targetChapterID)[0]
-      target.color = "red"
+      target.color = "white"
       target.selected = true
       const source = this.chapters.filter((chp) => chp.id == this.selectedConnection?.sourceChapterID)[0]
-      source.color = "red"
+      source.color = "white"
       source.selected = true
       this.wd.updateChapter(target)
       this.wd.updateChapter(source)
@@ -867,7 +868,6 @@ private updateEventDisplay(event: Event) {
   }
 
   removeFromSubway() {
-
     if (this.selectedChapter != undefined) {
       this.selectedChapter.timeline_id = ""
       this.selectedChapter.storyline_id = ""
@@ -881,6 +881,7 @@ private updateEventDisplay(event: Event) {
 
       this.api.updateChapter(this.selectedChapter.id, this.selectedChapter).subscribe((c) => {
         this.wd.updateChapter(c)
+        this.removeConnection()
         this.selectedChapter = undefined
       })
     }
@@ -907,33 +908,45 @@ private updateEventDisplay(event: Event) {
       .append("path")
       .attr("id", (edge: Connection) => edge.id + "-connections-group")
       .attr("d", (edge: Connection) => {
-
         let source = c.find((data: Chapter) => data.id === edge.sourceChapterID);
         let target = c.find((data: Chapter) => data.id === edge.targetChapterID);
-
+    
         let y0 = source ? source.height : 0;
         let x0 = source ? source.width : 0;
         let x1 = target ? target.width : 0;
         let y1 = target ? target.height : 0;
-
+    
         const CONSTANT_CONTROL_POINT = 5;
         const HORIZONTAL_THRESHOLD = 3;
-
+    
+        // Checa por capítulos interferentes no caminho
+        const interferingChapters = c.filter(chp => {
+          if (source != undefined && target != undefined && chp.id !== source?.id && chp.id !== target?.id) {
+              // Verifica se a posição horizontal (width) de `chp` está entre o `source` e o `target`
+              const withinXRange = (chp.width >= Math.min(source.width, target.width)) &&
+                                   (chp.width <= Math.max(source.width, target.width));
+      
+              // Verifica se a posição vertical (height) de `chp` está entre o `source` e o `target`
+              const withinYRange = (chp.height >= Math.min(source.height, target.height)) &&
+                                   (chp.height <= Math.max(source.height, target.height));
+    
+              return withinXRange && withinYRange;
+          }
+          return false;
+      });
+      
+    
         let isHorizontal = Math.abs(y0 - y1) < HORIZONTAL_THRESHOLD;
         let isVertical = Math.abs(x0 - x1) < HORIZONTAL_THRESHOLD;
-
-        let controlPointX = (isHorizontal ? x1 : x1 + CONSTANT_CONTROL_POINT * ((x1 - x0) / (y1 - y0)) + MARGIN);
+    
+        let controlPointX = isHorizontal ? x1 : x1 + CONSTANT_CONTROL_POINT * ((x1 - x0) / (y1 - y0));
         let controlPointY = isVertical ? y1 : y1 - CONSTANT_CONTROL_POINT * ((y1 - y0) / (x1 - x0));
-
-        let pathData = "";
-
-        if (isVertical) {
-          pathData = `M ${x0} ${y0} Q ${x0} ${y0} ${x1} ${y1}`;
-        } else {
-          pathData = this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal);
-        }
-        return pathData;
-      })
+    
+        // Usa `createEdge` para construir o caminho com ajuste para interferentes
+        const isCurve = interferingChapters.length > 0
+        return this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal, isCurve);
+    })
+    
       .attr("fill", "none")
       .attr("stroke", EDGE_BORDER_COLOR_DEFAULT)
       .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
@@ -954,23 +967,47 @@ private updateEventDisplay(event: Event) {
         const source = this.chapters.find(chp => chp.id === connection.sourceChapterID);
 
         if (target) {
-          target.color = "red";
+          target.color = "black";
           this.wd.updateChapter(target);
         }
         if (source) {
-          source.color = "red";
+          source.color = "black";
           this.wd.updateChapter(source);
         }
       })
-      .on("mouseover", function () {
+      .on("mouseover", function (_: MouseEvent, connection: Connection) {
         d3.select(this)
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+
+        d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-circle`))
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+
+          d3.select(document.getElementById( `${connection.targetChapterID}-chapter-circle`))
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+          
       })
-      .on("mouseout", function () {
+      .on("mouseout", function (_: MouseEvent, connection: Connection) {
         d3.select(this)
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+
+          d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-circle`))
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+          d3.select(document.getElementById( `${connection.targetChapterID}-chapter-circle`))
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
@@ -1010,7 +1047,7 @@ private updateEventDisplay(event: Event) {
       .attr("d", (st: StoryLine) => {
         const strHeight = (st.order * this.gridHeight);
         this.graphHeigh += this.gridHeight
-        return this.createEdge(MARGIN + 50, strHeight, width, strHeight, width, strHeight, true);
+        return this.createEdge(MARGIN + 50, strHeight, width, strHeight, width, strHeight, true, false);
       })
       .attr("fill", "none")
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado
@@ -1858,7 +1895,7 @@ private updateEventDisplay(event: Event) {
 
 
 
-  private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean) {
+  private createEdge(x0: number, y0: number, x1: number, y1: number, controlPointX: number, controlPointY: number, isHorizontal: boolean, curve: boolean) {
 
     let path = d3.path();
 
@@ -1869,9 +1906,9 @@ private updateEventDisplay(event: Event) {
 
     path.bezierCurveTo(
       x0,
-      controlPointY,
-      controlPointX,
-      controlPointY,
+      controlPointY + ((curve && x0 !== x1 )? 35 : 0),
+      controlPointX + ((curve && x0 !== x1 )? 35 : 0),
+      controlPointY + ((curve && x0 !== x1 )? 35 : 0),
       x1,
       y1
     );
