@@ -16,7 +16,7 @@ interface ExtendedChapter extends Chapter {
   papperName: string,
   timelineName: string,
   storylineName: string,
-  eventName:string
+  // eventName:string
 }
 
 interface allData {
@@ -33,7 +33,7 @@ interface allData {
   styleUrl: './chapter.component.scss'
 })
 export class ChapterComponent implements OnInit {
-  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','eventName','description', 'update', 'open'];
+  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','description', 'update', 'open'];
   dataSource = new MatTableDataSource<ExtendedChapter>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -51,13 +51,13 @@ export class ChapterComponent implements OnInit {
     created_at: '',
     papperName: '',
     timelineName: '',
-    eventName: '',
+    // eventName: '',
     storylineName: ''
   };
   searchInputs: any = {
     order: false,
     name: false,
-    eventName: false,
+    // eventName: false,
     created_at: false,
     papperName: false,
     timelineName: false,
@@ -72,7 +72,7 @@ export class ChapterComponent implements OnInit {
   dateSearchValue: string = ""
   papperNameSearchValue:String = ""
   timelineNameSearchValue:String = ""
-  eventNameSearchValue:String = ""
+  // eventNameSearchValue:String = ""
   storylineNameSearchValue:String = ""
 
   startDateSearchValue: string = ""
@@ -101,10 +101,10 @@ export class ChapterComponent implements OnInit {
     const valDate = this.dateSearchValue ==  ""
     const valPaperName = this.papperNameSearchValue == ""
     const valTlName = this.timelineNameSearchValue == ""
-    const valEvtName = this.eventNameSearchValue == ""
+    // const valEvtName = this.eventNameSearchValue == ""
     const valStName = this.storylineNameSearchValue == ""
     
-    const searchCondition = !valOrder || !valName || !valPaperName || !valTlName || !valStName || !valEvtName
+    const searchCondition = !valOrder || !valName || !valPaperName || !valTlName || !valStName
     const sortCondition =  (this.sortCriteria !== "order" && !this.sortDirection) || (this.sortCriteria !== "order" && !this.sortDirection)
     if(searchCondition || sortCondition ){
       return true
@@ -145,8 +145,8 @@ export class ChapterComponent implements OnInit {
         const tl = timelines.find((pp) => pp.id == c.timeline_id)
         cht.timelineName = tl?.name || ''
 
-        const evt = events.find((ev) => ev.id == c.event_Id)
-        cht.eventName = evt?.name || ''
+        // const evt = events.find((ev) => ev.id == c.event_Id)
+        // cht.eventName = evt?.name || ''
         
         
         return cht

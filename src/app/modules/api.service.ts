@@ -46,6 +46,9 @@ export class ApiService {
   updateChapterList( body:Chapter[]): Observable<Chapter> {
     return this.http.put<Chapter>(`http://localhost:9090/updateChapterList?id=${body[0].id}`, body);
   }
+  updateTimelineList( body:Timeline[]): Observable<Timeline> {
+    return this.http.put<Timeline>(`http://localhost:9090/updateTimelineList?id=${body[0].id}`, body);
+  }
   updateStoryLineList( body:StoryLine[]): Observable<StoryLine[]> {
     return this.http.put<StoryLine[]>(`http://localhost:9090/updateStorylineList?id=${body[0].id}`, body);
   }
@@ -75,6 +78,9 @@ export class ApiService {
   }
   deleteTimeline(id: string):Observable<Timeline>  {
     return this.http.delete<Timeline>(`http://localhost:9090/deleteTimeline?id=${id}`)
+  }
+  deleteEvent(id: string):Observable<Event>  {
+    return this.http.delete<Event>(`http://localhost:9090/removeEvent?id=${id}`)
   }
   createStoryLine(body: StoryLine):Observable<StoryLine>  {
    return this.http.post<StoryLine>('http://localhost:9090/createStoryline', body)

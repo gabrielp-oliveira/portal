@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Chapter, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
+import { Chapter, Event, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { DocxComponent } from '../modules/docx/docx/docx.component';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
 
@@ -41,6 +41,14 @@ export class DialogService {
   }
   openDeleteTimelineDialog(t: {timeline: Timeline, timelines: Timeline[], chapters:Chapter[]  }, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(deleteTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: t
+    });
+  }
+  openUpdateEventDialog(t: Event, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(UpdateEventDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,

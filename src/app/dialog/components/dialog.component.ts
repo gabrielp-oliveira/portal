@@ -506,6 +506,47 @@ import { combineLatest } from 'rxjs';
     }
   }
   
+  @Component({
+    selector: 'app-updateEventDialog',
+    templateUrl: './updateEventDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class UpdateEventDialogComponent  {
+    worldForm: FormGroup;
+    worldId:string | undefined= ''
+      errorHandler: any;
+    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+      @Inject(MAT_DIALOG_DATA) public data: Event
+    ){
+      this.worldForm = this.fb.group({
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        description: ['', [Validators.required]],
+      });
+
+        this.worldForm.patchValue({
+          name: data.name,
+          description: data.description,
+          
+        });
+
+    }
+
+
+    onSubmit(){
+      const event:Event = this.data
+      event.name = this.worldForm.value.name
+      event.description = this.worldForm.value.description
+      this.api.updateEvent(event).subscribe(
+        
+        {
+            next: (data) => this.wd.updateEvent(data),
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+      )
+    }
+
+  }
+  
 
   @Component({
     selector: 'app-createWorldDialog',

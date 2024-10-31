@@ -59,6 +59,7 @@ export class SubwayComponent {
   @ViewChild('chapterMenuTrigger') chapterMenuTrigger!: MatMenuTrigger;
   @ViewChild('storylineMenuTrigger') storylineMenuTrigger!: MatMenuTrigger;
   @ViewChild("connectionMenuTrigger") trggerConnectionMenu!: MatMenuTrigger;
+  @ViewChild("eventMenuTrigger") evtMenuTrigger!: MatMenuTrigger;
 
   bodyElement: HTMLElement = document.body;
   @ViewChild(`${D3_ROOT_ELEMENT_ID}`, { read: ElementRef }) root: ElementRef | undefined;
@@ -360,18 +361,50 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
 
     // Adiciona o background do header usando 'rect'
     bottomEvent.append("rect")
-      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
-      .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
-      .attr("class", 'event-bottom')
-      .attr("y", gridHeight + 50) // Posiciona no topo
-      .attr("width", (ev: Event) => (ev.range * 20) - 5)
-      .attr("height", 45) // Altura do header
-      .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
-      .style("stroke", "#000")  // Adiciona uma borda se necessário
-      .style("stroke-width", "1px")
+    .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
+    .attr("class",'event-bottom')
+    .attr("pointer-events", 'none')
+    .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
+    .attr("y", gridHeight + 50) // Posiciona no topo
+    .attr("width", (ev: Event) => (ev.range * 20) - 5)
+    .attr("height", 45) // Altura do header
+    .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
+    .style("stroke", "#000")  // Adiciona uma borda se necessário
+    .style("stroke-width", "1px")
+
+
+      bottomEvent
+      .append("text")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-left`)
+      .attr("class", `event-resize-left`)
+      .attr("x", (ev: Event) => (ev.startRange * 20) + 105)
+      .attr("y", gridHeight + 75) // Posiciona no topo
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("font-weight", '700')
+      .attr("cursor", "pointer")
+      .text("<")
       .call(
-        d3.drag<SVGRectElement, Event>()
-          .on("start", (event, e) => this.eventDragResizeStart(event, e))
+        d3.drag<SVGTextElement, Event>()
+          .on("start", (event, e) => this.eventDragResizeStart(event, e, "left"))
+          .on("drag", (event, e) => this.eventResizeDragged(event, e))
+          .on("end", () => this.eventResizeDragEnd(el))
+      )
+
+      bottomEvent
+      .append("text")
+      .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-right`)
+      .attr("class", `event-resize-right`)
+      .attr("font-weight", '700')
+      .attr("x", (ev: Event) => ((ev.startRange + ev.range) * 20) + 80)
+      .attr("y", gridHeight + 75) // Posiciona no topo
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+      .attr("cursor", "pointer")
+      .text(">")
+      .call(
+        d3.drag<SVGTextElement, Event>()
+          .on("start", (event, e) => this.eventDragResizeStart(event, e, "right"))
           .on("drag", (event, e) => this.eventResizeDragged(event, e))
           .on("end", () => this.eventResizeDragEnd(el))
       )
@@ -391,20 +424,10 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
       
 }
 
-eventDragResizeStart(nativeEvent:any, e:Event){
-  if((nativeEvent.x - 100) <= 0){
-    return
-  }else {
-    const clickPosition = (nativeEvent.x - 100)
-    let leftClickDiff = Math.abs(clickPosition - (e.startRange * 20));
-    let rightClickDiff = Math.abs(((e.startRange * 20) + (e.range * 20)) - clickPosition);
-    if(leftClickDiff < 15){
-      this.resizeDirection = "left"
-    }else if(rightClickDiff < 15){
-      this.resizeDirection = "right"
-    } 
+eventDragResizeStart(nativeEvent:any, e:Event, direction:"" | "left" | "right" ){
+    this.resizeDirection = direction
   }
-}
+
 eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
   // Calcular o novo valor de range com base na posição do mouse
   const newMouseX = nativeEvent.x - 100;
@@ -419,6 +442,7 @@ eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
     if(newStartRange < 0){
       return
     }
+    console.log('1')
     const rangeChange = e.startRange - newStartRange;
     if (newStartRange >= 0) {
       if((e.range + rangeChange) <= 5){
@@ -451,7 +475,7 @@ eventResizeDragEnd(svg:any){
   this.resizeDirection = ""
 
   if(this.selectedEvent){
-    this.resizeEvent(this.selectedEvent)
+    // this.resizeEvent(this.selectedEvent)
     this.api.updateEvent(this.selectedEvent).subscribe((e) => {
       this.wd.updateEvent(e)
       // this.selectedEvent = undefined
@@ -487,7 +511,35 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
     .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
     .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
     .attr("text-anchor", "middle")
-    .text((ev: Event) => ev.name);
+    .text((ev: Event) => ev.name)
+    .on("contextmenu", (e, event:Event) => {
+      e.preventDefault();
+
+      this.evtMenuTrigger.openMenu();
+      const menuElement = document.querySelector("#" + this.evtMenuTrigger.menu?.panelId) as HTMLElement;
+      if (menuElement) {
+        menuElement.style.position = "absolute";
+        menuElement.style.left = `${e.x + 5}px`;
+        menuElement.style.top = `${e.y + 5}px`;
+      }
+      this.selectedEvent = event
+    })
+    
+}
+removeEvent(){
+  if(this.selectedEvent){
+    const id = this.selectedEvent.id
+    this.api.deleteEvent(id).subscribe((e) => {
+      this.wd.removeEvent(id)
+      this.selectedEvent = undefined
+    })
+  }
+}
+updateEvent(){
+  if(this.selectedEvent){
+    const event:Event = this.selectedEvent
+    this.dialog.openUpdateEventDialog(event, "150ms","150ms")
+  }
 }
 
 private resizeEvent(event: Event) {
@@ -545,7 +597,14 @@ private updateEventDisplay(event: Event) {
 
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-decrease`))
-    .attr("x", (event.startRange * 20) + (event.range * 10) + 80);
+    .attr("x", (event.startRange * 20) + (event.range * 20) + 80);
+
+    
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-right`))
+    .attr("x", (event.startRange * 20) + (event.range * 20) + 80);
+    
+  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-left`))
+    .attr("x", (event.startRange * 20) + 105);
 
 }
 
@@ -1378,6 +1437,12 @@ private updateEventDisplay(event: Event) {
 
       this.selectedEvent.startRange = Math.round(rangeStart)
 
+      d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-right`))
+      .attr("x", (e.startRange * 20) + (e.range * 20) + 80);
+      
+    d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-left`))
+      .attr("x", (e.startRange * 20) + 105);
+
 
 
     } else {
@@ -1907,8 +1972,8 @@ private updateEventDisplay(event: Event) {
     this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
     this.renderConnections(svg, chapters, connections);
-    this.renderChapters(svg, chapters, storyLines, timelines, connections);
     this.renderEvents(svg, events, chapters, storyLines.length);
+    this.renderChapters(svg, chapters, storyLines, timelines, connections);
 
 
 
