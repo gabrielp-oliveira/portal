@@ -368,8 +368,8 @@ export class ChapterComponent implements OnInit {
   
 
 
-  hoverChapter(pp: Chapter) {
-    pp.focus = !!!pp.focus
+  hoverChapter(pp: Chapter, status:boolean) {
+    pp.focus = status
 
     this.wd.updateChapter(pp)
   }

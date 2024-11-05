@@ -223,8 +223,8 @@ export class PapperComponent implements OnInit {
   
 
 
-  hoverPappeer(pp: paper) {
-    pp.focus = !!!pp.focus
+  hoverPappeer(pp: paper, status: boolean) {
+    pp.focus = status
 
     const chpts = this.chapters$.filter((c) => {
       return c.paper_id == pp.id

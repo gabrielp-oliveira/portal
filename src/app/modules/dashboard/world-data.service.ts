@@ -79,6 +79,12 @@ export class WorldDataService {
     );
     this.chaptersSubject.next(chapters);
   }
+  updateConnection(cnn: Connection): void {
+    const cnns = this.connectionsSubject.value.map(existingCnn => 
+      existingCnn.id === cnn.id ? cnn : existingCnn
+    );
+    this.connectionsSubject.next(cnns);
+  }
   updateTimeline(timeline: Timeline): void {
     const timelines = this.timelinesSubject.value.map(existingTimeline => 
       existingTimeline.id === timeline.id ? timeline : existingTimeline

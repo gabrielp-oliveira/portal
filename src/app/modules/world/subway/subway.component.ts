@@ -29,6 +29,7 @@ export class SubwayComponent {
   tiltY: number = 1
   timeLineTxtHeight: number = 20
   selectedEvent: Event | undefined
+  duplucateChaptersPosition: Record<string, Chapter[]>
 
   selectedChapter: Chapter | undefined;
   selectedConnection: Connection | undefined;
@@ -81,7 +82,9 @@ export class SubwayComponent {
   timelineOrderToUpdate: number
   storylineOrderToUpdate: number
   prevTimeline: Timeline | undefined
-
+  uniqueChapters: Chapter[]
+  duplicateChapters: Chapter[][]
+  ChapterGroup: any = {}
   constructor(
     private dialog: DialogService,
     private wd: WorldDataService,
@@ -137,6 +140,9 @@ export class SubwayComponent {
       })
       this.chapters = data.chapters
 
+
+     this.duplucateChaptersPosition = this.separateChaptersByDimensions(data.chapters)
+
       this.cleanItemsOnSvg();
       this.handleGraphEvents(svg, data);
     })
@@ -145,6 +151,36 @@ export class SubwayComponent {
     // Subscribe events for graph
 
   }
+
+
+separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
+  // Agrupa capítulos por width e height
+  const groups = chapters.reduce((acc, chapter) => {
+    const key = `${chapter.height}-${chapter.width}`;
+    this.ChapterGroup[key] = (this.ChapterGroup[key] != undefined) ? this.ChapterGroup[key] : false
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(chapter);
+    return acc;
+  }, {} as Record<string, Chapter[]>);
+
+  // Separa capítulos únicos e duplicados
+  // const duplicateChapters: Chapter[][] = [];
+
+  this.uniqueChapters = []
+  this.duplicateChapters = []
+  Object.values(groups).forEach((group:any) => {
+    if (group.length === 1) {
+      this.uniqueChapters.push(group[0]);
+    } else {
+      this.duplicateChapters.push(group);
+    }
+  });
+
+  return  groups ;
+}
+
 
 
 
@@ -208,7 +244,182 @@ export class SubwayComponent {
     this.wd.updateChapter(c)
     return
   }
-  private renderChapters(
+  private renderGroupChapters(
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    s: StoryLine[],
+    t: Timeline[],
+    c: Connection[]
+  ) {
+    // Seleciona ou adiciona o grupo principal para cada posição de capítulo duplicada
+    if(this.duplicateChapters.length < 1){
+      return
+    }
+    let eleEnter = svg.selectAll("g.chapter-group-stack")
+      .data(this.duplicateChapters)
+      .enter()
+      .append("g")
+      .attr("class", "chapter-group-stack");
+  
+
+    // Adiciona um retângulo transparente para expandir a área de detecção
+    eleEnter
+      .append("rect")
+      .attr("id", (c) => `${c[0].height}-${c[0].width}-rect`)
+      .attr("width", 20)
+      .attr("height", 50)  // Define a altura de 50px
+      .attr("x", (c) => c[0].width - 10) // Ajusta a posição horizontal para centralizar
+      .attr("y", (c) => c[0].height - 50) // Ajusta a posição vertical para centralizar
+      .attr("fill", "transparent")
+    // Itera por cada grupo de capítulos duplicados
+    eleEnter.each((group: Chapter[], idx) => {
+      const elGroup = d3.select(eleEnter.nodes()[idx]);
+      const key: any = `${group[0].height}-${group[0].width}`;
+
+      // Renderiza os círculos
+      elGroup.selectAll("circle")
+        .data(group)
+        .enter()
+        .append("circle")
+        .attr("id", (c: Chapter) => `${c.id}-chapter-circle`)
+        .attr("cx", (chp: Chapter) => chp.width)
+        .attr("cy", (chp: Chapter) => {
+          const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == chp.id)) + 1);
+          if(this.ChapterGroup[key]){
+            return chp.height - (pos * 15);
+          }else{
+            return chp.height - ((pos > 8 ? 8 : pos) * 5);
+          }
+        })
+        .attr("r", (c) => this.getDiameter(c))
+        .attr("fill", (chp: Chapter) => this.getFillColor(chp))
+        .attr("stroke", "black")
+        .attr("stroke-width", NODE_BORDER_WIDTH_DEFAULT)
+        .attr("cursor", "pointer")
+        .call(
+          d3.drag<SVGCircleElement, Chapter>()
+            .on("start", (event, d) => this.dragStarted(event, d))
+            .on("drag", (event, d) => this.dragged(svg, event, d, c, this.chapters, true))
+            .on("end", (event, d) => this.dragEnded(s, t, event, d))
+        )
+        .on('contextmenu', (e: MouseEvent, chp: Chapter) => this.chapterMenu(e, chp))
+        .on("mouseover", (e: MouseEvent, chp: Chapter) => this.ChapterMouseEnter(e, chp, true))
+        .on("mouseout", (e: MouseEvent, chp: Chapter) => this.chapterMouseLeave(chp, true));
+
+  
+      // Adiciona um texto para cada capítulo dentro do grupo
+      elGroup.selectAll("text")
+        .data([{}])
+        .enter()
+        .append("text")
+        .attr("dx", () => group[0].width)
+        .attr("dy", () => group[0].height + 15)
+        .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+        .attr("font-size", LABEL_FONT_SIZE_GROUP)
+        .attr("text-anchor", "middle")
+        .attr("fill", "black")
+        .text(() => 'group ' + (idx + 1))
+        .on("click", (e:MouseEvent) => this.getChapterGroup(svg, e, group, elGroup));
+
+        
+        if(this.ChapterGroup[key]){
+          
+          group.forEach((c) => {
+          elGroup
+          .append("text")
+          .attr("dx", () => c.width - ((c.name.length * 3) + 15))
+          .attr("dy", ( i) => {
+            const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == c.id)) + 1);
+            const cy = c.height - (pos * 15)
+            return cy
+          })
+          .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+          .attr("font-size", LABEL_FONT_SIZE_GROUP)
+          .attr("text-anchor", "middle")
+          .attr("fill", "black")  // Cor inicial do texto
+          .attr("id", () => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
+          .text(() => c.name);
+        })
+        }
+        
+    });
+    
+    
+  }
+  
+  getChapterGroup(
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    e:MouseEvent, group: Chapter[] ,getGroup:any){
+    const key: any = `${group[0].height}-${group[0].width}`+'';
+    if(this.ChapterGroup[key] == false ){
+      this.handleMouseOver(svg, e, group, getGroup)
+
+      this.ChapterGroup[key] = true 
+    }else{
+      this.ChapterGroup[key] = false
+      this.handleMouseOut(svg, e, group, getGroup)
+    }
+    this.wd.updateChapter(group[0])
+
+  }
+
+  // Funções para manipular o evento de destaque no grupo
+  private handleMouseOver(
+    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    event:MouseEvent, chpList: Chapter[], element:any) {
+   
+    chpList.forEach((chp) => {
+      const el = d3.select(document.getElementById(`${chp.id}-chapter-circle`))
+      const key: any = `${chp.height}-${chp.width}`;
+      const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == chp.id)) + 1);
+      const cy = chp.height - (pos * 15)
+      el
+      .transition()
+      .duration(200)
+      .attr("cy", () => cy);
+      
+     element
+      .append("text")
+      .raise()
+      .attr("dx", () => chp.width - ((chp.name.length * 3) + 15))
+      .attr("dy", () => cy)
+      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+      .attr("font-size", LABEL_FONT_SIZE_GROUP)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")  // Cor inicial do texto
+      .attr("id", () => `${chp.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
+      .text(() => chp.name);
+      this.updateConnectionDrag(svg, this.connections, chpList, chp)
+
+        
+    });
+
+
+  }
+  
+  private handleMouseOut(    svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+    e: MouseEvent, chpList: Chapter[], element:any) {
+    chpList.forEach((chp) => {
+      d3.select(document.getElementById(`${chp.id}-chapter-circle`))
+        .transition()
+        .duration(200)
+        .attr("cy", () => {
+          const key: any = `${chp.height}-${chp.width}`;
+          const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == chp.id)) + 1);
+          return chp.height - ((pos > 8 ? 8 : pos) * 5);
+        })
+
+        const txt = d3.select(document.getElementById(`${chp.id}-chapter-group-txt`))
+        .remove()
+
+
+        // this.updateConnectionDrag(svg, this.connections, chpList, chp)
+    });
+
+  }
+  
+  
+
+  private renderUniqueChapters(
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     chapters: Chapter[],
     s: StoryLine[],
@@ -216,8 +427,9 @@ export class SubwayComponent {
     c: Connection[]
   ) {
     // Cria um grupo (g) para cada capítulo
+
     let eleEnter = svg.selectAll("g.chapter-group")
-      .data(chapters)
+      .data(this.uniqueChapters)
       .raise()
       .enter()
       .append("g")
@@ -240,64 +452,12 @@ export class SubwayComponent {
       .call(
         d3.drag<SVGCircleElement, Chapter>()
           .on("start", (event, d) => this.dragStarted(event, d))
-          .on("drag", (event, d) => this.dragged(svg, event, d, c, chapters))
+          .on("drag", (event, d) => this.dragged(svg, event, d, c, chapters, false))
           .on("end", (event, d) => this.dragEnded(s, t, event, d))
       )
-      .on('contextmenu', (event: MouseEvent, c: Chapter) => {
-        event.preventDefault();
-
-
-        // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
-
-        this.chapterMenuTrigger.openMenu();
-        const menu = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId)
-        const menuElement = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId) as HTMLElement;
-
-        if (menuElement) {
-          // Defina o estilo de posicionamento
-          menuElement.style.position = 'absolute';
-          menuElement.style.left = `${event.x + 5}px`;
-          menuElement.style.top = `${event.y + 5}px`;
-        }
-        this.selectedChapter = c
-
-      })
-      .on("mouseover", (_: MouseEvent, c: Chapter) => {
-        if (this.selectedChapter) {
-          return
-        }
-        if (!c?.focus) {
-
-          c.focus = true;
-          this.wd.updateChapter(c); // Update the state
-
-          const element = document.getElementById(`${c.id}-chapter-circle`);
-          d3.select(element)
-            .transition()
-            .duration(200)
-            .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
-            .attr("r", this.getDiameter(c))
-
-        }
-      })
-      .on("mouseout", (_: MouseEvent, c: Chapter) => {
-        if (this.selectedChapter) {
-          return
-        }
-        if (c?.focus) {
-
-          c.focus = false;
-          this.wd.updateChapter(c); // Update the state
-
-          const element = document.getElementById(`${c.id}-chapter-circle`);
-
-          d3.select(element)
-            .transition()
-            .duration(200)
-            .attr("fill", this.getFillColor(c)) // Restore the original color based on state
-            .attr("r", this.getDiameter(c))
-        }
-      });
+      .on('contextmenu', (event: MouseEvent, c: Chapter) => this.chapterMenu(event, c))
+      .on("mouseover", (e: MouseEvent, c: Chapter) => this.ChapterMouseEnter(e, c, false))
+      .on("mouseout", (_: MouseEvent, c: Chapter) => this.chapterMouseLeave(c, false));
     // Labels (Texto)
     eleEnter
       .append("text")
@@ -313,6 +473,89 @@ export class SubwayComponent {
       .text((node: Chapter) => node.name);
   }
 
+
+  ChapterMouseEnter (event: MouseEvent, c: Chapter, isGroup:boolean)  {
+    if (this.selectedChapter) {
+      return
+    }
+    if (!c?.focus) {
+
+      c.focus = true;
+      this.wd.updateChapter(c); // Update the state
+
+      
+      
+      // this.ChapterGroupHover = key
+
+      const element = document.getElementById(`${c.id}-chapter-circle`);
+      const elementtx = document.getElementById(`${(c.id)}-chapter-group-txt`);
+
+      d3.select(element)
+      .transition()
+      .duration(200)
+      .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
+      .attr("r", this.getDiameter(c));
+
+      if(!isGroup){
+        return
+      }
+
+      d3.select(elementtx)
+      .transition()
+      .duration(100)
+      .attr("font-weight", 800)
+
+    }
+
+  }
+  chapterMouseLeave ( c: Chapter, isGroup:boolean)  {
+    if (this.selectedChapter) {
+      return
+    }
+    if (c?.focus) {
+
+
+      c.focus = false;
+      this.wd.updateChapter(c); // Update the state
+
+      const element = document.getElementById(`${c.id}-chapter-circle`);
+      const elementtx = document.getElementById(`${(c.id)}-chapter-group-txt`);
+
+      d3.select(element)
+        .transition()
+        .duration(200)
+        .attr("fill", this.getFillColor(c)) // Restore the original color based on state
+        .attr("r", this.getDiameter(c));
+        
+        if(!isGroup){
+          return
+        }
+        d3.select(elementtx)
+        .transition()
+        .duration(200)
+        .attr("font-weight", 700)
+    }
+
+  }
+  chapterMenu(event: MouseEvent, c: Chapter) {
+    event.preventDefault();
+
+
+    // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
+
+    this.chapterMenuTrigger.openMenu();
+    const menu = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId)
+    const menuElement = document.querySelector("#" + this.chapterMenuTrigger.menu?.panelId) as HTMLElement;
+
+    if (menuElement) {
+      // Defina o estilo de posicionamento
+      menuElement.style.position = 'absolute';
+      menuElement.style.left = `${event.x + 5}px`;
+      menuElement.style.top = `${event.y + 5}px`;
+    }
+    this.selectedChapter = c
+
+  }
   private renderEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     events: Event[], chapters: Chapter[], height: number) {
 
@@ -443,7 +686,6 @@ eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
     if(newStartRange < 0){
       return
     }
-    console.log('1')
     const rangeChange = e.startRange - newStartRange;
     if (newStartRange >= 0) {
       if((e.range + rangeChange) <= 5){
@@ -697,7 +939,7 @@ private updateEventDisplay(event: Event) {
     d3.select(elementCircleId).raise().attr("stroke", "black");
   }
 
-  private dragged(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, event: any, d: Chapter, connections: Connection[], chapters: Chapter[]) {
+  private dragged(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, event: any, d: Chapter, connections: Connection[], chapters: Chapter[], isGroup:boolean) {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
 
@@ -708,7 +950,7 @@ private updateEventDisplay(event: Event) {
 
     const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
     const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
-
+    
 
     if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
       return
@@ -716,20 +958,37 @@ private updateEventDisplay(event: Event) {
 
     d.width = relativeX
     d.height = relativeY
-    d3.select(elementCircleId)
+    if(isGroup){
+      d3.select(document.getElementById(`${d.id}-chapter-circle`))
       .attr("cx", relativeX)
       .attr("cy", relativeY);
+  
+  
+      d3.select(document.getElementById(`${d.id}-chapter-group-txt`))
+        .attr("dx", d.width)
+        .attr("dy", d.height + 15)
+        .attr("cx", d.width)
+        .attr("cy", d.height)
+        .attr("stroke", d.color)
+  
+    }else {
 
-    d3.select(elementtextId)
-      .attr("dx", d.width)
-      .attr("dy", d.height + 15)
-      .attr("cx", d.width)
-      .attr("cy", d.height)
-      .attr("stroke", d.color)
-
-
-
-    this.updateConnectionDrag(svg, connections, chapters, d)
+      d3.select(elementCircleId)
+      .attr("cx", relativeX)
+      .attr("cy", relativeY);
+  
+  
+      d3.select(elementtextId)
+        .attr("dx", d.width)
+        .attr("dy", d.height + 15)
+        .attr("cx", d.width)
+        .attr("cy", d.height)
+        .attr("stroke", d.color)
+  
+  
+  
+      }
+      this.updateConnectionDrag(svg, connections, chapters, d)
 
   }
 
@@ -739,24 +998,23 @@ private updateEventDisplay(event: Event) {
     if (!connectionRelated || connectionRelated.length === 0) {
       return; // Se não houver conexões relacionadas, não há necessidade de continuar.
     }
-
+    
     // Criar um mapa com capítulos para acesso rápido
     const chapterMap = new Map(chp.map(chp => [chp.id, chp]));
 
     let relatedChaptersSet = new Set<Chapter>();
 
     connectionRelated.forEach((cnn) => {
-      const className = `${cnn.id}-connections-group`;
-      const element = document.getElementById(className);
+      const id = `${cnn.id}-connections-group`;
+      const element = document.getElementById(id);
 
       if (element) {
         element.remove(); // Remover diretamente se o elemento existir
       }
-
       // Adicionar os capítulos relacionados ao conjunto (Set) sem duplicatas
       const sourceChapter = chapterMap.get(cnn.sourceChapterID);
       const targetChapter = chapterMap.get(cnn.targetChapterID);
-
+      
       if (sourceChapter) relatedChaptersSet.add(sourceChapter);
       if (targetChapter) relatedChaptersSet.add(targetChapter);
     });
@@ -944,7 +1202,47 @@ private updateEventDisplay(event: Event) {
     
         // Usa `createEdge` para construir o caminho com ajuste para interferentes
         const isCurve = interferingChapters.length > 0
-        return this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal, isCurve);
+        const sourceKey: any = `${source?.height}-${source?.width}`;
+        const targetKey: any = `${target?.height}-${target?.width}`;
+
+        if((x0 == x1) && y0 == y1){
+          const sourcePos = ((this.duplucateChaptersPosition[sourceKey].findIndex((e) => e.id == source?.id)) + 1);
+          const targetPos = ((this.duplucateChaptersPosition[targetKey].findIndex((e) => e.id == target?.id)) + 1);
+          
+          if(this.ChapterGroup[targetKey]){
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15)
+            const targetHeight = (target?.height ?? 0) - (targetPos * 15)
+            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.6), false, false);
+          }else {
+           
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + 10
+            const targetHeight = (target?.height ?? 0) - (targetPos* 8)  + 10
+            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.9), false, false);
+          }
+          
+        } 
+        if((x0 !== x1) && y0 == y1){
+          if(this.ChapterGroup[targetKey]){
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1);
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15) + 10
+            const targetHeight = (target?.height ?? 0) - (targetPos* 15) - 5
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+
+          }
+          else{
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey].findIndex((e) => e.id == source?.id)) + 1);
+            const targetPos = ((this.duplucateChaptersPosition[targetKey].findIndex((e) => e.id == target?.id)) + 1);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + 10
+            const targetHeight = (target?.height ?? 0) - (targetPos* 8)  + 10
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          }
+          
+
+        }
+        else {
+          return this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal, isCurve);
+        }
     })
     
       .attr("fill", "none")
@@ -994,6 +1292,16 @@ private updateEventDisplay(event: Event) {
           .ease(d3.easeCubic)
           .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
           
+        d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-group-txt`))
+        .transition()
+        .duration(100)
+        .attr("font-weight", 800)
+
+          d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
+          .transition()
+          .duration(100)
+          .attr("font-weight", 800)
+          
       })
       .on("mouseout", function (_: MouseEvent, connection: Connection) {
         d3.select(this)
@@ -1012,6 +1320,17 @@ private updateEventDisplay(event: Event) {
           .duration(100)
           .ease(d3.easeCubic)
           .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+
+          d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-group-txt`))
+          .transition()
+          .duration(100)
+          .attr("font-weight", 800)
+  
+          d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
+          .transition()
+          .duration(100)
+          .attr("font-weight", 800)
+            
       });
 
     // Garante que as conexões estejam no topo
@@ -2010,7 +2329,8 @@ private updateEventDisplay(event: Event) {
     this.renderStoryLines(svg, storyLines);
     this.renderConnections(svg, chapters, connections);
     this.renderEvents(svg, events, chapters, storyLines.length);
-    this.renderChapters(svg, chapters, storyLines, timelines, connections);
+    this.renderUniqueChapters(svg, chapters, storyLines, timelines, connections);
+    this.renderGroupChapters(svg, storyLines, timelines, connections);
 
 
 
