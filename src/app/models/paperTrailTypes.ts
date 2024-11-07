@@ -8,7 +8,16 @@ export type world = {
     timelines: Timeline[],
     papers: paper[]
     storyLines: StoryLine[]
+    subway_settings: Subway_Settings
 }
+
+export interface ExtendedChapter extends Chapter {
+    papperName: string,
+    timelineName: string,
+    storylineName: string,
+    // eventName:string
+  }
+
 export type basicWorld = {
     id: string,
     name?: string,
@@ -63,6 +72,17 @@ export type Connection = {
     targetChapterID: string,
     world_id: string,
 }
+export type Subway_Settings = {
+    id: string,
+    chapter_names: boolean,
+    display_table_chapters: boolean,
+    zoom: number,
+    x: number,
+    y: number,
+    world_id: string,
+}
+
+
 export type Event = {
     id: string,
     name: string,

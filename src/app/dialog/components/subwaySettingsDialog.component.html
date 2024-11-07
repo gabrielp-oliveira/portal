@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Subway Settings</h2>
+<mat-dialog-content>
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+    <label for="chapter_names">Display chapter names </label>
+    <input type="checkbox" id="chapter_names" name="chapter_names"  formControlName="chapter_names"  />
+   
+    <br>
+    <label for="display_table_chapters">Display tablet chapters </label>
+    <input type="checkbox" id="display_table_chapters" name="display_table_chapters"  formControlName="display_table_chapters"  />
+   
+  
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>

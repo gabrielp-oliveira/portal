@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, SettingsDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Chapter, Event, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { DocxComponent } from '../modules/docx/docx/docx.component';
@@ -79,6 +79,13 @@ export class DialogService {
   }
   openCreateTimelineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createTimelineDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+  }
+  openSubwaySettingsDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(SettingsDialogComponent, {
       width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,

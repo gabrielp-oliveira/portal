@@ -8,8 +8,7 @@ import {
   UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent,
   createTimelineDialogComponent, createEventsDialogComponent, createStorylineDialogComponent,
   deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-  strEditDialogComponent,
-  UpdateEventDialogComponent
+  strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent
 } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
@@ -27,7 +26,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent
+    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent
   ],
   providers: [],
   imports: [

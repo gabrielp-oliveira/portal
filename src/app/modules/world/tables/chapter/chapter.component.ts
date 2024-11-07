@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
 import { WorldDataService } from '../../../dashboard/world-data.service';
-import { Chapter, paper, StoryLine, Timeline } from '../../../../models/paperTrailTypes';
+import { Chapter, paper, StoryLine, Subway_Settings, ExtendedChapter } from '../../../../models/paperTrailTypes';
 import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
@@ -12,19 +12,8 @@ import { combineLatest, distinctUntilChanged,  } from 'rxjs';
 import { PapperComponent } from '../papper/papper.component';
 
 
-interface ExtendedChapter extends Chapter {
-  papperName: string,
-  timelineName: string,
-  storylineName: string,
-  // eventName:string
-}
 
-interface allData {
-  timelines: Timeline[];
-  storyLines: StoryLine[];
-  chapters: Chapter[];
-  papers: paper[];
-}
+
 
 
 @Component({
@@ -40,6 +29,7 @@ export class ChapterComponent implements OnInit {
 
   chapter$: ExtendedChapter[];
   paper$: paper[];
+  settings: Subway_Settings | null;
   isDrag: boolean = true;
   sortDirection: boolean = true
 
@@ -124,14 +114,16 @@ export class ChapterComponent implements OnInit {
 
     combineLatest({
       "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$,
-      "chapters": this.wd.chapters$, "papers": this.wd.papers$, "events": this.wd.events$
+      "chapters": this.wd.chapters$, "papers": this.wd.papers$, "events": this.wd.events$,
+      "ss":this.wd.settings$
     })
     .pipe(
       distinctUntilChanged(() => this.compareUpdates())
     )
     .subscribe((data) => {
-      let { chapters, papers, storyLines, timelines, events } = data
+      let { chapters, papers, storyLines, timelines, ss } = data
 
+      this.settings = ss
       const chp:ExtendedChapter[] = chapters.map((c) => {
         const data:any = c
         const cht:ExtendedChapter = data
@@ -153,7 +145,7 @@ export class ChapterComponent implements OnInit {
       })
 
       this.dataSource.data =this.returnSortChapters(this.sortCriteria, chp)
-      this.chapter$ =this.returnSortChapters(this.sortCriteria, chp)
+      this.chapter$ = this.returnSortChapters(this.sortCriteria, chp)
     })
     
 
@@ -229,6 +221,14 @@ export class ChapterComponent implements OnInit {
     }
   }
 
+  setGlobalData(data: Chapter[], val:String){
+    if(this.settings?.display_table_chapters){
+      this.wd.setTableChapter(data)
+    }if(this.settings?.display_table_chapters === false) {
+      this.wd.setTableChapter(undefined)
+
+  }
+  }
   callInputSearch(columnName: string) {
     this.searchInputs[columnName] = !this.searchInputs[columnName]
     if(columnName == "created_at"){
@@ -240,50 +240,69 @@ export class ChapterComponent implements OnInit {
       case 'order':
         let val = Number(this.orderSearchValue)
         if (val && val > 0) {
-          this.dataSource.data = this.dataSource.data.filter((a) => a.order == Number(this.orderSearchValue));
+          const data = this.dataSource.data.filter((a) => a.order == Number(this.orderSearchValue));
+          this.dataSource.data = data
+          this.setGlobalData(data, this.orderSearchValue)
           return
         }
         this.dataSource.data = this.chapter$
+        this.wd.setTableChapter(undefined)
         return
       case 'name':
         let nameVal = this.nameSearchValue.toLowerCase(); // Normalizar para minúsculas
         if (nameVal && nameVal != "") {
-          this.dataSource.data = this.dataSource.data.filter((c: Chapter) =>
+          const data = this.dataSource.data.filter((c: Chapter) =>
             c.name.toLowerCase().includes(nameVal)
           );          
+          this.dataSource.data = data
+          this.setGlobalData(data, nameVal)
           return
         }
         this.dataSource.data = this.chapter$
+        this.wd.setTableChapter(undefined)
         return
       case 'papperName':
         let papperName = this.papperNameSearchValue.toLowerCase(); // Normalizar para minúsculas
         if (papperName && papperName != "") {
-          this.dataSource.data = this.dataSource.data.filter((c) =>
+          const data = this.dataSource.data.filter((c) =>
             c.papperName?.toLowerCase().includes(papperName)
-          );          
+          );     
+          this.dataSource.data = data
+          this.setGlobalData(data, papperName)
+     
           return
         }
         this.dataSource.data = this.chapter$
+        this.wd.setTableChapter(undefined)
         return
       case 'storylineName':
         let storylineName = this.storylineNameSearchValue.toLowerCase(); // Normalizar para minúsculas
         if (storylineName && storylineName != "") {
-          this.dataSource.data = this.dataSource.data.filter((c) =>
+          const data = this.dataSource.data.filter((c) =>
             c.storylineName?.toLowerCase().includes(storylineName)
-          );          
+          ); 
+          this.dataSource.data = data
+    
+          this.setGlobalData(data, storylineName)
+
           return
         }
         this.dataSource.data = this.chapter$
+        this.wd.setTableChapter(undefined)
         return
       case 'timelineName':
         let timelineName = this.timelineNameSearchValue.toLowerCase(); // Normalizar para minúsculas
         if (timelineName && timelineName != "") {
-          this.dataSource.data = this.dataSource.data.filter((c) =>
+          const data = this.dataSource.data.filter((c) =>
             c.timelineName?.toLowerCase().includes(timelineName)
-          );          
+          );   
+          this.dataSource.data = data
+          this.setGlobalData(data, timelineName)
+
           return
         }
         this.dataSource.data = this.chapter$
+        this.wd.setTableChapter(undefined)
         return
       case 'created_at':
         this.dialog.openDataPickerDialog("150ms",'150ms')

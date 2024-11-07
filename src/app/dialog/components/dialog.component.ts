@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, Event, StoryLine, Timeline } from '../../models/paperTrailTypes';
+import { Chapter, Event, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 
 
@@ -339,39 +339,58 @@ import { combineLatest } from 'rxjs';
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
-
-
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
         range: [0, [Validators.required]],
       });
 
-
-
-
     }
-
-
-
     onSubmit(){
       const body = this.worldForm.value
       body.world_id = this.wd.worldId
-
       this.api.createTimeline(body).subscribe(
-        
         {
             next: (data) => this.wd.addTimeline(data),
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
     }
-
-
-
-
-
   }
+  @Component({
+    selector: 'app-subwaySettingsDialog',
+    templateUrl: './subwaySettingsDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class SettingsDialogComponent  {
+    worldForm: FormGroup;
+    worldId:string | undefined= ''
+      errorHandler: any;
+      ss: Subway_Settings | null
+
+    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService ){
+
+      this.wd.settings$.subscribe((ss) => {
+          this.ss = ss
+      })
+      this.worldForm = this.fb.group({
+        chapter_names: [this.ss?.chapter_names, [Validators.required]],
+        display_table_chapters: [this.ss?.display_table_chapters, [Validators.required]],
+      });
+
+    }
+    onSubmit(){
+      const body = this.worldForm.value
+      body.id = this.ss?.id
+
+
+      this.api.updateSettings(body.id, body).subscribe((ss) => {
+        this.wd.setSettings(ss)
+      })
+    }
+  }
+
+  
   @Component({
     selector: 'app-createStorylineDialog',
     templateUrl: './createStorylineDialog.component.html',

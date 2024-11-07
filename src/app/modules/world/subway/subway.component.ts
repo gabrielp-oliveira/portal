@@ -5,7 +5,7 @@ import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY
 import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, Event, paper, StoryLine, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, Event, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -38,6 +38,8 @@ export class SubwayComponent {
   storylinesMoved: StoryLine[] = []
   lastStorylineChanged: StoryLine
   selectedTimeline: Timeline;
+  ss: Subway_Settings | null;
+  textDisplay : 'block' | 'none' = "block"
   nextStorylineSelected: number;
   reset: boolean
   currentSelectTimelineLeftGap: number;
@@ -69,6 +71,8 @@ export class SubwayComponent {
   storylines$ = this.wd.storylines$;
   timelines$ = this.wd.timelines$;
   chapters$ = this.wd.chapters$;
+  tableChapter$ = this.wd.tableChapter$;
+  settings$ = this.wd.settings$;
   papers$ = this.wd.papers$;
   connections$ = this.wd.connections$;
   events$ = this.wd.events$;
@@ -107,15 +111,40 @@ export class SubwayComponent {
     })
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
-      "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$
+      "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$,
+      "ss": this.settings$, "tbChp": this.tableChapter$
+
     }).subscribe((data) => {
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
+      let {  papers, storyLines, timelines, connections, tbChp } = data
+      this.ss = data.ss
 
-      let { chapters, papers, storyLines, timelines, connections } = data
+      const showTableChapters = data.ss?.display_table_chapters
+
+      let chpList = (showTableChapters == true &&  tbChp !== undefined)? tbChp: data.chapters 
+
+      console.log(chpList)
+      this.textDisplay =  data.ss?.chapter_names == true ? "block" : "none"
+
+
+      const chapterIds = new Set(chpList.map(c => c.id));
+
+        const filteredConnections = connections.filter((connection) => {
+          return (
+            chapterIds.has(connection.sourceChapterID) &&
+            chapterIds.has(connection.targetChapterID)
+          );
+        });
+        
+        console.log(filteredConnections)
+        data.connections = filteredConnections
+        this.connections = filteredConnections
+      
+
+
       this.papers = papers
-      this.connections = connections
       data.timelines = timelines.sort((a, b) => a.order - b.order);
-      data.chapters = chapters.map((c) => {
+      data.chapters = chpList.map((c) => {
         c.width = 0
         const str = storyLines.filter((s) => s.id == c.storyline_id)[0]
         const tl = timelines.filter((t) => t.id == c.timeline_id)[0]
@@ -139,12 +168,13 @@ export class SubwayComponent {
         c.width = width + 100
         return c
       })
-      this.chapters = data.chapters
+      this.chapters = chpList
 
 
-     this.duplucateChaptersPosition = this.separateChaptersByDimensions(data.chapters)
+     this.duplucateChaptersPosition = this.separateChaptersByDimensions(chpList)
 
       this.cleanItemsOnSvg();
+      data.chapters = chpList
       this.handleGraphEvents(svg, data);
     })
 
@@ -338,6 +368,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
           .attr("text-anchor", "middle")
           .attr("fill", "black")  // Cor inicial do texto
           .attr("id", () => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
+          .attr("display", this.textDisplay)
           .text(() => c.name);
         })
         }
@@ -387,6 +418,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       .attr("font-size", LABEL_FONT_SIZE_GROUP)
       .attr("text-anchor", "middle")
       .attr("fill", "black")  // Cor inicial do texto
+      .attr("display", this.textDisplay)
       .attr("id", () => `${chp.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
       .text(() => chp.name);
       this.updateConnectionDrag(svg, this.connections, chpList, chp)
@@ -460,19 +492,22 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       .on("mouseover", (e: MouseEvent, c: Chapter) => this.ChapterMouseEnter(e, c, false))
       .on("mouseout", (_: MouseEvent, c: Chapter) => this.chapterMouseLeave(c, false));
     // Labels (Texto)
-    eleEnter
+
+      eleEnter
       .append("text")
       .raise()
-
       .attr("dx", (node: Chapter) => node.width)
       .attr("dy", (node: Chapter) => node.height + 15)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_GROUP)
       .attr("text-anchor", "middle")
+      .attr("display", this.textDisplay)
       .attr("fill", "black")  // Cor inicial do texto
       .attr("id", (c: Chapter) => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
+      .attr("display", this.textDisplay)
       .text((node: Chapter) => node.name);
-  }
+    }
+ 
 
 
   ChapterMouseEnter (event: MouseEvent, c: Chapter, isGroup:boolean)  {
@@ -517,6 +552,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         d3.select(elementtx)
         .transition()
         .duration(100)
+        .attr("display", "block")
         .attr("font-weight", 700);
 
         d3.select(element)
@@ -526,13 +562,14 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         .attr("r", this.getDiameter(c));
         })
 
-      if(!isGroup){
-        return
-      }
+      // if(!isGroup){
+      //   return
+      // }
 
       d3.select(elementtx)
       .transition()
       .duration(100)
+      .attr("display", "block")
       .attr("font-weight", 700)
 
 
@@ -575,12 +612,10 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         })
 
         
-        if(!isGroup){
-          return
-        }
         d3.select(elementtx)
         .transition()
         .duration(200)
+        .attr("display", this.textDisplay)
         .attr("font-weight", 500)
     }
 
@@ -1032,11 +1067,13 @@ private updateEventDisplay(event: Event) {
   
   
       d3.select(document.getElementById(`${d.id}-chapter-group-txt`))
+      .attr("display", this.textDisplay)
         .attr("dx", d.width)
         .attr("dy", d.height + 15)
         .attr("cx", d.width)
         .attr("cy", d.height)
         .attr("stroke", d.color)
+        
   
     }else {
 
@@ -1223,6 +1260,7 @@ private updateEventDisplay(event: Event) {
       return;
     }
 
+    const txtDisplay :String= this.textDisplay
     // Cria um grupo específico para as conexões
     const connectionsGroup = svg.append("g").attr("class", "connections");
 
@@ -1364,11 +1402,14 @@ private updateEventDisplay(event: Event) {
         .transition()
         .duration(100)
         .attr("font-weight", 700)
+        .attr("display", "block")
 
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
           .transition()
           .duration(100)
           .attr("font-weight", 700)
+          .attr("display", "block")
+        
           
       })
       .on("mouseout", function (_: MouseEvent, connection: Connection) {
@@ -1393,11 +1434,13 @@ private updateEventDisplay(event: Event) {
           .transition()
           .duration(100)
           .attr("font-weight", 500)
+          .attr("display", "" + txtDisplay)
   
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
           .transition()
           .duration(100)
           .attr("font-weight", 500)
+          .attr("display", "" + txtDisplay)
             
       });
 
@@ -2297,14 +2340,14 @@ private updateEventDisplay(event: Event) {
     if (transform.x > 0) {
       transform.x = 0
     }
-    if (transform.y > 0) {
-      transform.y = 0
+    if (transform.y > 60) {
+      transform.y = 60
     }
 
 
     // Limita o movimento ao longo do eixo X, fixa o eixo Y em 0 e impede o movimento para a direita além de 0
     const restrictedX = Math.min(transform.x, 0); // Limita para não ir além de 0 (esquerda)
-    const restrictedY = Math.min(transform.y, 0); // Limita para não ir além de 0 (top)
+    const restrictedY = Math.min(transform.y,60); // Limita para não ir além de 0 (top)
 
 
 
@@ -2368,8 +2411,8 @@ private updateEventDisplay(event: Event) {
   private handleGraphEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     data: { "chapters": Chapter[], "storyLines": StoryLine[], "connections": Connection[], "timelines": Timeline[], "events": Event[] }) {
 
-
-    const { timelines, storyLines, connections, chapters, events } = data
+      
+      const { timelines, storyLines, connections, chapters, events } = data
     this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
     this.renderConnections(svg, chapters, connections);

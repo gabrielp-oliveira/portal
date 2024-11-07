@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { world, paper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine } from '../../models/paperTrailTypes';
+import { world, paper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine, Subway_Settings } from '../../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -10,19 +10,23 @@ export class WorldDataService {
   private worldSubject = new BehaviorSubject<basicWorld | null>(null);
   private papersSubject = new BehaviorSubject<paper[]>([]);
   private chaptersSubject = new BehaviorSubject<Chapter[]>([]);
+  private tableChapterSubject = new BehaviorSubject<Chapter[] | undefined>(undefined);
   private eventsSubject = new BehaviorSubject<Event[]>([]);
   private timelinesSubject = new BehaviorSubject<Timeline[]>([]);
   private storylinesSubject = new BehaviorSubject<StoryLine[]>([]);
   private connectionsSubject = new BehaviorSubject<Connection[]>([]);
+  private settingsSubject = new BehaviorSubject<Subway_Settings | null>(null);
 
   // Observables para os componentes se inscreverem
   world$ = this.worldSubject.asObservable();
   papers$ = this.papersSubject.asObservable();
   chapters$ = this.chaptersSubject.asObservable();
+  tableChapter$ = this.tableChapterSubject.asObservable();
   events$ = this.eventsSubject.asObservable();
   timelines$ = this.timelinesSubject.asObservable();
   storylines$ = this.storylinesSubject.asObservable();
   connections$ = this.connectionsSubject.asObservable();
+  settings$ = this.settingsSubject.asObservable();
   worldId: string = ""
   constructor() {}
 
@@ -39,9 +43,15 @@ export class WorldDataService {
   setPapers(papers: paper[]): void {
     this.papersSubject.next(papers);
   }
+  setSettings(ss: Subway_Settings): void {
+    this.settingsSubject.next(ss);
+  }
 
   setChapters(chapters: Chapter[]): void {
     this.chaptersSubject.next(chapters);
+  }
+  setTableChapter(chapters: Chapter[] | undefined): void {
+    this.tableChapterSubject.next(chapters);
   }
 
   setEvents(events: Event[]): void {
@@ -174,5 +184,8 @@ export class WorldDataService {
   this.setEvents(data.events)
   this.setTimelines(data.timelines)
   this.setStorylines(data.storyLines)
+  this.setSettings(data.subway_settings)
   }
+
+  
 }

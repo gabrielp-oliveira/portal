@@ -102,11 +102,12 @@ papper: paper;
   }
   createTimeline(){
     this.dialog.openCreateTimelineDialog('150ms', '150ms')
-
+  }
+  openSubwaySettings(){
+    this.dialog.openSubwaySettingsDialog('150ms', '150ms')
   }
   createEvents(){
     this.dialog.opencreateEventsDialog( this.worldId , '150ms', '150ms')
-
   }
   
   hoverPappeer(pp: paper){
