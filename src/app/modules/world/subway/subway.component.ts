@@ -58,6 +58,7 @@ export class SubwayComponent {
 
   }
   @ViewChild('chapterMenuTrigger') chapterMenuTrigger!: MatMenuTrigger;
+  @ViewChild('menuTimelineTrigger') menuTimelineTrigger!: MatMenuTrigger;
   @ViewChild('storylineMenuTrigger') storylineMenuTrigger!: MatMenuTrigger;
   @ViewChild("connectionMenuTrigger") trggerConnectionMenu!: MatMenuTrigger;
   @ViewChild("eventMenuTrigger") evtMenuTrigger!: MatMenuTrigger;
@@ -496,6 +497,35 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
       .attr("r", this.getDiameter(c));
 
+      const connections = this.connections.filter((cnn) => cnn.sourceChapterID == c.id || cnn.targetChapterID == c.id)
+      connections.forEach((cnn) => {
+        const el = document.getElementById(cnn.id + "-connections-group" )
+        const el2= d3.select(el)
+        .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT * 2)
+      })
+      const uniqueChapterIDs = Array.from(
+        new Set(connections.map(cnn => [cnn.sourceChapterID, cnn.targetChapterID]).flat())
+      );
+
+      uniqueChapterIDs.forEach((id) => {
+        const chp = this.chapters.filter((c) => c.id == id)[0]
+
+        const element = document.getElementById(`${chp.id}-chapter-circle`);
+        const elementtx = document.getElementById(`${(chp.id)}-chapter-group-txt`);
+        
+
+        d3.select(elementtx)
+        .transition()
+        .duration(100)
+        .attr("font-weight", 700);
+
+        d3.select(element)
+        .transition()
+        .duration(200)
+        .attr("fill", d3.color(chp.color)?.brighter(1)?.toString() || chp.color) // Lighten the color
+        .attr("r", this.getDiameter(c));
+        })
+
       if(!isGroup){
         return
       }
@@ -503,7 +533,8 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       d3.select(elementtx)
       .transition()
       .duration(100)
-      .attr("font-weight", 800)
+      .attr("font-weight", 700)
+
 
     }
 
@@ -518,6 +549,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       c.focus = false;
       this.wd.updateChapter(c); // Update the state
 
+      
       const element = document.getElementById(`${c.id}-chapter-circle`);
       const elementtx = document.getElementById(`${(c.id)}-chapter-group-txt`);
 
@@ -526,6 +558,22 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         .duration(200)
         .attr("fill", this.getFillColor(c)) // Restore the original color based on state
         .attr("r", this.getDiameter(c));
+
+
+        const connections = this.connections.filter((cnn) => cnn.sourceChapterID == c.id || cnn.targetChapterID == c.id)
+        connections.forEach((cnn) => {
+          const el = document.getElementById(cnn.id + "-connections-group" )
+           d3.select(el)
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
+        })
+        const uniqueChapterIDs = Array.from(
+          new Set(connections.map(cnn => [cnn.sourceChapterID, cnn.targetChapterID]).flat())
+        );
+        uniqueChapterIDs.forEach((id) => {
+          const chp = this.chapters.filter((c) => c.id == id)[0]
+          this.chapterMouseLeave(chp, false)
+        })
+
         
         if(!isGroup){
           return
@@ -533,7 +581,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         d3.select(elementtx)
         .transition()
         .duration(200)
-        .attr("font-weight", 700)
+        .attr("font-weight", 500)
     }
 
   }
@@ -554,6 +602,25 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       menuElement.style.top = `${event.y + 5}px`;
     }
     this.selectedChapter = c
+
+  }
+  timeLineMenu(event: MouseEvent, tl: Timeline) {
+    event.preventDefault();
+
+
+    // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
+
+    this.menuTimelineTrigger.openMenu();
+    const menu = document.querySelector("#" + this.menuTimelineTrigger.menu?.panelId)
+    const menuElement = document.querySelector("#" + this.menuTimelineTrigger.menu?.panelId) as HTMLElement;
+
+    if (menuElement) {
+      // Defina o estilo de posicionamento
+      menuElement.style.position = 'absolute';
+      menuElement.style.left = `${event.x + 5}px`;
+      menuElement.style.top = `${event.y + 5}px`;
+    }
+    this.selectedTimeline = tl
 
   }
   private renderEvents(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
@@ -1231,10 +1298,10 @@ private updateEventDisplay(event: Event) {
 
           }
           else{
-            const sourcePos = ((this.duplucateChaptersPosition[sourceKey].findIndex((e) => e.id == source?.id)) + 1);
-            const targetPos = ((this.duplucateChaptersPosition[targetKey].findIndex((e) => e.id == target?.id)) + 1);
-            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + 10
-            const targetHeight = (target?.height ?? 0) - (targetPos* 8)  + 10
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1)  || 1;
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1) || 1;
+            const sourceHeight = (source?.height != undefined? source.height :  0) - (sourcePos * 8) + 10
+            const targetHeight = (target?.height != undefined? target?.height : 0) - (targetPos* 8)  + 10
             return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
           }
           
@@ -1248,6 +1315,7 @@ private updateEventDisplay(event: Event) {
       .attr("fill", "none")
       .attr("stroke", EDGE_BORDER_COLOR_DEFAULT)
       .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
+      .attr("cursor", "pointer")
       .attr("cursor", "pointer")
       .on("contextmenu", (event: MouseEvent, connection: Connection) => {
         event.preventDefault();
@@ -1278,29 +1346,29 @@ private updateEventDisplay(event: Event) {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT * 2);
 
         d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-circle`))
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT * 1.3);
 
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-circle`))
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT + 2);
+          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT * 1.3);
           
         d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-group-txt`))
         .transition()
         .duration(100)
-        .attr("font-weight", 800)
+        .attr("font-weight", 700)
 
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
           .transition()
           .duration(100)
-          .attr("font-weight", 800)
+          .attr("font-weight", 700)
           
       })
       .on("mouseout", function (_: MouseEvent, connection: Connection) {
@@ -1314,22 +1382,22 @@ private updateEventDisplay(event: Event) {
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+          .attr("stroke-width", NODE_BORDER_WIDTH_DEFAULT);
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-circle`))
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT);
+          .attr("stroke-width", NODE_BORDER_WIDTH_DEFAULT);
 
           d3.select(document.getElementById( `${connection.sourceChapterID}-chapter-group-txt`))
           .transition()
           .duration(100)
-          .attr("font-weight", 800)
+          .attr("font-weight", 500)
   
           d3.select(document.getElementById( `${connection.targetChapterID}-chapter-group-txt`))
           .transition()
           .duration(100)
-          .attr("font-weight", 800)
+          .attr("font-weight", 500)
             
       });
 
@@ -1667,59 +1735,36 @@ private updateEventDisplay(event: Event) {
       .attr("height", 45) // Altura do header
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
-      .style("stroke-width", "1px");
+      .style("stroke-width", "1px")
 
-
-    // Botão de "grab" (movimentação)
-    headerTimeline.append("text")
-      .attr("class", `timeline-drag`)
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 0)) // Posição proporcional
-      .attr("y", this.timeLineTxtHeight)
-      .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-      .attr("font-size", (LABEL_FONT_SIZE_DEFAULT))
-      .attr("cursor", "pointer")
-      .text("↹")
-      .call(
-        d3.drag<SVGTextElement, Timeline>()
-          .on("start", (event, t) => this.timelineSwapDragStart(t, data))
-          .on("drag", (event, t) => this.timelineSwapDragged(event, data))
-          .on("end", (event, t) => this.timelineSwapDragEnded(svg, data))
-      );
-
-    // Botão de deletar no header
-    headerTimeline.append("text")
-      .attr("class", "timeline-delete")
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 1)) // Posição proporcional
-      .attr("y", this.timeLineTxtHeight)
-      .attr("font-family", "Arial")
-      .attr("font-size", ("20px"))
-      .attr("cursor", "pointer")
-      .text("🗑")
-      .on("click", (e, tl) => this.dialog.openDeleteTimelineDialog({ timeline: tl, timelines: data, chapters: this.chapters }, "150ms", "150ms"));
-
-    // Botão de atualizar no header
-    headerTimeline.append("text")
-      .attr("class", "timeline-update")
-      .attr("x", (tl: Timeline) => this.buttonPositions(tl, data, 2)) // Posição proporcional
-      .attr("y", this.timeLineTxtHeight)
-      .attr("font-family", "Arial")
-      .attr("font-size", ("20px"))
-      .attr("cursor", "pointer")
-      .text("🖉")
-      .on("click", (e, tl) => this.dialog.openUpdateTimelineDialog(tl, "150ms", "150ms"));
 
     // Nome da timeline no header, centralizado abaixo dos botões
     headerTimeline.append("text")
       .attr("class", "timeline-txt")
       .attr("x", (tl: Timeline) => this.calculateXPosition(tl, data)) // Centralizado
-      .attr("y", this.timeLineTxtHeight + 20) // Abaixo dos botões
+      .attr("y", this.timeLineTxtHeight + 5) // Abaixo dos botões
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
       .attr("text-anchor", "middle")
-      .text((tl: Timeline) => tl.name);
+      .attr("cursor", "pointer")
+      .text((tl: Timeline) => tl.name)
+      .call(
+        d3.drag<SVGTextElement, Timeline>()
+          .on("start", (event, t) => this.timelineSwapDragStart(t, data))
+          .on("drag", (event, t) => this.timelineSwapDragged(event, data))
+          .on("end", (event, t) => this.timelineSwapDragEnded(svg, data))
+      )
+      .on('contextmenu', (e: MouseEvent, tl: Timeline) => this.timeLineMenu(e, tl))
+
   }
 
 
+  updateTimeline(){  
+    this.dialog.openUpdateTimelineDialog(this.selectedTimeline, "150ms", "150ms")
+  }
+  deleteTimeline(){ 
+    this.dialog.openDeleteTimelineDialog({ timeline: this.selectedTimeline, timelines: this.timelines, chapters: this.chapters }, "150ms", "150ms") 
+  }
 
 
   getElementCenter(element: any) {
