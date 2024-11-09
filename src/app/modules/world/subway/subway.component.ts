@@ -122,8 +122,6 @@ export class SubwayComponent {
       const showTableChapters = data.ss?.display_table_chapters
 
       let chpList = (showTableChapters == true &&  tbChp !== undefined)? tbChp: data.chapters 
-
-      console.log(chpList)
       this.textDisplay =  data.ss?.chapter_names == true ? "block" : "none"
 
 
@@ -136,7 +134,6 @@ export class SubwayComponent {
           );
         });
         
-        console.log(filteredConnections)
         data.connections = filteredConnections
         this.connections = filteredConnections
       
@@ -1346,7 +1343,23 @@ private updateEventDisplay(event: Event) {
 
         }
         else {
-          return this.createEdge(x0, y0, x1, y1, controlPointX, controlPointY, isHorizontal, isCurve);
+
+          if(this.ChapterGroup[targetKey]){
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1);
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15) + 10
+            const targetHeight = (target?.height ?? 0) - (targetPos* 15) - 5
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+
+          }
+          else{
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1)  || 1;
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1) || 1;
+            const sourceHeight = (source?.height != undefined? source.height :  0) - (sourcePos * 8) + 10
+            const targetHeight = (target?.height != undefined? target?.height : 0) - (targetPos* 8)  + 10
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          }
+
         }
     })
     
@@ -1564,6 +1577,8 @@ private updateEventDisplay(event: Event) {
     const newstrlElement: any = d3.select(document.getElementById(selectedNewElementiD)).select("text");
     let toWalk = newStrl.order - this.prevStoryline?.order
     toWalk = toWalk <= 0 ? 1 : toWalk
+
+    // 4 e 6 as vezes 1 e 3
     if (!isSame && this.storylineSelected.order > newStrl.order) {
 
       selectedElementText
@@ -1572,73 +1587,103 @@ private updateEventDisplay(event: Event) {
         .ease(d3.easeCubic)
         .attr('y', () => ((newStrl.order) * this.gridHeight) + 2)
 
-      if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
-        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-        prevTimelineElement
+        if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
+          const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
+          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+          prevTimelineElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
           .attr('y', ((this.prevStoryline.order) * this.gridHeight))
+          
+          console.log(2)
+        } else {
+          strs.forEach((st, idx) => {
+            if(newStrl.order <= st.order && st.order !== this.storylineSelected.order){
+              const height =((st.order +1) * this.gridHeight)
+              const prevNewElementiD = `${CSS.escape(st?.id)}-storyline-group`;
+              const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+              prevStorylineElement
+              .transition()
+              .duration(100)
+              .ease(d3.easeCubic)
+              .attr('y', height)   
+            }
+          })
 
-      } else {
-        newstrlElement
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('y', () => ((this.prevStoryline.order + 1) * this.gridHeight) - 2)
-      }
-    } else if (!isSame && this.storylineSelected.order < newStrl.order) {
-      selectedElementText
+          console.log(3)
+        }
+      } else if (!isSame && this.storylineSelected.order < newStrl.order) {
+        selectedElementText
         .transition()
         .duration(100)
         .ease(d3.easeCubic)
         .attr('y', (newStrl.order * this.gridHeight) + 2)
+        
+        // console.log(4)
+        if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
+          
 
-      if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
+          strs.forEach((st, idx) => {
+            if(st.order > newStrl.order){
+              const height = ((strs[idx -1].order +1) * this.gridHeight)
+              const prevNewElementiD = `${CSS.escape(st?.id)}-storyline-group`;
+              const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+              prevStorylineElement
+              .transition()
+              .duration(100)
+              .ease(d3.easeCubic)
+              .attr('y', height)   
+            }
+          })
 
-        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-        const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-
-        prevStorylineElement
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('y', ((this.prevStoryline.order) * this.gridHeight))
-
-      } else {
-        newstrlElement
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('y', () => ((this.prevStoryline.order - 1) * this.gridHeight) - 2)
-
-
+          console.log(5)
+          this.updayeStorylineOrder(newStrl, strs)
+          return
+        } else {
+            
+            // console.log(6)
+            strs.forEach((st) => {
+              if(st.order <= newStrl.order && st.order > this.storylineSelected.order){
+                let pos = st?.order - 1 <= 0? 1 : st?.order - 1
+                const height = ((pos) * this.gridHeight) - 2
+                const id =  `${CSS.escape(st.id)}-storyline-group`;
+                const el: any = d3.select(document.getElementById(id)).select("text");
+                el
+                .transition()
+                .duration(100)
+                .ease(d3.easeCubic)
+                .attr('y', () => height)
+              }
+            })
+          this.updayeStorylineOrder(newStrl, strs)
+          return
+        }
       }
-    }
-    else if (isSame && this.storylineSelected.order == newStrl.order) {
-      if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-        const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-        const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-        prevTimelineElement
+      else if (isSame && this.storylineSelected.order == newStrl.order) {
+        if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
+          const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
+          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
+          prevTimelineElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-
-      } else {
-        if (this.prevStoryline != undefined) {
-          if (newStrl.id == this.storylineSelected.id) {
+          
+          // console.log(7, 'parado' )
+        } else {
+          if (this.prevStoryline != undefined) {
+            if (newStrl.id == this.storylineSelected.id) {
             newStrl = strs[this.nextStorylineSelected]
           }
-
+          
           const prevNewElementiD = `${CSS.escape(newStrl?.id)}-storyline-group`;
           const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-
+          
           selectedElementText
-            .transition()
-            .duration(100)
-            .ease(d3.easeCubic)
-            .attr('y', ((this.storylineSelected.order) * this.gridHeight))
+          .transition()
+          .duration(100)
+          .ease(d3.easeCubic)
+          .attr('y', ((this.storylineSelected.order) * this.gridHeight))
 
 
           prevTimelineElement
@@ -1646,9 +1691,8 @@ private updateEventDisplay(event: Event) {
             .duration(50)
             .ease(d3.easeCubic)
             .attr('y', ((newStrl.order) * this.gridHeight))
-
+            
           this.reset = true
-          return
 
         }
       }
@@ -1663,6 +1707,21 @@ private updateEventDisplay(event: Event) {
     this.prevStoryline = newStrl
 
     // Verificar se o Story
+
+  }
+  updayeStorylineOrder (newstr:StoryLine, strlns: StoryLine[]){
+    if (this.storylineOrderToUpdate == 0) {
+      this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
+    }
+
+    if (this.storylineOrderToUpdate != 0) {
+      this.storylineOrderToUpdate = newstr.order
+    }
+    this.prevStoryline = newstr
+
+ 
+
+   
 
   }
 
@@ -1696,19 +1755,20 @@ private updateEventDisplay(event: Event) {
 
 
     if (this.reset) {
-
-      this.api.updateStoryLineList(strs).subscribe((data) => {
-        data.forEach(str => {
-          this.wd.updateStoryline(str)
-        });
-
-      })
+      // console.log(strs.map((c) => c.order))
+      // this.api.updateStoryLineList(strs).subscribe((data) => {
+      //   data.forEach(str => {
+      //     this.wd.updateStoryline(str)
+      //   });
+        
+      // })
     } else {
-      this.api.updateStoryLineList(reordenadas).subscribe((data) => {
-        data.forEach(str => {
-          this.wd.updateStoryline(str)
-        });
-      })
+      // console.log(reordenadas.map((c) => c.order))
+      // this.api.updateStoryLineList(reordenadas).subscribe((data) => {
+      //   data.forEach(str => {
+      //     this.wd.updateStoryline(str)
+      //   });
+      // })
 
     }
     this.prevTimeline = undefined;
@@ -2249,6 +2309,7 @@ private updateEventDisplay(event: Event) {
     this.prevTimeline = newTimeline
 
   }
+
 
 
   timelineSwapDragEnded(element: any, timelines: Timeline[]) {

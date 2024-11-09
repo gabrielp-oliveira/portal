@@ -58,6 +58,9 @@ export class ApiService {
   updateStoryLineList( body:StoryLine[]): Observable<StoryLine[]> {
     return this.http.put<StoryLine[]>(`http://localhost:9090/updateStorylineList?id=${body[0].id}`, body);
   }
+  updateStoryLine( body:StoryLine): Observable<StoryLine> {
+    return this.http.put<StoryLine>(`http://localhost:9090/updateStoryline?id=${body.id}`, body);
+  }
   Createworld(body: any):Observable<world>  {
    return this.http.post<world>('http://localhost:9090/createWorld', body)
   }

@@ -76,6 +76,8 @@ export type Subway_Settings = {
     id: string,
     chapter_names: boolean,
     display_table_chapters: boolean,
+    timeline_update_chapter: boolean,
+    storyline_update_chapter: boolean,
     zoom: number,
     x: number,
     y: number,

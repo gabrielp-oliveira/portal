@@ -376,6 +376,9 @@ import { combineLatest } from 'rxjs';
       this.worldForm = this.fb.group({
         chapter_names: [this.ss?.chapter_names, [Validators.required]],
         display_table_chapters: [this.ss?.display_table_chapters, [Validators.required]],
+        storyline_update_chapter: [this.ss?.storyline_update_chapter, [Validators.required]],
+        timeline_update_chapter: [this.ss?.timeline_update_chapter, [Validators.required]],
+        
       });
 
     }
@@ -640,13 +643,14 @@ import { combineLatest } from 'rxjs';
 
     onSubmit(){
       const body = {...this.data, ...this.worldForm.value, }
-      // this.api.updateTimeline(body).subscribe(
+      body.world_id = this.wd.worldId
+      this.api.updateStoryLine(body).subscribe(
         
-      //   {
-      //       next: (tl) => this.wd.updateTimeline(tl),
-      //       error: (err) =>this.errorHandler.errHandler(err)
-      //     }
-      // )
+        {
+            next: (str) => this.wd.updateStoryline(str),
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+      )
     }
 
 
