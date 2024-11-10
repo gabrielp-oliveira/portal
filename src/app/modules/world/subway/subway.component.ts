@@ -1552,179 +1552,239 @@ private updateEventDisplay(event: Event) {
       this.dialog.openStorylineEditDialog(this.storylineSelected, '150ms', '150ms')
     }
   }
+  // aqui aqui de novo
+  //  aqui . 
   storyLineSwapDragged(event: MouseEvent, strs: StoryLine[]) {
-    if (strs.length <= 1) {
-      return
-    }
+    if (strs.length <= 1) return;
 
+    const y = (event.y / this.zoom) - this.tiltY;
+    this.reset = false;
 
-    const y = (event.y / this.zoom) - this.tiltY
-    this.reset = false
-    // Cálculo da posição do mouse em relação aos StoryLines
-    let mousePos = (Math.round((y - 0.2) / 50) - 1) < 0 ? 0 : Math.round((y - 0.2) / 50) - 1;
-    mousePos = mousePos > strs.length - 1 ? strs.length - 1 : mousePos;
-    this.nextStorylineSelected = mousePos <= 0 ? 1 : mousePos + 1
-    this.nextStorylineSelected = this.nextStorylineSelected == strs.length ? strs.length - 2 : this.nextStorylineSelected
+    let mousePos = Math.max(0, Math.round((y - 0.2) / 50) - 1);
+    mousePos = Math.min(mousePos, strs.length - 1);
+    this.nextStorylineSelected = Math.min(mousePos + 1, strs.length - 2);
+
     let newStrl: StoryLine = strs[mousePos];
-    if (!newStrl.order) {
-      return
-    }
+    if (!newStrl.order) return;
+
     const selectedElementText = d3.select(document.getElementById(`${CSS.escape(this.storylineSelected.id)}-storyline-group`)).select("text");
-    const isSame = this.storylineSelected.id == newStrl.id
+    const isSame = this.storylineSelected.id === newStrl.id;
+    const selectedNewElementID = `${CSS.escape(newStrl.id)}-storyline-group`;
+    const newstrlElement: any = d3.select(document.getElementById(selectedNewElementID)).select("text");
 
+    let toWalk = newStrl.order - (this.prevStoryline?.order || 0);
+    toWalk = Math.max(toWalk, 1);
 
-    const selectedNewElementiD = `${CSS.escape(newStrl.id)}-storyline-group`;
-    const newstrlElement: any = d3.select(document.getElementById(selectedNewElementiD)).select("text");
-    let toWalk = newStrl.order - this.prevStoryline?.order
-    toWalk = toWalk <= 0 ? 1 : toWalk
+    
 
-    // 4 e 6 as vezes 1 e 3
+    if (!isSame) {
+        const tempOrder = this.storylineSelected.order;
+        this.storylineSelected.order = newStrl.order;
+        newStrl.order = tempOrder;
+        strs.sort((a, b) => a.order - b.order);
+    }
+
+    const selectedChapters = this.getChapterByStoryline(this.storylineSelected)
+    const newstorylineChapters = this.getChapterByStoryline(newStrl)
+    selectedElementText.interrupt();
+    newstrlElement.interrupt();
+
     if (!isSame && this.storylineSelected.order > newStrl.order) {
-
-      selectedElementText
-        .transition()
-        .duration(100)
-        .ease(d3.easeCubic)
-        .attr('y', () => ((newStrl.order) * this.gridHeight) + 2)
-
-        if (this.prevStoryline != undefined && this.prevStoryline.order < newStrl.order) {
-          const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-          prevTimelineElement
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('y', ((this.prevStoryline.order) * this.gridHeight))
-          
-          console.log(2)
-        } else {
-          strs.forEach((st, idx) => {
-            if(newStrl.order <= st.order && st.order !== this.storylineSelected.order){
-              const height =((st.order +1) * this.gridHeight)
-              const prevNewElementiD = `${CSS.escape(st?.id)}-storyline-group`;
-              const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-              prevStorylineElement
-              .transition()
-              .duration(100)
-              .ease(d3.easeCubic)
-              .attr('y', height)   
-            }
-          })
-
-          console.log(3)
-        }
-      } else if (!isSame && this.storylineSelected.order < newStrl.order) {
         selectedElementText
-        .transition()
-        .duration(100)
-        .ease(d3.easeCubic)
-        .attr('y', (newStrl.order * this.gridHeight) + 2)
-        
-        // console.log(4)
-        if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-          
+            .transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('y', (newStrl.order * this.gridHeight) + 2);
 
-          strs.forEach((st, idx) => {
-            if(st.order > newStrl.order){
-              const height = ((strs[idx -1].order +1) * this.gridHeight)
-              const prevNewElementiD = `${CSS.escape(st?.id)}-storyline-group`;
-              const prevStorylineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-              prevStorylineElement
-              .transition()
+            this.updateChapterHeight(selectedChapters, (newStrl.order * this.gridHeight) + 2)
+            
+            
+            if (this.prevStoryline && this.prevStoryline.order < newStrl.order) {
+              const prevElementID = `${CSS.escape(this.prevStoryline.id)}-storyline-group`;
+              const prevElementText = d3.select(document.getElementById(prevElementID)).select("text");
+              const prevstorylineChapters = this.getChapterByStoryline(this.prevStoryline)
+              
+              prevElementText.interrupt().transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('y', height)   
-            }
-          })
-
-          console.log(5)
-          this.updayeStorylineOrder(newStrl, strs)
-          return
+              .attr('y', (this.prevStoryline.order * this.gridHeight));
+              this.updateChapterHeight(prevstorylineChapters, (this.prevStoryline.order * this.gridHeight))
         } else {
-            
-            // console.log(6)
-            strs.forEach((st) => {
-              if(st.order <= newStrl.order && st.order > this.storylineSelected.order){
-                let pos = st?.order - 1 <= 0? 1 : st?.order - 1
-                const height = ((pos) * this.gridHeight) - 2
-                const id =  `${CSS.escape(st.id)}-storyline-group`;
-                const el: any = d3.select(document.getElementById(id)).select("text");
-                el
-                .transition()
+            newstrlElement.transition()
                 .duration(100)
                 .ease(d3.easeCubic)
-                .attr('y', () => height)
-              }
-            })
-          this.updayeStorylineOrder(newStrl, strs)
-          return
+                .attr('y', ((this.prevStoryline.order + 1) * this.gridHeight) - 2);
+                this.updateChapterHeight(newstorylineChapters, ((this.prevStoryline.order + 1) * this.gridHeight) - 2)
+
         }
-      }
-      else if (isSame && this.storylineSelected.order == newStrl.order) {
-        if (this.prevStoryline != undefined && this.prevStoryline?.order > newStrl.order) {
-          const prevNewElementiD = `${CSS.escape(this.prevStoryline?.id)}-storyline-group`;
-          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-          prevTimelineElement
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          
-          // console.log(7, 'parado' )
-        } else {
-          if (this.prevStoryline != undefined) {
-            if (newStrl.id == this.storylineSelected.id) {
-            newStrl = strs[this.nextStorylineSelected]
-          }
-          
-          const prevNewElementiD = `${CSS.escape(newStrl?.id)}-storyline-group`;
-          const prevTimelineElement: any = d3.select(document.getElementById(prevNewElementiD)).select("text");
-          
-          selectedElementText
-          .transition()
-          .duration(100)
-          .ease(d3.easeCubic)
-          .attr('y', ((this.storylineSelected.order) * this.gridHeight))
-
-
-          prevTimelineElement
+    } else if (!isSame && this.storylineSelected.order < newStrl.order) {
+        selectedElementText
             .transition()
-            .duration(50)
+            .duration(100)
             .ease(d3.easeCubic)
-            .attr('y', ((newStrl.order) * this.gridHeight))
-            
-          this.reset = true
+            .attr('y', (newStrl.order * this.gridHeight) + 2);
+            this.updateChapterHeight(selectedChapters, (newStrl.order * this.gridHeight) + 2)
+
+
+        if (this.prevStoryline && this.prevStoryline.order > newStrl.order) {
+            const prevElementID = `${CSS.escape(this.prevStoryline.id)}-storyline-group`;
+            const prevElementText = d3.select(document.getElementById(prevElementID)).select("text");
+            const prevstorylineChapters = this.getChapterByStoryline(this.prevStoryline)
+
+            prevElementText.interrupt().transition()
+                .duration(100)
+                .ease(d3.easeCubic)
+                .attr('y', (this.prevStoryline.order * this.gridHeight));
+                this.updateChapterHeight(prevstorylineChapters, (this.prevStoryline.order * this.gridHeight))
+
+        } else {
+            newstrlElement.transition()
+                .duration(100)
+                .ease(d3.easeCubic)
+                .attr('y', ((this.prevStoryline.order - 1) * this.gridHeight) - 2);
+                this.updateChapterHeight(newstorylineChapters, ((this.prevStoryline.order - 1) * this.gridHeight) - 2)
 
         }
-      }
-    }
-    if (this.storylineOrderToUpdate == 0) {
-      this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
     }
 
-    if (this.storylineOrderToUpdate != 0) {
-      this.storylineOrderToUpdate = newStrl.order
+    if (isSame && this.storylineSelected.order === newStrl.order) {
+        const prevElementID = this.prevStoryline ? `${CSS.escape(this.prevStoryline.id)}-storyline-group` : '';
+        const prevElementText = prevElementID ? d3.select(document.getElementById(prevElementID)).select("text") : null;
+        
+        if (prevElementText) {
+          const prevstorylineChapters = this.getChapterByStoryline(this.prevStoryline)
+            prevElementText.interrupt().transition()
+                .duration(100)
+                .ease(d3.easeCubic)
+                .attr('y', (this.prevStoryline.order * this.gridHeight));
+                this.updateChapterHeight(prevstorylineChapters, (this.prevStoryline.order * this.gridHeight))
+
+        }
+
+        selectedElementText.transition()
+            .duration(100)
+            .ease(d3.easeCubic)
+            .attr('y', (this.storylineSelected.order * this.gridHeight));
+            this.updateChapterHeight(selectedChapters, this.storylineSelected.order * this.gridHeight)
+
     }
-    this.prevStoryline = newStrl
 
-    // Verificar se o Story
+    this.storylineOrderToUpdate = newStrl.order;
+    this.prevStoryline = newStrl;
+}
 
-  }
-  updayeStorylineOrder (newstr:StoryLine, strlns: StoryLine[]){
-    if (this.storylineOrderToUpdate == 0) {
-      this.storylineOrderToUpdate = this.storylineSelected.order || this.storylineOrderToUpdate
-    }
 
-    if (this.storylineOrderToUpdate != 0) {
-      this.storylineOrderToUpdate = newstr.order
-    }
-    this.prevStoryline = newstr
 
- 
 
-   
 
-  }
+getChapterByStoryline(str:StoryLine): Chapter[]{
+  return this.chapters.filter((chp) => chp.storyline_id == str.id )
+}
 
+updateChapterHeight(chapters: Chapter[], height: number){
+  chapters.forEach((c) => {
+    const id = document.getElementById(`${c.id}-chapter-circle`);
+    d3.select(id)
+    .transition()
+    .duration(200)
+    .attr("cy", height);
+
+    this.updateConnectionByChapter(c, height)
+  })
+}
+updateConnectionByChapter(chapter: Chapter, newHeight: number) {
+  chapter.height = newHeight;
+  const connections = this.connections.filter((cnn) => cnn.sourceChapterID == chapter.id || cnn.targetChapterID == chapter.id);
+
+  connections.forEach((cnn) => {
+    const el = d3.select(document.getElementById(cnn.id + "-connections-group"))
+      .transition() // Inicia a transição
+      .duration(200) // Define a duração para 200ms
+      .attr("d", () => {
+        let source = this.chapters.find((data: Chapter) => data.id === cnn.sourceChapterID);
+        let target = this.chapters.find((data: Chapter) => data.id === cnn.targetChapterID);
+
+        source = source?.id == chapter.id ? chapter : source;
+        target = target?.id == chapter.id ? chapter : target;
+
+        let y0 = source ? source.height : 0;
+        let x0 = source ? source.width : 0;
+        let x1 = target ? target.width : 0;
+        let y1 = target ? target.height : 0;
+
+        const CONSTANT_CONTROL_POINT = 5;
+        const HORIZONTAL_THRESHOLD = 3;
+
+        const interferingChapters = this.chapters.filter(chp => {
+          if (source && target && chp.id !== source.id && chp.id !== target.id) {
+            const withinXRange = (chp.width >= Math.min(source.width, target.width)) &&
+                                 (chp.width <= Math.max(source.width, target.width));
+
+            const withinYRange = (chp.height >= Math.min(source.height, target.height)) &&
+                                 (chp.height <= Math.max(source.height, target.height));
+
+            return withinXRange && withinYRange;
+          }
+          return false;
+        });
+
+        let isHorizontal = Math.abs(y0 - y1) < HORIZONTAL_THRESHOLD;
+        let isVertical = Math.abs(x0 - x1) < HORIZONTAL_THRESHOLD;
+
+        let controlPointX = isHorizontal ? x1 : x1 + CONSTANT_CONTROL_POINT * ((x1 - x0) / (y1 - y0));
+        let controlPointY = isVertical ? y1 : y1 - CONSTANT_CONTROL_POINT * ((y1 - y0) / (x1 - x0));
+
+        const isCurve = interferingChapters.length > 0;
+        const sourceKey: any = `${source?.height}-${source?.width}`;
+        const targetKey: any = `${target?.height}-${target?.width}`;
+
+        if ((x0 == x1) && y0 == y1) {
+          const sourcePos = ((this.duplucateChaptersPosition[sourceKey].findIndex((e) => e.id == source?.id)) + 1);
+          const targetPos = ((this.duplucateChaptersPosition[targetKey].findIndex((e) => e.id == target?.id)) + 1);
+
+          if (this.ChapterGroup[targetKey]) {
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15);
+            const targetHeight = (target?.height ?? 0) - (targetPos * 15);
+            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.6), false, false);
+          } else {
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + 10;
+            const targetHeight = (target?.height ?? 0) - (targetPos * 8) + 10;
+            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.9), false, false);
+          }
+        }
+
+        if ((x0 !== x1) && y0 == y1) {
+          if (this.ChapterGroup[targetKey]) {
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1);
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15) + 10;
+            const targetHeight = (target?.height ?? 0) - (targetPos * 15) - 5;
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          } else {
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1) || 1;
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1) || 1;
+            const sourceHeight = (source?.height != undefined ? source.height : 0) - (sourcePos * 8) + 10;
+            const targetHeight = (target?.height != undefined ? target?.height : 0) - (targetPos * 8) + 10;
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          }
+        } else {
+          if (this.ChapterGroup[targetKey]) {
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1);
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 15) + 10;
+            const targetHeight = (target?.height ?? 0) - (targetPos * 15) - 5;
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          } else {
+            const sourcePos = ((this.duplucateChaptersPosition[sourceKey]?.findIndex((e) => e.id == source?.id)) + 1) || 1;
+            const targetPos = ((this.duplucateChaptersPosition[targetKey]?.findIndex((e) => e.id == target?.id)) + 1) || 1;
+            const sourceHeight = (source?.height != undefined ? source.height : 0) - (sourcePos * 8) + 10;
+            const targetHeight = (target?.height != undefined ? target?.height : 0) - (targetPos * 8) + 10;
+            return this.createEdge(x0, sourceHeight, x1, targetHeight, controlPointX, controlPointY, isHorizontal, isCurve);
+          }
+        }
+      });
+  });
+}
 
 
   storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
@@ -1755,20 +1815,19 @@ private updateEventDisplay(event: Event) {
 
 
     if (this.reset) {
-      // console.log(strs.map((c) => c.order))
-      // this.api.updateStoryLineList(strs).subscribe((data) => {
-      //   data.forEach(str => {
-      //     this.wd.updateStoryline(str)
-      //   });
-        
-      // })
+
+      this.api.updateStoryLineList(strs).subscribe((data) => {
+        data.forEach(str => {
+          this.wd.updateStoryline(str)
+        });
+
+      })
     } else {
-      // console.log(reordenadas.map((c) => c.order))
-      // this.api.updateStoryLineList(reordenadas).subscribe((data) => {
-      //   data.forEach(str => {
-      //     this.wd.updateStoryline(str)
-      //   });
-      // })
+      this.api.updateStoryLineList(reordenadas).subscribe((data) => {
+        data.forEach(str => {
+          this.wd.updateStoryline(str)
+        });
+      })
 
     }
     this.prevTimeline = undefined;
@@ -2309,7 +2368,6 @@ private updateEventDisplay(event: Event) {
     this.prevTimeline = newTimeline
 
   }
-
 
 
   timelineSwapDragEnded(element: any, timelines: Timeline[]) {
