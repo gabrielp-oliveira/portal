@@ -1682,12 +1682,26 @@ getChapterByStoryline(str:StoryLine): Chapter[]{
 }
 
 updateChapterHeight(chapters: Chapter[], height: number){
+  if(!this.ss?.storyline_update_chapter){
+    return
+  }
   chapters.forEach((c) => {
     const id = document.getElementById(`${c.id}-chapter-circle`);
     d3.select(id)
     .transition()
     .duration(200)
     .attr("cy", height);
+    
+    
+    if(this.ss?.chapter_names){
+      const idTxt = document.getElementById( `${c.id}-chapter-group-txt`);
+      d3.select(idTxt)
+      .transition()
+      .duration(200)
+      .attr("dy", height + 15)
+    }
+
+    
 
     this.updateConnectionByChapter(c, height)
   })
@@ -1787,7 +1801,7 @@ updateConnectionByChapter(chapter: Chapter, newHeight: number) {
 }
 
 
-  storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
+storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
     const elementId = `${CSS.escape(this.storylineSelected.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "12");
     if (!this.storylineSelected) {
@@ -1813,22 +1827,26 @@ updateConnectionByChapter(chapter: Chapter, newHeight: number) {
         reordenadas.push(t);
       });
 
+      const storylinesToUpdate = this.reset ? strs : reordenadas;
 
-    if (this.reset) {
-
-      this.api.updateStoryLineList(strs).subscribe((data) => {
-        data.forEach(str => {
-          this.wd.updateStoryline(str)
-        });
-
-      })
-    } else {
-      this.api.updateStoryLineList(reordenadas).subscribe((data) => {
+      this.api.updateStoryLineList(storylinesToUpdate).subscribe((data) => {
         data.forEach(str => {
           this.wd.updateStoryline(str)
         });
       })
-
+   
+      if(!this.ss?.storyline_update_chapter){
+        const chps = this.chapters.map((c) => {
+          const pos = Math.round(c.height / this.gridHeight) <=1? 1 : Math.round(c.height / this.gridHeight)
+          const storyline = strs.find((s) => s.order == pos)
+          c.storyline_id = storyline?.id || c.storyline_id
+          return c
+        })
+      this.api.updateChapterList(chps).subscribe((chpList) => {
+        chpList.forEach((c) => {
+          this.wd.updateChapter(c)
+        })
+      })
     }
     this.prevTimeline = undefined;
 

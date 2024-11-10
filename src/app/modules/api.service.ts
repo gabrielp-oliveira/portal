@@ -49,8 +49,8 @@ export class ApiService {
   updateChapter(chapterId: string, body:Chapter): Observable<Chapter> {
     return this.http.put<Chapter>(`http://localhost:9090/updateChapter?id=${chapterId}`, body);
   }
-  updateChapterList( body:Chapter[]): Observable<Chapter> {
-    return this.http.put<Chapter>(`http://localhost:9090/updateChapterList?id=${body[0].id}`, body);
+  updateChapterList( body:Chapter[]): Observable<Chapter[]> {
+    return this.http.put<Chapter[]>(`http://localhost:9090/updateChapterList?id=${body[0].id}`, body);
   }
   updateTimelineList( body:Timeline[]): Observable<Timeline> {
     return this.http.put<Timeline>(`http://localhost:9090/updateTimelineList?id=${body[0].id}`, body);
