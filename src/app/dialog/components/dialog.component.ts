@@ -106,7 +106,7 @@ import { combineLatest } from 'rxjs';
       selectedTl: Timeline = {
         range: 0,
         id: '',
-        WorldsID: '',
+        world_id: '',
         name: '',
         description: '',
         order: 0,

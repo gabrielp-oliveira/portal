@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
-import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap } from '../../../models/graphsTypes';
-import { BehaviorSubject, Subject, delay, filter, switchMap, takeUntil, tap, combineLatest, map, concatMap, from, forkJoin } from 'rxjs';
+import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap, RANGE_GAP } from '../../../models/graphsTypes';
+import {  combineLatest } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, Connection, Event, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
@@ -1703,17 +1703,47 @@ updateChapterHeight(chapters: Chapter[], height: number){
 
     
 
-    this.updateConnectionByChapter(c, height)
+    this.updateConnectionByChapter(c, height, true)
   })
 }
-updateConnectionByChapter(chapter: Chapter, newHeight: number) {
-  chapter.height = newHeight;
+updateChapterWidth(chapters: Chapter[], width: number){
+  if(!this.ss?.timeline_update_chapter){
+    return
+  }
+  chapters.forEach((c) => {
+    const base = document.getElementById(`${c.id}-chapter-group`);
+    const el = d3.select(base).select('circle')
+
+    el
+    .transition()
+    .duration(100)
+    .attr("cx", width + (c.range * RANGE_GAP));
+    
+    
+    if(this.ss?.chapter_names){
+      d3.select(base).select('text')
+      .transition()
+      .duration(100)
+      .attr("dx", width + (c.range * RANGE_GAP))
+    }
+
+    
+
+    this.updateConnectionByChapter(c, width + (c.range * RANGE_GAP), false)
+  })
+}
+updateConnectionByChapter(chapter: Chapter, newNumber: number, isHeight:boolean) {
+  if(isHeight){
+    chapter.height = newNumber;
+  }else {
+    chapter.width = newNumber
+  }
   const connections = this.connections.filter((cnn) => cnn.sourceChapterID == chapter.id || cnn.targetChapterID == chapter.id);
 
   connections.forEach((cnn) => {
     const el = d3.select(document.getElementById(cnn.id + "-connections-group"))
       .transition() // Inicia a transição
-      .duration(200) // Define a duração para 200ms
+      .duration(100) // Define a duração para 200ms
       .attr("d", () => {
         let source = this.chapters.find((data: Chapter) => data.id === cnn.sourceChapterID);
         let target = this.chapters.find((data: Chapter) => data.id === cnn.targetChapterID);
@@ -2065,6 +2095,9 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
   }
 
 
+  getChapterByTimeline(tl:Timeline): Chapter[]{
+    return this.chapters.filter((c) => c.timeline_id == tl.id)
+  }
 
 
 
@@ -2098,6 +2131,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
     const currentElementLocation = this.calculateEditIconPosition(newTimeline, beforeSelected)
     const otherElementLocation = this.calculateEditIconPosition(newTimeline, timelines)
 
+    const newTimelineChapters = this.getChapterByTimeline(newTimeline)
+    const selectedTimelineChapters = this.getChapterByTimeline(this.selectedTimeline)
+
+
     if (!isSame && this.selectedTimeline.order > newTimeline.order) {
       const diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
 
@@ -2120,9 +2157,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("x", () => this.buttonPositions(newTimeline, timelines, pos) + diff)
+          .attr("x", () => 30 + this.buttonPositions(newTimeline, timelines, pos) + diff)
       });
 
+      this.updateChapterWidth(selectedTimelineChapters, otherElementLocation -20)
 
       //  aqui ---------------------------
       if (this.prevTimeline != undefined && this.prevTimeline.order < newTimeline.order) {
@@ -2150,9 +2188,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(timelines[newTimeline.order - 2], timelines, pos))
+            .attr("x", () => 30 + this.buttonPositions(timelines[newTimeline.order - 2], timelines, pos))
         });
-
+        const prevTimelineChapters = this.getChapterByTimeline(this.prevTimeline)
+        this.updateChapterWidth(prevTimelineChapters, otherElementLocation - (this.prevTimeline?.range * 20))
 
       } else {
         const elPos = otherElementLocation + (this.selectedTimeline.range * 20)
@@ -2180,6 +2219,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .attr("x", () => (elPos + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
 
         });
+        this.updateChapterWidth(newTimelineChapters, elPos - 20)
 
       }
 
@@ -2207,9 +2247,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .duration(100)
           .ease(d3.easeCubic)
           .attr("x", () => (elPosition + (this.selectedTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
-
-        // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
-      });
+          
+          // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
+        });
+        this.updateChapterWidth(selectedTimelineChapters, elPosition - 20)
 
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
@@ -2241,9 +2282,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .duration(100)
             .ease(d3.easeCubic)
             .attr("x", () => (Location + (range * 10) - 7 + this.buttonsSpacing[pos]))
-
-          // .attr('x', Location + this.getElementCenter(prevRectElement));
-        });
+            
+            // .attr('x', Location + this.getElementCenter(prevRectElement));
+          });
+          console.log('5')
 
 
       } else {
@@ -2273,6 +2315,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .attr("x", () => (elPosition + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
 
         });
+        this.updateChapterWidth(newTimelineChapters, elPosition - 20 )
       }
 
 
@@ -2287,6 +2330,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
         const prevRectElement = prevTimelineElement.select(".timeline-body");
         const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
         const prevtextElement = prevTimelineElement.selectAll("text");
+        const prevTimelineChapters = this.getChapterByTimeline(this.prevTimeline)
 
         prevRectElement
           .transition()
@@ -2308,10 +2352,11 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos))
-
-          // .attr('x', Location + this.getElementCenter(prevRectElement) );
-        });
+            .attr("x", () => 30 + this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos))
+            
+          });
+          console.log('7')
+          this.updateChapterWidth(prevTimelineChapters, Location - 20)
 
 
 
@@ -2326,7 +2371,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           const prevRectElement = prevTimelineElement.select(".timeline-body");
           const prevRectheaderElement = prevTimelineElement.select(".timeline-header");
           const prevtextElement = prevTimelineElement.selectAll("text");
-          const range = this.prevTimeline?.range
+          const prevTimelineChapters = this.getChapterByTimeline(this.prevTimeline)
 
           prevRectElement
             .transition()
@@ -2347,7 +2392,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', () => this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos));
+              .attr('x', () => 30 + this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos));
 
           });
 
@@ -2365,9 +2410,12 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
               .transition()
               .duration(100)
               .ease(d3.easeCubic)
-              .attr('x', () => this.buttonPositions(this.selectedTimeline, timelines, pos));
+              .attr('x', () => 30 + this.buttonPositions(this.selectedTimeline, timelines, pos));
           });
+          this.updateChapterWidth(prevTimelineChapters, Location -20)
+          this.updateChapterWidth(selectedTimelineChapters, toWalk -20)
         }
+
 
 
       }
@@ -2415,14 +2463,30 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       });
 
 
-    reordenadas.forEach(timeline => {
-      this.wd.updateTimeline(timeline)
-    });
-    const updateTimelinesApi = reordenadas.map((t) => {
-      return this.api.updateTimeline(t).subscribe((e) => {
-        this.wd.updateTimeline(e)
+
+    this.api.updateTimelineList(reordenadas).subscribe((e) => {
+      this.wd.updateTimeline(e)
+    })
+    
+    if(!this.ss?.timeline_update_chapter){
+
+      
+      const chps = this.chapters.map((c) => {
+        const tl = this.getTimelineAndAdjustedRange(c.width, c.width)
+        c.timeline_id = tl?.timeline?.id || c.timeline_id
+        c.range = (tl?.adjustedRange || c.range) - 4
+        console.log(c.name, tl?.timeline.name, tl?.adjustedRange)
+        return c
+      })
+    this.api.updateChapterList(chps).subscribe((chpList) => {
+      chpList.forEach((c) => {
+        this.wd.updateChapter(c)
       })
     })
+  }
+    
+
+  
 
     // updateTimelinesApi.forEach(element => {
     //   element.unsubscribe()
@@ -2434,6 +2498,38 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
     // Resetar prevTimeline
     this.prevTimeline = undefined;
   }
+
+
+
+  // Método para obter o timeline com base na posição x
+// Método para obter o timeline e o range ajustado para manter o chapter na mesma posição
+getTimelineAndAdjustedRange(xPosition: number, chapterWidth: number): { timeline: Timeline, adjustedRange: number } | undefined {
+  const RANGE_MULTIPLIER = 20;
+  let accumulatedX = 0;
+
+  for (const timeline of this.timelines.sort((a, b) => a.order - b.order)) {
+      // Calcula a largura do timeline atual
+      const timelineWidth =  (timeline.range ) * RANGE_MULTIPLIER;
+
+      // Checa se xPosition está dentro do intervalo acumulado para o timeline atual
+      if (xPosition >= accumulatedX && xPosition < accumulatedX + timelineWidth) {
+          // Calcular o range ajustado necessário para manter o capítulo na mesma posição
+          const offsetWithinTimeline = xPosition - accumulatedX;
+          const adjustedRange = Math.ceil((offsetWithinTimeline) / RANGE_MULTIPLIER);
+          
+          return {
+              timeline,
+              adjustedRange
+          };
+      }
+
+      // Atualiza o acumulado para o próximo intervalo
+      accumulatedX += timelineWidth;
+  }
+  
+  // Se xPosition estiver fora do intervalo de todos os timelines
+  return undefined;
+}
 
 
 

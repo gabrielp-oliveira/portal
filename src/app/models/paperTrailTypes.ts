@@ -100,7 +100,7 @@ export type Event = {
 
 export type Timeline = {
     id: string,
-    WorldsID: string,
+    world_id: string,
     name: string,
     description: string,
     order: number,
