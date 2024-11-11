@@ -238,7 +238,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         const element = document.getElementById(`${c.id}-chapter-circle`);
         d3.select(element)
           .transition()
-          .duration(200)
+          .duration(100)
           .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color)
           .attr("r", this.getDiameter(chp))
 
@@ -343,8 +343,10 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         .attr("dy", () => group[0].height + 15)
         .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
         .attr("font-size", LABEL_FONT_SIZE_GROUP)
+        .attr("font-weight", 700)
         .attr("text-anchor", "middle")
         .attr("fill", "black")
+        .attr("cursor", "pointer")
         .text(() => 'group ' + (idx + 1))
         .on("click", (e:MouseEvent) => this.getChapterGroup(svg, e, group, elGroup));
 
@@ -403,7 +405,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
       const cy = chp.height - (pos * 15)
       el
       .transition()
-      .duration(200)
+      .duration(100)
       .attr("cy", () => cy);
       
      element
@@ -431,7 +433,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
     chpList.forEach((chp) => {
       d3.select(document.getElementById(`${chp.id}-chapter-circle`))
         .transition()
-        .duration(200)
+        .duration(100)
         .attr("cy", () => {
           const key: any = `${chp.height}-${chp.width}`;
           const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == chp.id)) + 1);
@@ -525,7 +527,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 
       d3.select(element)
       .transition()
-      .duration(200)
+      .duration(100)
       .attr("fill", d3.color(c.color)?.brighter(1)?.toString() || c.color) // Lighten the color
       .attr("r", this.getDiameter(c));
 
@@ -554,7 +556,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 
         d3.select(element)
         .transition()
-        .duration(200)
+        .duration(100)
         .attr("fill", d3.color(chp.color)?.brighter(1)?.toString() || chp.color) // Lighten the color
         .attr("r", this.getDiameter(c));
         })
@@ -589,7 +591,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 
       d3.select(element)
         .transition()
-        .duration(200)
+        .duration(100)
         .attr("fill", this.getFillColor(c)) // Restore the original color based on state
         .attr("r", this.getDiameter(c));
 
@@ -611,7 +613,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
         
         d3.select(elementtx)
         .transition()
-        .duration(200)
+        .duration(100)
         .attr("display", this.textDisplay)
         .attr("font-weight", 500)
     }
@@ -1689,7 +1691,7 @@ updateChapterHeight(chapters: Chapter[], height: number){
     const id = document.getElementById(`${c.id}-chapter-circle`);
     d3.select(id)
     .transition()
-    .duration(200)
+    .duration(100)
     .attr("cy", height);
     
     
@@ -1697,7 +1699,7 @@ updateChapterHeight(chapters: Chapter[], height: number){
       const idTxt = document.getElementById( `${c.id}-chapter-group-txt`);
       d3.select(idTxt)
       .transition()
-      .duration(200)
+      .duration(100)
       .attr("dy", height + 15)
     }
 
@@ -1743,7 +1745,7 @@ updateConnectionByChapter(chapter: Chapter, newNumber: number, isHeight:boolean)
   connections.forEach((cnn) => {
     const el = d3.select(document.getElementById(cnn.id + "-connections-group"))
       .transition() // Inicia a transição
-      .duration(100) // Define a duração para 200ms
+      .duration(100) // Define a duração para 100ms
       .attr("d", () => {
         let source = this.chapters.find((data: Chapter) => data.id === cnn.sourceChapterID);
         let target = this.chapters.find((data: Chapter) => data.id === cnn.targetChapterID);

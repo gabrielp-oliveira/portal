@@ -470,7 +470,7 @@ import { combineLatest } from 'rxjs';
       )
     }
     addEvent(event: Event){
-        // this.wd.updateChapter(newChapter)
+        this.wd.addEvent(event)
     }
 
 
