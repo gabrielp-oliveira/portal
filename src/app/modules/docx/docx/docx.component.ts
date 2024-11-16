@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ApiService } from '../../api.service';
+import { ChapterDetails } from '../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-docx',
@@ -11,6 +12,7 @@ import { ApiService } from '../../api.service';
 export class DocxComponent {
   worldId: string = "";
   chapterId: string = "";
+  ChapterDetails: ChapterDetails
 
   docLink:string = ""
   constructor(
@@ -23,10 +25,7 @@ export class DocxComponent {
     this.route.paramMap.subscribe(params => {
       this.worldId = String(params.get('id'))
       this.chapterId = String(params.get('chapterId'))
-
-      this.api.getChapterUrl(this.chapterId).subscribe((a) => {
-
-      })
+      this.api.getChapterUrl(this.chapterId).subscribe((a: ChapterDetails) => this.ChapterDetails = a)
       this.docLink = this.wd.getChapterLink(this.chapterId)
     });
   }

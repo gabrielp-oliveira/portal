@@ -11,10 +11,15 @@ export class LoadingService {
   loading$ = this.loadingSubject.asObservable();
   
   loadingOn() {
-    this.loadingSubject.next(true);
+    if(!this.loadingSubject.value){
+      this.loadingSubject.next(true);
+    }
   }
   
   loadingOff() {
-    this.loadingSubject.next(false);
+
+    if(this.loadingSubject.value){
+      this.loadingSubject.next(false);
+    }
   }
 }

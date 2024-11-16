@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, Connection, Event, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterDetails, Connection, Event, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +22,8 @@ export class ApiService {
   getWorldData(worldId: string): Observable<world> {
     return this.http.get<world>(`http://localhost:9090/world?id=${worldId}`);
   }
-  getChapterUrl(chapterId: string): Observable<Chapter> {
-    return this.http.get<Chapter>(`http://localhost:9090/chapterUrl?id=${chapterId}`);
+  getChapterUrl(chapterId: string): Observable<ChapterDetails> {
+    return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
   getChapteData(chapterId: string): Observable<Chapter> {
     return this.http.get<Chapter>(`http://localhost:9090/chapter?id=${chapterId}`);

@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
 import { WorldDataService } from '../../../dashboard/world-data.service';
-import { Chapter, paper, StoryLine, Subway_Settings, ExtendedChapter } from '../../../../models/paperTrailTypes';
+import { Chapter, paper, StoryLine, Subway_Settings, ExtendedChapter, Timeline } from '../../../../models/paperTrailTypes';
 import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
@@ -34,6 +34,7 @@ export class ChapterComponent implements OnInit {
   sortDirection: boolean = true
 
   sortCriteria:string = "sort"
+  @ViewChild('circle') circle: ElementRef;
 
   filterValues: any = {
     order: '',
@@ -55,10 +56,13 @@ export class ChapterComponent implements OnInit {
 
   };
 
+  gridHeight = 50
 
 
   orderSearchValue: string = ""
   nameSearchValue: string = ""
+  timelines: Timeline[] = []
+  storylines: StoryLine[] = []
   dateSearchValue: string = ""
   papperNameSearchValue:String = ""
   timelineNameSearchValue:String = ""
@@ -130,12 +134,13 @@ export class ChapterComponent implements OnInit {
         
         const pp = papers.find((pp) => pp.id == c.paper_id)
         cht.papperName = pp?.name || ''
-
+        cht.papperOrder = pp?.order || 1
         const stl = storyLines.find((pp) => pp.id == c.storyline_id)
         cht.storylineName = stl?.name?stl.name:  ''
-        
+        this.storylines = storyLines
         const tl = timelines.find((pp) => pp.id == c.timeline_id)
         cht.timelineName = tl?.name || ''
+        this.timelines = timelines
 
         // const evt = events.find((ev) => ev.id == c.event_Id)
         // cht.eventName = evt?.name || ''
@@ -153,38 +158,161 @@ export class ChapterComponent implements OnInit {
 
   }
 
+  
+  onDragMoved(a: CdkDragDrop<Chapter[]> | any) {
+    if (a.event.target.id !== 'tableChapter') {
+
+      const targetEl = (a.event.target);  // Exibe todo o objeto do evento para referência
+
+      const subwayElement = document.getElementById('subway'); // Obtém o elemento com o ID #subway
+
+// Verifica se o subwayElement contém o targetElement como filho
+    if (subwayElement && subwayElement.contains(targetEl)) {
+      const circleElement = this.circle.nativeElement;
+      circleElement.style.display = 'block';     
+      circleElement.style.backgroundColor =  this.numberToRGB(a.source.data.paper_id);
+      circleElement.style.top = a.event.clientY +10 + "px";
+      circleElement.style.left = a.event.clientX +10 + "px";
+      }
+    } else {
+      const circleElement = this.circle.nativeElement;
+      circleElement.style.display = 'none';
+    }
+  }
+
+  getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRange: number } | undefined {
+    const RANGE_MULTIPLIER = 20;
+    let accumulatedX = 100;
+  
+    for (const timeline of this.timelines.sort((a, b) => a.order - b.order)) {
+        // Calcula a largura do timeline atual
+        const timelineWidth =  (timeline.range ) * RANGE_MULTIPLIER;
+  
+        // Checa se xPosition está dentro do intervalo acumulado para o timeline atual
+        if (xPosition >= accumulatedX && xPosition < accumulatedX + timelineWidth) {
+            // Calcular o range ajustado necessário para manter o capítulo na mesma posição
+            const offsetWithinTimeline = xPosition - accumulatedX;
+            let adjustedRange = Math.floor((offsetWithinTimeline) / RANGE_MULTIPLIER);
+            adjustedRange = adjustedRange <= 0? 1 : adjustedRange
+            return {
+                timeline,
+                adjustedRange
+            };
+        }
+  
+        // Atualiza o acumulado para o próximo intervalo
+        accumulatedX += timelineWidth;
+    }
+    
+    // Se xPosition estiver fora do intervalo de todos os timelines
+    return undefined;
+  }
+  
+  private findStorylineForChapter( y: number): StoryLine {
+    let range = Math.round((y - 50) / this.gridHeight)
+    if (range >= this.storylines.length - 1) {
+      range = this.storylines.length - 1
+    }
+    const str = this.storylines.filter((s) => s.order == (range + 1))
+    return str[0];
+  }
+
+
+
+  
   // Função para reorganizar os itens da tabela
   drop(event: CdkDragDrop<Chapter[]> | any) {
-    if(!this.isDrag){
-      return 
-    }
-    const prevIndex = this.dataSource.data.findIndex(
-      (d) => d === event.item.data
-    );
-    moveItemInArray(this.dataSource.data, prevIndex, event.currentIndex);
-    this.dataSource._updateChangeSubscription(); // Atualiza a tabela
+    const circleElement = this.circle.nativeElement;
+    circleElement.style.display = 'none'; // Exemplo: muda a cor de fundo
+    const targetEl = (event.event.target);  // Exibe todo o objeto do evento para referência
 
-    const data: Chapter[] = this.dataSource.data.map((pp, idx) => {
-      pp.order = idx + 1
-      return pp
-    })
-    this.api.updateChapterList(data).subscribe((a) => {
-      data.forEach((c) => {
+    const subwayElement = document.getElementById('subway'); // Obtém o elemento com o ID #subway
+
+    if (subwayElement && subwayElement.contains(targetEl)) {
+
+      const chapter :Chapter= event.item.data
+      const tl = this.getTimelineAndAdjustedRange(event.dropPoint.x)
+      
+      
+      const x = event.event.clientX - subwayElement.getBoundingClientRect().left;
+      const y = event.event.clientY - subwayElement.getBoundingClientRect().top;
+      
+      const str = this.findStorylineForChapter( y);
+      
+      console.log(str)
+      chapter.storyline_id = str.id
+      chapter.timeline_id = tl?.timeline.id || ''
+      chapter.range= tl?.adjustedRange || 0
+      console.log(tl?.adjustedRange)
+      this.api.updateChapter(chapter.id, chapter).subscribe((c) => {
         this.wd.updateChapter(c)
       })
-
-    })
-
-  }
+      console.log(tl)
+      console.log(chapter)
 
 
-  sortByOrder(a: Chapter, b: Chapter): number {
-    if (this.sortDirection) {
-      return a.order - b.order;
-    } else {
-      return b.order - a.order;
+
+    } 
+
+    if (!this.isDrag) {
+      return;
     }
+    // Identifica o `paperId` do capítulo que está sendo movido
+    const draggedChapter = event.item.data;
+    const paperId = draggedChapter.paper_id;
+  
+    // Filtra os capítulos que pertencem ao mesmo `paper`
+    const chaptersInSamePaper = this.dataSource.data.filter(
+      (chapter) => chapter.paper_id === paperId
+    );
+  
+    // Encontra o índice original e o índice alvo dentro do conjunto de capítulos do mesmo `paper`
+    const prevIndex = chaptersInSamePaper.findIndex(
+      (d) => d === draggedChapter
+    );
+    const currentIndex = event.currentIndex;
+  
+    // Move o capítulo na lista filtrada para reorganização
+    moveItemInArray(chaptersInSamePaper, prevIndex, currentIndex);
+  
+    // Atualiza a ordem dos capítulos no `paper` específico
+    chaptersInSamePaper.forEach((chapter, idx) => {
+      chapter.order = idx + 1;
+    });
+  
+    // Atualiza a dataSource para refletir as novas ordens no `paper` específico
+    this.dataSource.data = this.dataSource.data.map((chapter) =>
+      chapter.paper_id === paperId ? chaptersInSamePaper.find((ch) => ch.id === chapter.id) || chapter : chapter
+    );
+    
+    // Atualiza a tabela
+    this.dataSource._updateChangeSubscription();
+  
+    // Envia a atualização ao servidor apenas para os capítulos do mesmo `paper`
+    this.api.updateChapterList(chaptersInSamePaper).subscribe((updatedChapters) => {
+      updatedChapters.forEach((c) => {
+        this.wd.updateChapter(c);
+      });
+    });
   }
+  
+
+
+  sortByOrder(a: ExtendedChapter, b: ExtendedChapter): number {
+    // Primeiro, compara o campo `order` dos capítulos
+    if (a.order !== b.order) {
+      return this.sortDirection ? a.order - b.order : b.order - a.order;
+    }
+  
+    // Se o campo `order` dos capítulos for igual, compara pelo `order` dos papers
+    if (a.papperOrder !== undefined && b.papperOrder !== undefined) {
+      return this.sortDirection ? a.papperOrder - b.papperOrder : b.papperOrder - a.papperOrder;
+    }
+  
+    // Se `order` dos capítulos e dos papers forem iguais ou ausentes, retorna 0
+    return 0;
+  }
+  
   sortByDate(a: Chapter, b: Chapter): number {
     if (this.sortDirection) {
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();

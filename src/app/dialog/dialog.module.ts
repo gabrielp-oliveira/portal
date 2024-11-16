@@ -15,6 +15,9 @@ import { MatCardModule } from '@angular/material/card';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ModalComponent } from '../standAlove/modal/modal.component';
 
 
 
@@ -26,7 +29,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent
+    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent, ModalComponent
   ],
   providers: [],
   imports: [
@@ -35,6 +38,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     ReactiveFormsModule,
     MatCardModule,
     MatNativeDateModule,
+    MatDialogModule,
+    MatButtonModule,
+    FontAwesomeModule,
     MatDatepickerModule,
     MatNativeDateModule, // Aqui está o adaptador de data nativo
     MatSliderModule

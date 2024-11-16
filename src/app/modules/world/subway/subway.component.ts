@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2 } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2, OnDestroy, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
 import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap, RANGE_GAP } from '../../../models/graphsTypes';
-import {  combineLatest } from 'rxjs';
+import {  combineLatest, Subject, takeUntil, tap } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, Connection, Event, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
@@ -11,6 +11,8 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
 import { NumberInput } from '@angular/cdk/coercion';
 import { Router } from '@angular/router';
+import { ModalComponent } from '../../../standAlove/modal/modal.component';
+import { ErrorService } from '../../error.service';
 
 const D3_ROOT_ELEMENT_ID = "subway";
 
@@ -20,7 +22,7 @@ const D3_ROOT_ELEMENT_ID = "subway";
   templateUrl: './subway.component.html',
   styleUrls: ['./subway.component.scss']
 })
-export class SubwayComponent {
+export class SubwayComponent implements OnDestroy, OnInit  {
 
   width: number;
   height: number;
@@ -90,34 +92,43 @@ export class SubwayComponent {
   uniqueChapters: Chapter[]
   duplicateChapters: Chapter[][]
   ChapterGroup: any = {}
+  
+  destroy$ = new Subject<void>();
+
+
   constructor(
     private dialog: DialogService,
     private wd: WorldDataService,
     private api: ApiService,
-    private renderer: Renderer2,
-    private router: Router,
+    private err: ErrorService,
+    private loading: LoadingService
 
   ) {
     this.cleanItemsOnSvg();
+  }
+  
+  OnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {
     this.width = this.root?.nativeElement.offsetWidth;
     this.height = this.root?.nativeElement.offsetHeight;
-
+    
     let svg = this.initSvg();
-    this.wd.timelines$.subscribe((t) => {
-      this.timelines = t
-    })
+
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
       "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$,
       "ss": this.settings$, "tbChp": this.tableChapter$
-
-    }).subscribe((data) => {
+    })
+    .subscribe({next: (data) => {
+      console.log('..')
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
       let {  papers, storyLines, timelines, connections, tbChp } = data
       this.ss = data.ss
+      this.timelines = timelines
 
       const showTableChapters = data.ss?.display_table_chapters
 
@@ -173,13 +184,28 @@ export class SubwayComponent {
       this.cleanItemsOnSvg();
       data.chapters = chpList
       this.handleGraphEvents(svg, data);
-    })
+      this.loading.loadingOff()
+    },
+      error: (err) => {
+      this.err.errHandler(err)
+      this.loading.loadingOn()
 
+    },
+    complete: () => {
+      console.log('Operação concluída');
 
+    }})
     // Subscribe events for graph
 
   }
 
+  ngOnInit(){
+    this.loading.loadingOn()
+
+    this.loading.loading$.subscribe((loading) => {
+      console.log(loading)
+    })
+  }
 
 separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
   // Agrupa capítulos por width e height
@@ -873,6 +899,7 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
 removeEvent(){
   if(this.selectedEvent){
     const id = this.selectedEvent.id
+    this.loading.loadingOn()
     this.api.deleteEvent(id).subscribe((e) => {
       this.wd.removeEvent(id)
       this.selectedEvent = undefined
@@ -968,7 +995,7 @@ private updateEventDisplay(event: Event) {
   }
 
   removeStoryline() {
-
+    this.loading.loadingOn()
     this.storylineSelected.world_id = this.wd.worldId
     this.api.deleteStoryline(this.storylineSelected.id, this.storylineSelected).subscribe({
       next: (data) => this.wd.setWorldData(data),
@@ -977,6 +1004,7 @@ private updateEventDisplay(event: Event) {
   }
   removeConnection() {
     if (this.selectedConnection != undefined) {
+      this.loading.loadingOn()
       const target = this.chapters.filter((chp) => chp.id == this.selectedConnection?.targetChapterID)[0]
       target.color = "white"
       target.selected = true
@@ -1167,6 +1195,7 @@ private updateEventDisplay(event: Event) {
       storyline_id: newStorylineId,
       timeline_id: newTimeline.timeline?.id
     }
+    console.log(body)
     this.api.updateChapter(d.id, body).subscribe(
 
       {
@@ -1233,7 +1262,14 @@ private updateEventDisplay(event: Event) {
       this.selectedChapter.timeline_id = ""
       this.selectedChapter.storyline_id = ""
       this.selectedChapter.event_Id = ""
+      this.selectedChapter.range = 0
+      this.selectedChapter.width = -100
+      this.selectedChapter.height = -100
+      this.selectedChapter.color = 'transparent'
+      this.selectedChapter.focus = false
 
+
+      this.loading.loadingOn()
       const elementId = `${CSS.escape(this.selectedChapter.id)}-chapter-circle`;
       const elementTxtId = `${CSS.escape(this.selectedChapter.id)}-chapter-group-txt`;
 
@@ -1479,7 +1515,8 @@ private updateEventDisplay(event: Event) {
 
     const widthChapter = this.chapters
       .sort((a, b) => b.width - a.width)[0]?.width
-    const width = widthTimelines > widthChapter ? widthTimelines : widthChapter
+    let width = widthTimelines > widthChapter ? widthTimelines : widthChapter
+    width = width > 1535? width : 1535
     let el = svg.selectAll("g.storyline-group")
       .data(strs)
       .enter()
@@ -1925,6 +1962,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
     // Adiciona ou atualiza os retângulos (o corpo da timeline)
     el.append("rect")
       .attr("class", "timeline-body")
+      .attr("id", (t) => t.id+"-timeline-body")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 50)
       .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
@@ -2474,7 +2512,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
       
       const chps = this.chapters.map((c) => {
-        const tl = this.getTimelineAndAdjustedRange(c.width, c.width)
+        const tl = this.getTimelineAndAdjustedRange(c.width)
         c.timeline_id = tl?.timeline?.id || c.timeline_id
         c.range = (tl?.adjustedRange || c.range) - 4
         console.log(c.name, tl?.timeline.name, tl?.adjustedRange)
@@ -2505,7 +2543,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
   // Método para obter o timeline com base na posição x
 // Método para obter o timeline e o range ajustado para manter o chapter na mesma posição
-getTimelineAndAdjustedRange(xPosition: number, chapterWidth: number): { timeline: Timeline, adjustedRange: number } | undefined {
+getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRange: number } | undefined {
   const RANGE_MULTIPLIER = 20;
   let accumulatedX = 0;
 

@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Chapter, Event, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { DocxComponent } from '../modules/docx/docx/docx.component';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
+import { ModalComponent } from '../standAlove/modal/modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,21 @@ export class DialogService {
       enterAnimationDuration,
       exitAnimationDuration,
       data: data
+    });
+  }
+
+ openModal(): void {
+    this.dialog.open(ModalComponent, {
+      enterAnimationDuration: "150ms",
+      exitAnimationDuration: "150ms",
+      position: {top: '10px', right: '10px'},
+      panelClass: 'dialogPanel',
+      data: {
+        title: 'Example Title',
+        text: 'This is an example of modal content.',
+        color: '#FF0000', // Passe a cor desejada para o reflexo
+        position: { top: '100px', left: '100px' },
+      },
     });
   }
 

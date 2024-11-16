@@ -76,13 +76,22 @@
   }
 
 
-  .chapterTable {
+  .chapterTable{
     margin: 5px;
   }
-
  
   .transition {
     transition: 400ms;
   }
 
   
+  .circle {
+    width: 15px;
+    height: 15px;
+    overflow: hidden;
+    padding: 0px;
+    border-radius: 100%;
+    border: 1px solid black;
+    display: none;
+    position: fixed;
+  }

@@ -9,6 +9,7 @@ export class ErrorService {
   
   constructor(private auth: AuthService){ }
   errHandler(error: any) {
+    console.error(error)
       if (error.status === 401 || error.status === 403) {
         console.error(error)
         this.auth.logOut();

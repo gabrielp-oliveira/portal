@@ -4,7 +4,7 @@
   cdkDropList
   (cdkDropListDropped)="drop($event)"
   [cdkDropListData]="dataSource.data"
-  class="drop-list"
+  class="drop-paper-list"
 >
   <table
     mat-table
@@ -114,6 +114,8 @@
       cdkDrag
       cdkDragLockAxis="y"
       [cdkDragData]="row"
+      cdkDragBoundary=".drop-paper-list"
+
     ></tr>
   </table>
 </div>

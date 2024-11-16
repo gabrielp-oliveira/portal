@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
 import { Chapter, Event, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
+import { LoadingService } from '../../modules/loading.service';
 
 
 
@@ -20,7 +21,9 @@ import { combineLatest } from 'rxjs';
   export class createPaperDialogComponent  {
     worldForm: FormGroup;
     worldId:string = ''
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService){
+    constructor(private fb: FormBuilder,private api:ApiService,
+      private loading: LoadingService,
+      private wd: WorldDataService){
         this.worldForm = this.fb.group({
             Name: ['', [Validators.required, Validators.minLength(3)]],
             description: ['', [Validators.required]],
@@ -33,7 +36,7 @@ import { combineLatest } from 'rxjs';
     world$ = this.wd.world$;
     onSubmit(){
       const body = this.worldForm.value
-
+      this.loading.loadingOn()
       
       body.world_id = this.worldId
       this.api.createPaper(this.worldForm.value).subscribe((paper) => {
@@ -55,7 +58,9 @@ import { combineLatest } from 'rxjs';
     worldForm: FormGroup;
     worldId:string | undefined= ''
       errorHandler: any;
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService){
+    constructor(private fb: FormBuilder,private api:ApiService,
+      private loading: LoadingService,
+      private wd: WorldDataService){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
@@ -75,6 +80,7 @@ import { combineLatest } from 'rxjs';
       const body = this.worldForm.value
       body.world_id = this.worldId
 
+      this.loading.loadingOn()
       this.api.createChapter(this.worldForm.value).subscribe(
         
         {
@@ -336,7 +342,9 @@ import { combineLatest } from 'rxjs';
     worldId:string | undefined= ''
       errorHandler: any;
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+    constructor(private fb: FormBuilder,private api:ApiService,
+       private wd: WorldDataService,
+       private loading: LoadingService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
       this.worldForm = this.fb.group({
@@ -349,6 +357,7 @@ import { combineLatest } from 'rxjs';
     onSubmit(){
       const body = this.worldForm.value
       body.world_id = this.wd.worldId
+      this.loading.loadingOn()
       this.api.createTimeline(body).subscribe(
         {
             next: (data) => this.wd.addTimeline(data),
@@ -368,7 +377,9 @@ import { combineLatest } from 'rxjs';
       errorHandler: any;
       ss: Subway_Settings | null
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService ){
+    constructor(private fb: FormBuilder,private api:ApiService,
+       private wd: WorldDataService,
+      private loading: LoadingService ){
 
       this.wd.settings$.subscribe((ss) => {
           this.ss = ss
@@ -385,6 +396,8 @@ import { combineLatest } from 'rxjs';
     onSubmit(){
       const body = this.worldForm.value
       body.id = this.ss?.id
+
+      this.loading.loadingOn()
 
 
       this.api.updateSettings(body.id, body).subscribe((ss) => {
@@ -405,7 +418,9 @@ import { combineLatest } from 'rxjs';
       errorHandler: any;
       sl: StoryLine[]
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+    constructor(private fb: FormBuilder,private api:ApiService,
+      private loading: LoadingService,
+      private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
@@ -419,7 +434,7 @@ import { combineLatest } from 'rxjs';
     onSubmit(){
       const body = this.worldForm.value
       body.world_id = this.wd.worldId
-
+      this.loading.loadingOn()
       this.api.createStoryLine(this.worldForm.value).subscribe(
         {
             next: (data) =>         this.wd.addStoryline(data)
@@ -441,7 +456,9 @@ import { combineLatest } from 'rxjs';
     worldForm: FormGroup;
       errorHandler: any;
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+    constructor(private fb: FormBuilder,private api:ApiService,
+      private loading: LoadingService,
+      private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) private data: string
     ){
 
@@ -461,6 +478,7 @@ import { combineLatest } from 'rxjs';
       body.world_id =  this.data
       body.range = 20
       body.startRange = 0
+      this.loading.loadingOn()
       this.api.createEvent(body).subscribe(
         
         {

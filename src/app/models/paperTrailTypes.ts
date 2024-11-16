@@ -11,10 +11,16 @@ export type world = {
     subway_settings: Subway_Settings
 }
 
+export type info<t> ={
+    message: string,
+    status: string,
+    data: t
+}
 export interface ExtendedChapter extends Chapter {
     papperName: string,
     timelineName: string,
     storylineName: string,
+    papperOrder: number
     // eventName:string
   }
 
@@ -37,6 +43,12 @@ export type paper = {
     focus: boolean 
 }
 
+export type ChapterDetails = {
+	chapter: Chapter,
+	timeline:Timeline,
+	storyLine: StoryLine,
+    events: Event[]
+}
 
 
 export type Chapter = {
