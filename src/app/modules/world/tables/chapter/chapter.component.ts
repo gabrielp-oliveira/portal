@@ -10,6 +10,7 @@ import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, distinctUntilChanged,  } from 'rxjs';
 import { PapperComponent } from '../papper/papper.component';
+import { UtilsService } from '../../../../utils.service';
 
 
 
@@ -75,7 +76,7 @@ export class ChapterComponent implements OnInit {
   constructor(
     private wd: WorldDataService,
     private router: Router,
-    private route: ActivatedRoute,
+    private utils: UtilsService,
     private api: ApiService,
     private dialog: DialogService,
     private errorHandler: ErrorService
@@ -109,8 +110,9 @@ export class ChapterComponent implements OnInit {
   }
 
   iconColors(c:Chapter){
+
     return {
-      'color': this.numberToRGB(c.paper_id),
+      'color': c.color ==''? this.utils.numberToHex(c.paper_id): c.color,
     }
   }
   ngOnInit() {
@@ -170,7 +172,7 @@ export class ChapterComponent implements OnInit {
     if (subwayElement && subwayElement.contains(targetEl)) {
       const circleElement = this.circle.nativeElement;
       circleElement.style.display = 'block';     
-      circleElement.style.backgroundColor =  this.numberToRGB(a.source.data.paper_id);
+      circleElement.style.backgroundColor =  this.utils.numberToHex(a.source.data.paper_id);
       circleElement.style.top = a.event.clientY +10 + "px";
       circleElement.style.left = a.event.clientX +10 + "px";
       }
@@ -488,31 +490,13 @@ export class ChapterComponent implements OnInit {
   }
 
 
-  chapterBackgroundColor(c: Chapter) {
-    return {
-      'background-color': this.numberToRGB(c.paper_id),
+  chapterBackgroundColor(c: Chapter) {    return {
+      'background-color': c.color,
       "filter": c.focus ? "brightness(1.2)" : "brightness(1)",
     }
   }
 
-  numberToRGB(id: string): string {
-    // Converte o ID em um número baseado nos caracteres do ID
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-  
-    // Garante que o hash seja positivo
-    hash = Math.abs(hash);
-  
-    // Extrai valores de R, G, B a partir do hash
-    const r = (hash & 0xFF0000) >> 16;
-    const g = (hash & 0x00FF00) >> 8;
-    const b = (hash & 0x0000FF);
-  
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-  
+
 
 
   hoverChapter(pp: Chapter, status:boolean) {

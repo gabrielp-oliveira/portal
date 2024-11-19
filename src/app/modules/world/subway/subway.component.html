@@ -1,4 +1,19 @@
-<div id="subway" #subway></div>
+<div class="buttonns">
+  <div>
+    <button (click)="createStoryline()">Create Story line</button>
+    <button (click)="createTimeline()">Create Timeline</button>
+    <button (click)="openCreateGroup()">Create Group</button>
+
+  </div>
+  <button (click)="openSubwaySettings()">Settings</button>
+</div> 
+
+<div style="display: flex;">
+
+  <div style="width: 1200px;" id="subway" #subway></div>
+  <app-group-connection></app-group-connection>
+</div>
+<button (click)="createEvents()">Create Events</button>
 
 <button id="menuBtn" mat-button [matMenuTriggerFor]="menu" #chapterMenuTrigger="matMenuTrigger" style="display: none;" ></button>
 
@@ -20,6 +35,7 @@
 <mat-menu #menuConnection="matMenu" yPosition="above">
   <!-- <button mat-menu-item>details</button> -->
   <button mat-menu-item (click)="removeConnection()">remove connection</button>
+  <button mat-menu-item (click)="setGroupConnection()">update connection</button>
 </mat-menu>
 <button id="menuBtn" mat-button [matMenuTriggerFor]="menuEvent" #eventMenuTrigger="matMenuTrigger" style="display: none;"></button>
 

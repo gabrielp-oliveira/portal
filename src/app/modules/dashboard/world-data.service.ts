@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { world, paper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine, Subway_Settings } from '../../models/paperTrailTypes';
+import { world, paper, Chapter, Connection, Timeline, Event, basicWorld, StoryLine, Subway_Settings, GroupConnection } from '../../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +12,8 @@ export class WorldDataService {
   private chaptersSubject = new BehaviorSubject<Chapter[]>([]);
   private tableChapterSubject = new BehaviorSubject<Chapter[] | undefined>(undefined);
   private eventsSubject = new BehaviorSubject<Event[]>([]);
+  private groupConnectionSubject = new BehaviorSubject<GroupConnection[]>([]);
+  private ssGroupConnectionSubject = new BehaviorSubject<GroupConnection[] | undefined>(undefined);
   private timelinesSubject = new BehaviorSubject<Timeline[]>([]);
   private storylinesSubject = new BehaviorSubject<StoryLine[]>([]);
   private connectionsSubject = new BehaviorSubject<Connection[]>([]);
@@ -23,6 +25,8 @@ export class WorldDataService {
   chapters$ = this.chaptersSubject.asObservable();
   tableChapter$ = this.tableChapterSubject.asObservable();
   events$ = this.eventsSubject.asObservable();
+  groupConnection$ = this.groupConnectionSubject.asObservable();
+  SsGroupConnection$ = this.ssGroupConnectionSubject.asObservable();
   timelines$ = this.timelinesSubject.asObservable();
   storylines$ = this.storylinesSubject.asObservable();
   connections$ = this.connectionsSubject.asObservable();
@@ -53,9 +57,15 @@ export class WorldDataService {
   setTableChapter(chapters: Chapter[] | undefined): void {
     this.tableChapterSubject.next(chapters);
   }
+  setGlobalConnectionGroup(cnn: GroupConnection[] | undefined): void {
+    this.ssGroupConnectionSubject.next(cnn);
+  }
 
   setEvents(events: Event[]): void {
     this.eventsSubject.next(events);
+  }
+  setGroupConnection(gcs: GroupConnection[]): void {
+    this.groupConnectionSubject.next(gcs);
   }
 
   setTimelines(timelines: Timeline[]): void {
@@ -74,6 +84,19 @@ export class WorldDataService {
     const papers = this.papersSubject.value;
     this.papersSubject.next([...papers, paper]);
   }
+
+  addGroupConnection(gc: GroupConnection): void {
+    const gcs = this.groupConnectionSubject.value;
+    this.groupConnectionSubject.next([...gcs, gc]);
+  }
+
+  updateGroupConnection(gc: GroupConnection): void {
+    const gcs = this.groupConnectionSubject.value.map(oldGc => 
+      oldGc.id === gc.id ? gc : oldGc
+    );
+    this.groupConnectionSubject.next(gcs);
+  }
+
   addStoryline(storyline: StoryLine): void {
     const storylines = this.storylinesSubject.value;
     this.storylinesSubject.next([...storylines, storyline]);
@@ -179,6 +202,7 @@ export class WorldDataService {
   }
   this.setWorld(basicworldInfo)
   this.setPapers(data.papers)
+  this.setGroupConnection(data.groupConnections)
   this.setChapters(data.chapters)
   this.setConnections(data.connections)
   this.setEvents(data.events)

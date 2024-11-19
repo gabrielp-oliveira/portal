@@ -36,7 +36,7 @@
   }
 
   #subway {
-    max-width: 1500px;
+    max-width: 1200px;
     height: 300px;
     padding: 1px;
     border: 1px solid gray;
@@ -54,3 +54,8 @@
     }
   } 
 
+  .buttonns {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+}

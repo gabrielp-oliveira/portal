@@ -27,10 +27,10 @@
          </th>
       <td mat-cell *matCellDef="let papper" class="order" [ngStyle]="papperBackgroundColor(papper)" class="transition" (mouseenter)="hoverPappeer(papper, true)" (mouseleave)="hoverPappeer(papper, false)">
         
-        <span >
+        <button mat-flat-button >
           {{papper.order}}
           <mat-icon class="drag-handle" cdkDragHandle>drag_handle</mat-icon>
-        </span>
+        </button >
       </td>
     </ng-container>
    
@@ -50,7 +50,10 @@
 
       </th>
       <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" class="transition" (mouseenter)="hoverPappeer(papper, true)" (mouseleave)="hoverPappeer(papper, false)">
-        {{ papper.name }}
+       <button mat-flat-button>
+
+         {{ papper.name }}
+        </button>
       </td>
     </ng-container>
 
@@ -69,7 +72,9 @@
 
         </th>
       <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" class="transition" (mouseenter)="hoverPappeer(papper, true)" (mouseleave)="hoverPappeer(papper, false)">
-        {{ papper.created_at  | date: 'MM-dd-yy' }}
+       <button mat-flat-button>
+         {{ papper.created_at  | date: 'MM-dd-yy' }}
+        </button>
       </td>
     </ng-container>
     <ng-container matColumnDef="update">

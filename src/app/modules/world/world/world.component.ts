@@ -97,18 +97,7 @@ papper: paper;
     this.dialog.openCreateChapterDialog(enterAnimationDuration, exitAnimationDuration)
   }
 
-  createStoryline(){
-    this.dialog.openCreateStoryline('150ms', '150ms')
-  }
-  createTimeline(){
-    this.dialog.openCreateTimelineDialog('150ms', '150ms')
-  }
-  openSubwaySettings(){
-    this.dialog.openSubwaySettingsDialog('150ms', '150ms')
-  }
-  createEvents(){
-    this.dialog.opencreateEventsDialog( this.worldId , '150ms', '150ms')
-  }
+
   
   hoverPappeer(pp: paper){
     pp.focus = !!!pp.focus

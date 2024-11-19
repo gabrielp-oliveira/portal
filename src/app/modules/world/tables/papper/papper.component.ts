@@ -9,6 +9,7 @@ import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged } from 'rxjs';
+import { UtilsService } from '../../../../utils.service';
 
 
 
@@ -45,7 +46,7 @@ export class PapperComponent implements OnInit {
   constructor(
     private wd: WorldDataService,
     private router: Router,
-    private route: ActivatedRoute,
+    private utils: UtilsService,
     private api: ApiService,
     private dialog: DialogService,
     private errorHandler: ErrorService
@@ -135,8 +136,9 @@ export class PapperComponent implements OnInit {
   }
 
   iconColors(p:paper){
+    const color = p.color != '' ? p.color : this.utils.numberToHex(p.id)
     return {
-      'color': this.numberToRGB(p.id),
+      'color': color
     }
   }
   searchPapper(key: string) {
@@ -198,29 +200,14 @@ export class PapperComponent implements OnInit {
 
 
   papperBackgroundColor(pp: paper) {
+    const color = pp.color != '' ? pp.color : this.utils.numberToHex(pp.id)
+
     return {
-      'background-color': this.numberToRGB(pp.id),
+      'background-color': color,
       "filter": pp.focus ? "brightness(1.2)" : "brightness(1)",
     }
   }
-  numberToRGB(id: string): string {
-    // Converte o ID em um número baseado nos caracteres do ID
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-  
-    // Garante que o hash seja positivo
-    hash = Math.abs(hash);
-  
-    // Extrai valores de R, G, B a partir do hash
-    const r = (hash & 0xFF0000) >> 16;
-    const g = (hash & 0x00FF00) >> 8;
-    const b = (hash & 0x0000FF);
-  
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-  
+
 
 
   hoverPappeer(pp: paper, status: boolean) {

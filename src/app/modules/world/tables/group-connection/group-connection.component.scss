@@ -1,0 +1,21 @@
+.nameChips {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+}
+.drop-group-list {
+    margin: 5px;
+}
+
+.drop-group-list button {
+    border: 1px solid rgb(210, 210, 210);
+    min-width: 80px;
+    
+  }
+  .drop-group-list mat-icon {
+  text-shadow: 0 0 1px black;
+  }

@@ -10,6 +10,14 @@
     <label for="order">paper order: </label>
     <input id="order" type="number" formControlName="order" />
     
+    <div id="swatch">
+
+    <label for="color">paper color: </label>
+    <input id="color" type="color" formControlName="color" id="color"  name="color" />
+    <div class="info">
+      <h2>{{this.worldForm.value.color}}</h2>
+    </div>
+      </div>
 
     
     <mat-dialog-actions>

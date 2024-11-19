@@ -8,7 +8,7 @@ export class UtilsService {
   constructor() { }
 
   
-  numberToRGB(id: string): string {
+  numberToHex(id: string): string {
     // Converte o ID em um número baseado nos caracteres do ID
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
@@ -23,8 +23,13 @@ export class UtilsService {
     const g = (hash & 0x00FF00) >> 8;
     const b = (hash & 0x0000FF);
   
-    return `rgb(${r}, ${g}, ${b})`;
+    // Converte cada componente para hexadecimal com 2 dígitos
+    const toHex = (value: number) => value.toString(16).padStart(2, '0');
+  
+    // Retorna a cor no formato hexadecimal
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
+  
   
   
 }

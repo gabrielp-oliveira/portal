@@ -5,9 +5,11 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, Event, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
+import { Chapter, Connection, Event, GroupConnection, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 import { LoadingService } from '../../modules/loading.service';
+import { UtilsService } from '../../utils.service';
+import { color } from 'd3';
 
 
 
@@ -389,6 +391,7 @@ import { LoadingService } from '../../modules/loading.service';
         display_table_chapters: [this.ss?.display_table_chapters, [Validators.required]],
         storyline_update_chapter: [this.ss?.storyline_update_chapter, [Validators.required]],
         timeline_update_chapter: [this.ss?.timeline_update_chapter, [Validators.required]],
+        group_connection_update_chapter: [this.ss?.group_connection_update_chapter, [Validators.required]],
         
       });
 
@@ -396,10 +399,7 @@ import { LoadingService } from '../../modules/loading.service';
     onSubmit(){
       const body = this.worldForm.value
       body.id = this.ss?.id
-
       this.loading.loadingOn()
-
-
       this.api.updateSettings(body.id, body).subscribe((ss) => {
         this.wd.setSettings(ss)
       })
@@ -511,6 +511,7 @@ import { LoadingService } from '../../modules/loading.service';
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
         order: ['', [Validators.required]],
+        color: ['', [Validators.required]],
       });
 
       console.log(this.data)
@@ -520,6 +521,7 @@ import { LoadingService } from '../../modules/loading.service';
           name: paper.name,
           description: paper.description,
           order: paper.order,
+          color: paper.color,
         });
       })
 
@@ -532,7 +534,8 @@ import { LoadingService } from '../../modules/loading.service';
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.papperId
-
+      body.color = this.worldForm.value.color
+      console.log(this.worldForm.value.color)
       this.api.updatePaper(this.data.papperId, this.worldForm.value).subscribe(
         
         {
@@ -625,6 +628,130 @@ import { LoadingService } from '../../modules/loading.service';
 
     constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter ){
   }
+  }
+  @Component({
+    selector: 'app-updateConnectionDialog',
+    templateUrl: './updateConnectionDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class updateConnectionDialogComponent {
+    worldForm: FormGroup;
+    gc:GroupConnection[]
+
+    errorHandler:any
+    constructor(
+      private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      @Inject(MAT_DIALOG_DATA) public cnn: Connection ){
+        this.wd.groupConnection$.subscribe((c) => this.gc = c)
+        
+        this.worldForm = this.fb.group({
+          groupConnection: ['', [Validators.required, Validators.minLength(3)]],
+      });
+
+        this.worldForm.patchValue({
+          groupConnection: this.cnn.group_id
+        });
+
+     }
+
+     onSubmit(){
+      const body:GroupConnection = this.worldForm.value
+      body.world_id = this.wd.worldId
+      // this.cnn.group_id = 
+      body.color =  this.utils.numberToHex(this.cnn.id)
+
+      this.cnn.group_id = this.worldForm.value.groupConnection
+
+      this.api.updateConnection(this.cnn).subscribe(
+        {
+            next: (gcs) => this.wd.updateConnection(gcs),
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+      )
+    }
+    
+  }
+  @Component({
+    selector: 'app-createGroupConnectionDialog',
+    templateUrl: './createGroupConnectionDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class createGroupConnectionDialogComponent {
+    worldForm: FormGroup;
+    gc:GroupConnection
+
+    errorHandler:any
+    constructor(
+      private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      ){
+        
+        this.worldForm = this.fb.group({
+          name: ['', [Validators.required, Validators.minLength(3)]],
+          description: ['', [Validators.required, Validators.minLength(3)]],
+      });
+
+     }
+
+     onSubmit(){
+      const body:GroupConnection = this.worldForm.value
+      body.world_id = this.wd.worldId
+      body.color = 'red'
+      // this.cnn.group_id = 
+
+
+      this.api.createGroupConnection(body).subscribe(
+        {
+            next: (gc) => this.wd.addGroupConnection(gc),
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+      )
+    }
+    
+  }
+  @Component({
+    selector: 'app-updateGroupConnection',
+    templateUrl: './updateGroupConnectionDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class updateGroupConnectionDialogComponent {
+    worldForm: FormGroup;
+
+    errorHandler:any
+    constructor(
+      private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      @Inject(MAT_DIALOG_DATA) public data: GroupConnection
+  
+    ){
+        
+        this.worldForm = this.fb.group({
+          name: ['', [Validators.required, Validators.minLength(3)]],
+          description: ['', [Validators.required, Validators.minLength(3)]],
+          color: ['', [Validators.required, Validators.minLength(3)]],
+      });
+
+      console.log(data.color)
+      this.worldForm.patchValue({
+        name: data.name,
+        description: data.description,
+        color: data.color, // Define um valor inicial para o input de cor
+      });
+
+     }
+
+     onSubmit(){
+      const body:GroupConnection = { ...this.data,...this.worldForm.value}
+      // this.cnn.group_id = 
+
+      console.log(body)
+
+      this.api.updateGroupConnection(body).subscribe(
+        {
+            next: (gc) => this.wd.updateGroupConnection(gc),
+            error: (err) =>this.errorHandler.errHandler(err)
+          }
+      )
+    }
+    
   }
 
   

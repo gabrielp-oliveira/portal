@@ -8,7 +8,10 @@ import {
   UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent,
   createTimelineDialogComponent, createEventsDialogComponent, createStorylineDialogComponent,
   deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-  strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent
+  strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent,
+  updateConnectionDialogComponent,
+  createGroupConnectionDialogComponent,
+  updateGroupConnectionDialogComponent
 } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
@@ -17,7 +20,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { ModalComponent } from '../standAlove/modal/modal.component';
+import { ModalComponent } from '../standAlone/modal/modal.component';
 
 
 
@@ -29,7 +32,8 @@ import { ModalComponent } from '../standAlove/modal/modal.component';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent, ModalComponent
+    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent, ModalComponent,
+    updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [],
   imports: [

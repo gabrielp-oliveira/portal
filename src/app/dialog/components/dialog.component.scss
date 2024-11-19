@@ -1,0 +1,57 @@
+#swatch{
+    background: white;
+    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 120px;
+    width: 120px;
+  }
+  
+  #swatch .info{
+    padding: 3px;
+  }
+  
+  #swatch h1{
+    margin: 0;
+    text-transform: uppercase;
+  }
+  
+  #swatch h2{
+    font-weight: normal;
+    margin: 0;
+  }
+  
+  input[type="color"] {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    height: 100px;
+    padding: 0;
+    width: 100px;
+  }
+  
+  *:focus{
+    border-radius: 0;
+    outline: none;
+  }
+  
+  ::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  
+  ::-webkit-color-swatch{
+    border: 0;
+    border-radius: 0;
+  }
+  
+  ::-moz-color-swatch,
+  ::-moz-focus-inner{
+    border: 0;
+  }
+  
+  ::-moz-focus-inner{
+    padding: 0;
+  }

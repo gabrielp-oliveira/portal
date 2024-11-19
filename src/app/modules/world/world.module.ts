@@ -23,6 +23,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { GooglePickerComponent } from '../../standAlone/google-picker/google-picker.component';
+import { GroupConnectionComponent } from './tables/group-connection/group-connection.component';
 
 
 
@@ -34,7 +36,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [WorldComponent, SubwayComponent, PapperComponent, ChapterComponent],
+  declarations: [WorldComponent, SubwayComponent, PapperComponent, ChapterComponent, GroupConnectionComponent],
   imports: [
     CommonModule,
     dialogModule,
@@ -44,7 +46,7 @@ const routes: Routes = [
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-
+    GooglePickerComponent,
     DragDropModule,
     FormsModule,
     MatInputModule,

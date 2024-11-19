@@ -1,9 +1,48 @@
-<p>docx works!</p>
+<nav class="docsMenu">
+    <div style="width: 50px;">
+        <a [routerLink]="['/world', worldId]"><mat-icon class="assignment_return">assignment_return</mat-icon> Back</a>
+    </div>
+
+    <div [class]="menuClass" class="content" [ngStyle]="chapterBackgroundColor()">
+        <mat-accordion class="accordion">
+            <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Chapter Info
+                    </mat-panel-title>
+
+                </mat-expansion-panel-header>
+                <p>chapter Description</p>
+                <p>Open Next Chapter</p>
+                <p>Open previous Chapter</p>
+
+            </mat-expansion-panel>
+        </mat-accordion>
 
 
-<iframe 
-    [src]="docLink | safeUrl"
-    width="80%" 
-    height="600px" 
-    style="border:none;">
+        <mat-accordion>
+            <mat-expansion-panel (opened)="panelpreviewState = true" (closed)="panelpreviewState = false">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        preview Info
+                    </mat-panel-title>
+
+                </mat-expansion-panel-header>
+                <p>chapter Description</p>
+                <p>Open Next Chapter</p>
+                <p>Open previous Chapter</p>
+
+            </mat-expansion-panel>
+        </mat-accordion>
+
+    </div>
+
+    <div style="width: 50px;" class="menu" (click)="callMenu()">
+        <mat-icon class="menu">{{!openMenu? 'menu' : 'close'}}</mat-icon>
+    </div>
+
+
+</nav>
+
+<iframe [src]="ChapterDetails.documentUrl| safeUrl" width="100%" height="90%" style="border:none;">
 </iframe>

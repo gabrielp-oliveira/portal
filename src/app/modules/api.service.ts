@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, ChapterDetails, Connection, Event, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterDetails, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -25,8 +25,8 @@ export class ApiService {
   getChapterUrl(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
-  getChapteData(chapterId: string): Observable<Chapter> {
-    return this.http.get<Chapter>(`http://localhost:9090/chapter?id=${chapterId}`);
+  getChapteData(chapterId: string): Observable<ChapterDetails> {
+    return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
   GetWorldChapters(worldId: string): Observable<Chapter[]> {
     return this.http.get<Chapter[]>(`http://localhost:9090/getWorldChapters?id=${worldId}`);
@@ -36,6 +36,9 @@ export class ApiService {
   }
   updatePaper(papperId: string, body:paper): Observable<paper> {
     return this.http.put<paper>(`http://localhost:9090/updatePaper?id=${papperId}`, body);
+  }
+  updateConnection(body:Connection): Observable<Connection> {
+    return this.http.put<Connection>(`http://localhost:9090/updateConnection?id=${body.id}`, body);
   }
   updateSettings(ssId: string, body:Subway_Settings): Observable<Subway_Settings> {
     return this.http.put<Subway_Settings>(`http://localhost:9090/updateSettings?id=${ssId}`, body);
@@ -61,8 +64,14 @@ export class ApiService {
   updateStoryLine( body:StoryLine): Observable<StoryLine> {
     return this.http.put<StoryLine>(`http://localhost:9090/updateStoryline?id=${body.id}`, body);
   }
+  updateGroupConnection( body:GroupConnection): Observable<GroupConnection> {
+    return this.http.put<GroupConnection>(`http://localhost:9090/updateGroupConnection?id=${body.id}`, body);
+  }
   Createworld(body: any):Observable<world>  {
    return this.http.post<world>('http://localhost:9090/createWorld', body)
+  }
+  createGroupConnection(body: GroupConnection):Observable<GroupConnection>  {
+   return this.http.post<GroupConnection>('http://localhost:9090/createGroupConnection', body)
   }
   createPaper(body: any):Observable<paper>  {
    return this.http.post<paper>('http://localhost:9090/createPaper', body)

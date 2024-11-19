@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core';
-import { chapteDescriptionDialogComponent, createChapterDialogComponent, createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent, createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent, deleteTimelineDialogComponent, SettingsDialogComponent, strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent } from './components/dialog.component';
+import { chapteDescriptionDialogComponent, createChapterDialogComponent,
+   createEventsDialogComponent, createPaperDialogComponent, createStorylineDialogComponent,
+    createTimelineDialogComponent, createWorldDialogComponent, DataPickerDialogComponent,
+     deleteTimelineDialogComponent, updateConnectionDialogComponent, SettingsDialogComponent,
+      strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent,
+       UpdatePaperDialogComponent, UpdateTimelineDialogComponent, 
+       createGroupConnectionDialogComponent,
+       updateGroupConnectionDialogComponent} from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Chapter, Event, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
-import { DocxComponent } from '../modules/docx/docx/docx.component';
+import { Chapter, Connection, Event, GroupConnection, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
-import { ModalComponent } from '../standAlove/modal/modal.component';
+import { ModalComponent } from '../standAlone/modal/modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -122,9 +128,32 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
+  openGroupConnectionDialog(cnn: Connection, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(updateConnectionDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: cnn
+    });
+  }
+  openCreateGroupConnectionDialog( enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(createGroupConnectionDialogComponent, {
+      width: '350px',
+      enterAnimationDuration,
+      exitAnimationDuration
+    });
+  }
+  openUpdateGroupConnectionDialog(gc: GroupConnection, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(updateGroupConnectionDialogComponent, {
+      width: '550px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: gc
+    });
+  }
   openUpdateChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string, chapterId: string): void {
     this.dialog.open(UpdateChapterDialogComponent, {
-      width: '350px',
+      width: '550px',
       enterAnimationDuration,
       exitAnimationDuration,
       data: {chapterId: chapterId}
@@ -152,7 +181,7 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
-  openChapterDescription(data:Chapter | paper | StoryLine, enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(chapteDescriptionDialogComponent, {
       width: '500',
       enterAnimationDuration,

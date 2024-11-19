@@ -8,6 +8,7 @@ export type world = {
     timelines: Timeline[],
     papers: paper[]
     storyLines: StoryLine[]
+    groupConnections: GroupConnection[],
     subway_settings: Subway_Settings
 }
 
@@ -40,15 +41,28 @@ export type paper = {
     world_id: string,
     chapter?: Chapter[],
     order: number,
-    focus: boolean 
+    focus: boolean,
+    color: string
 }
 
 export type ChapterDetails = {
 	chapter: Chapter,
 	timeline:Timeline,
 	storyLine: StoryLine,
-    events: Event[]
+    documentUrl:string,
+    events: Event[],
+    color: string
 }
+
+export type GroupConnection = {
+  focus: any
+	id            :string, 
+	name          :string, 
+	description   :string, 
+	world_id      :string, 
+	color         :string,
+}
+
 
 
 export type Chapter = {
@@ -83,6 +97,10 @@ export type Connection = {
     sourceChapterID: string,
     targetChapterID: string,
     world_id: string,
+    color:string,
+    group_id:string | null,
+    focus?: boolean
+
 }
 export type Subway_Settings = {
     id: string,
@@ -94,6 +112,7 @@ export type Subway_Settings = {
     x: number,
     y: number,
     world_id: string,
+    group_connection_update_chapter: boolean
 }
 
 

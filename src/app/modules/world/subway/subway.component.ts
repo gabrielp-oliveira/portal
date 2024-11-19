@@ -5,14 +5,15 @@ import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY
 import {  combineLatest, Subject, takeUntil, tap } from 'rxjs';
 import { LoadingService } from '../../loading.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, Event, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
 import { NumberInput } from '@angular/cdk/coercion';
 import { Router } from '@angular/router';
-import { ModalComponent } from '../../../standAlove/modal/modal.component';
+import { ModalComponent } from '../../../standAlone/modal/modal.component';
 import { ErrorService } from '../../error.service';
+import { UtilsService } from '../../../utils.service';
 
 const D3_ROOT_ELEMENT_ID = "subway";
 
@@ -41,6 +42,7 @@ export class SubwayComponent implements OnDestroy, OnInit  {
   lastStorylineChanged: StoryLine
   selectedTimeline: Timeline;
   ss: Subway_Settings | null;
+  gcs: GroupConnection[] = [];
   textDisplay : 'block' | 'none' = "block"
   nextStorylineSelected: number;
   reset: boolean
@@ -101,7 +103,8 @@ export class SubwayComponent implements OnDestroy, OnInit  {
     private wd: WorldDataService,
     private api: ApiService,
     private err: ErrorService,
-    private loading: LoadingService
+    private loading: LoadingService,
+    private utils:UtilsService
 
   ) {
     this.cleanItemsOnSvg();
@@ -121,34 +124,49 @@ export class SubwayComponent implements OnDestroy, OnInit  {
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
       "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$,
-      "ss": this.settings$, "tbChp": this.tableChapter$
+      "ss": this.settings$, "tbChp": this.tableChapter$, "gc": this.wd.groupConnection$, "globalGc": this.wd.SsGroupConnection$
     })
     .subscribe({next: (data) => {
-      console.log('..')
+      data.chapters = data.chapters.map((c) => {
+        c.color = c.color == '' ? (data.papers.find((pp) => pp.id == c.paper_id)?.color || this.utils.numberToHex(c.paper_id)) : this.utils.numberToHex(c.paper_id) 
+        return c
+      })
       data.chapters = data.chapters.filter((c) => c.timeline_id != null && c.storyline_id != null)
-      let {  papers, storyLines, timelines, connections, tbChp } = data
+      let {  papers, storyLines, timelines, connections, tbChp, gc,globalGc } = data
+      this.gcs = gc
       this.ss = data.ss
       this.timelines = timelines
 
       const showTableChapters = data.ss?.display_table_chapters
+      const showGroupConnections = data.ss?.group_connection_update_chapter
 
       let chpList = (showTableChapters == true &&  tbChp !== undefined)? tbChp: data.chapters 
+      let cnnList = (showGroupConnections === true && globalGc !== undefined)
+        ? data.connections.filter((cnn) => 
+            globalGc?.some((gc) => gc.id === cnn.group_id) 
+          ) : data.connections;
+      
+    
       this.textDisplay =  data.ss?.chapter_names == true ? "block" : "none"
 
 
       const chapterIds = new Set(chpList.map(c => c.id));
 
-        const filteredConnections = connections.filter((connection) => {
+        const filteredConnections = cnnList.filter((connection) => {
           return (
             chapterIds.has(connection.sourceChapterID) &&
             chapterIds.has(connection.targetChapterID)
           );
         });
         
+        filteredConnections.map((cnn) => {
+          const group = this.gcs.find((gp)=>gp.id == cnn.group_id )
+          cnn.color = group?.color || 'black'
+          return cnn
+        })
         data.connections = filteredConnections
         this.connections = filteredConnections
       
-
 
       this.papers = papers
       data.timelines = timelines.sort((a, b) => a.order - b.order);
@@ -160,7 +178,7 @@ export class SubwayComponent implements OnDestroy, OnInit  {
 
         this.svgHeight = storyLines.length
         if (!c.selected) {
-          c.color = this.numberToRGB(pp?.id)
+          c.color = pp.color ==""? this.utils.numberToHex(pp?.id) : pp.color
         }
         c.height = (str?.order * this.gridHeight) || 0
 
@@ -243,7 +261,7 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
   }
 
   private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-    const width = this.width < 1500 ? this.width : 1500
+    const width = this.width < 1200 ? this.width : 1200
     return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
       .append("svg")
       .attr("width", width)
@@ -963,18 +981,15 @@ private updateEventDisplay(event: Event) {
     .attr("x", (event.startRange * 20) + (event.range * 10) + 100);
 
 
-  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-increase`))
-    .attr("x", (event.startRange * 20) + (event.range * 10) + 120);
-
-    
-  d3.select(document.getElementById(`${CSS.escape(event.id)}-event-decrease`))
-    .attr("x", (event.startRange * 20) + (event.range * 20) + 80);
-
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-right`))
+  .transition()
+  .duration(100)
     .attr("x", (event.startRange * 20) + (event.range * 20) + 80);
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-left`))
+  .transition()
+  .duration(100)
     .attr("x", (event.startRange * 20) + 105);
 
 }
@@ -1029,6 +1044,11 @@ private updateEventDisplay(event: Event) {
 
   }
 
+  setGroupConnection(){
+    if(!this.selectedConnection) return
+    this.dialog.openGroupConnectionDialog(this.selectedConnection, `150ms`, `150ms`)
+  }
+
   private dragStarted(event: any, d: Chapter) {
     if (this.isCreateConnectionSet && this.selectedChapter) {
       if (this.selectedChapter.id == d.id) {
@@ -1040,7 +1060,9 @@ private updateEventDisplay(event: Event) {
         "id": "",
         "targetChapterID": d.id,
         "sourceChapterID": this.selectedChapter.id,
-        "world_id": this.wd.worldId
+        "world_id": this.wd.worldId,
+        'color': 'black',
+        "group_id": null
       }
 
       this.api.createConnection(body).subscribe((cnn) => {
@@ -1195,7 +1217,6 @@ private updateEventDisplay(event: Event) {
       storyline_id: newStorylineId,
       timeline_id: newTimeline.timeline?.id
     }
-    console.log(body)
     this.api.updateChapter(d.id, body).subscribe(
 
       {
@@ -1402,8 +1423,8 @@ private updateEventDisplay(event: Event) {
     })
     
       .attr("fill", "none")
-      .attr("stroke", EDGE_BORDER_COLOR_DEFAULT)
-      .attr("stroke-width", EDGE_BORDER_WIDTH_DEFAULT)
+      .attr("stroke", (a:any) => a.color)
+      .attr("stroke-width", (a) => a.focus?EDGE_BORDER_WIDTH_DEFAULT * 2: EDGE_BORDER_WIDTH_DEFAULT)
       .attr("cursor", "pointer")
       .attr("cursor", "pointer")
       .on("contextmenu", (event: MouseEvent, connection: Connection) => {
@@ -2089,10 +2110,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       this.selectedEvent.startRange = Math.round(rangeStart)
 
       d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-right`))
-      .attr("x", (e.startRange * 20) + (e.range * 20) + 80);
+      .attr("x", relativeX - (e.range *5) + (e.range * 20) + 80);
       
     d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-left`))
-      .attr("x", (e.startRange * 20) + 105);
+      .attr("x", relativeX - (e.range *5) + 105);
 
 
 
@@ -2325,7 +2346,6 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             
             // .attr('x', Location + this.getElementCenter(prevRectElement));
           });
-          console.log('5')
 
 
       } else {
@@ -2395,7 +2415,6 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .attr("x", () => 30 + this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos))
             
           });
-          console.log('7')
           this.updateChapterWidth(prevTimelineChapters, Location - 20)
 
 
@@ -2515,7 +2534,6 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
         const tl = this.getTimelineAndAdjustedRange(c.width)
         c.timeline_id = tl?.timeline?.id || c.timeline_id
         c.range = (tl?.adjustedRange || c.range) - 4
-        console.log(c.name, tl?.timeline.name, tl?.adjustedRange)
         return c
       })
     this.api.updateChapterList(chps).subscribe((chpList) => {
@@ -2655,23 +2673,6 @@ getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRa
   }
 
 
-  numberToRGB(id: string): string {
-    // Converte o ID em um número baseado nos caracteres do ID
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    // Garante que o hash seja positivo
-    hash = Math.abs(hash);
-
-    // Extrai valores de R, G, B a partir do hash
-    const r = (hash & 0xFF0000) >> 16;
-    const g = (hash & 0x00FF00) >> 8;
-    const b = (hash & 0x0000FF);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  }
 
 
 
@@ -2699,5 +2700,20 @@ getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRa
     this.initZoom();
   }
 
-
+  createStoryline(){
+    this.dialog.openCreateStoryline('150ms', '150ms')
+  }
+  createTimeline(){
+    this.dialog.openCreateTimelineDialog('150ms', '150ms')
+  }
+  openSubwaySettings(){
+    this.dialog.openSubwaySettingsDialog('150ms', '150ms')
+  }
+  openCreateGroup(){
+    this.dialog.openCreateGroupConnectionDialog('150ms', '150ms')
+  }
+  createEvents(){
+    this.dialog.opencreateEventsDialog( this.wd.worldId , '150ms', '150ms')
+  }
+  
 }
