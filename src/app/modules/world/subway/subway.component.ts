@@ -1523,7 +1523,7 @@ private updateEventDisplay(event: Event) {
 
   callPreviewDialog() {
     if (this.selectedChapter) {
-      this.dialog.openPreview(this.selectedChapter, `150ms`, `150ms`)
+      this.dialog.openPreview(this.selectedChapter.id, `150ms`, `150ms`)
     }
   }
 

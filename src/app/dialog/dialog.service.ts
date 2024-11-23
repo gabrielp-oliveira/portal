@@ -181,7 +181,7 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
-  openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection, enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection , enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(chapteDescriptionDialogComponent, {
       width: '500',
       enterAnimationDuration,
@@ -197,7 +197,7 @@ export class DialogService {
       data:data
     });
   }
-  openPreview(data:Chapter, enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openPreview(data:string, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(PreviewComponent, {
       width: '350px',
       enterAnimationDuration,

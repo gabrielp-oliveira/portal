@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ApiService } from '../../api.service';
-import { ChapterDetails } from '../../../models/paperTrailTypes';
+import { Chapter, ChapterDetails } from '../../../models/paperTrailTypes';
 import { UtilsService } from '../../../utils.service';
+import { DialogService } from '../../../dialog/dialog.service';
 
 @Component({
   selector: 'app-docx',
@@ -15,10 +16,11 @@ export class DocxComponent {
   chapterId: string = "";
   ChapterDetails: ChapterDetails
   openMenu:boolean = false
-  menuClass:'slide-in-right'|'slide-out-left'|'none' = 'none'
+  menuClass:'slide-in-right'|'slide-out-right'|'none' = 'none'
+  menu:string = 'closeMenu'
   docLink:string = ""
 
-  panelOpenState = false;
+  panelOpenState = true;
   panelpreviewState = false;
 
 
@@ -26,7 +28,8 @@ export class DocxComponent {
     private route: ActivatedRoute,
     private wd: WorldDataService,
     private api:ApiService,
-    private utils:UtilsService
+    private utils:UtilsService,
+    private dialog:DialogService
   ) {}
 
   ngOnInit(): void {
@@ -39,13 +42,28 @@ export class DocxComponent {
   }
   callMenu(){
     this.openMenu = !this.openMenu
-    this.menuClass = this.openMenu? 'slide-in-right':'slide-out-left'
+    this.menuClass = this.openMenu? 'slide-in-right':'slide-out-right'
+    if(this.openMenu){
+      this.menu = 'openMenu'
+    }else {
+      this.menu = 'closeMenu'
+    }
+    console.log(this.ChapterDetails)
+  }
+  openPreview(id:string){
+    this.dialog.openPreview(id, '150ms','150ms')
+  }
+
+  openDesctiprion(c:Chapter) {
+      this.dialog.openChapterDescription(c, '150ms', '150ms')
+    
   }
 
   chapterBackgroundColor() {
     const id = this.ChapterDetails?.chapter?.paper_id || '1'
+    console.log(this.ChapterDetails?.color?? this.utils.numberToHex(id))
     return {
-      'background-color': this.ChapterDetails.color?? this.utils.numberToHex(id),
+      'background-color': this.ChapterDetails?.color?? this.utils.numberToHex(id),
     }
   }
 

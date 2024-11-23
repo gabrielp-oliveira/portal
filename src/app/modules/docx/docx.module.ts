@@ -7,6 +7,10 @@ import { SafeUrlPipe } from '../../safe-url.pipe';
 import { PreviewComponent } from './preview/preview.component';
 import { MatIconModule } from '@angular/material/icon';
 import {MatExpansionModule} from '@angular/material/expansion';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 
 const routes: Routes = [
@@ -24,6 +28,12 @@ const routes: Routes = [
     CommonModule,
     MatIconModule,
     MatExpansionModule,
+    MatExpansionModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatDatepickerModule,
     RouterModule.forChild(routes)
   ]
 })

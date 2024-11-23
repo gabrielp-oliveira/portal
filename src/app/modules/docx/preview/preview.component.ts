@@ -19,11 +19,11 @@ export class PreviewComponent {
     private route: ActivatedRoute,
     private wd: WorldDataService,
     private api:ApiService,
-    @Inject(MAT_DIALOG_DATA) public data: Chapter
+    @Inject(MAT_DIALOG_DATA) public data: string
   ) {
   }
 
   ngOnInit(): void {
-      this.docLink = this.wd.getChapterPreview(this.data.id)
+      this.docLink = this.wd.getChapterPreview(this.data)
   }
 }

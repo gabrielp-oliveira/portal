@@ -1,6 +1,7 @@
 export type world = {
     id: string,
     name?: string,
+    description?: string,
     created_at?: string,
     chapters: Chapter[],
     events: Event[],
@@ -51,7 +52,20 @@ export type ChapterDetails = {
 	storyLine: StoryLine,
     documentUrl:string,
     events: Event[],
-    color: string
+    color: string,
+    next: Chapter,
+    prev: Chapter,
+    relatedChapters: relatedChapter[]
+}
+
+export type relatedChapter =  {
+    "chapterID": string, 
+    "relatedChapter": {
+        "id": string, 
+        "name": string
+    },
+    "groupName": string,
+    "groupColor": string
 }
 
 export type GroupConnection = {

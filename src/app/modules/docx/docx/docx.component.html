@@ -1,48 +1,104 @@
-<nav class="docsMenu">
-    <div style="width: 50px;">
-        <a [routerLink]="['/world', worldId]"><mat-icon class="assignment_return">assignment_return</mat-icon> Back</a>
+<div class="docxContainer" >
+    <!-- <div [class]="menu" class="menu" [ngStyle]="chapterBackgroundColor()"> -->
+    <div [class]="menu" class="menu" >
+        <nav >
+    
+            <div [class]="menuClass" class="content" >
+                <div>
+    
+                    <mat-accordion class="accordion">
+                        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                            <mat-expansion-panel-header>
+                                <mat-panel-title>
+                                    Chapter Info
+                                </mat-panel-title>
+                                
+                            </mat-expansion-panel-header>
+                            <div class="accordion-info">
+                                <span>chapter Name: {{ChapterDetails.chapter.name}}</span>
+                                <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.chapter)">description</button>
+                            </div>
+                            <div class="accordion-info">
+                                <span>previously Chapter in order: {{ChapterDetails.prev.name}}</span>
+                                <div>
+
+                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.prev.id)">preview</button>
+                                    <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.prev)">description</button>
+                                </div>
+                            </div>
+                            <div class="accordion-info">
+                                <span>next Chapter in order: {{ChapterDetails.next.name}}</span>
+                                <div>
+                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.next.id)">preview</button>
+                                    <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.next)">description</button>
+                                </div>
+                            </div>
+                            
+                        </mat-expansion-panel>
+                    </mat-accordion>
+        
+                </div>
+        
+                <mat-accordion class="accordion">
+                    <mat-expansion-panel (opened)="panelpreviewState = true" (closed)="panelpreviewState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Connection Info
+                            </mat-panel-title>
+        
+                        </mat-expansion-panel-header>
+                        <p >chapter Description</p>
+                        <div *ngFor="let item of ChapterDetails?.relatedChapters">
+                            <div class="accordion-info">
+                                <span>Chapter: {{item?.relatedChapter?.name}}</span>
+                                <button mat-stroked-button (click)="openPreview(item.relatedChapter.id)">preview</button>
+
+                                <p [style]="{color: item?.groupColor}">Connection: {{item?.groupName}}</p>
+                            </div>
+                        </div>
+
+        
+                    </mat-expansion-panel>
+
+                </mat-accordion>
+                <mat-accordion class="accordion">
+                    <mat-expansion-panel (opened)="panelpreviewState = true" (closed)="panelpreviewState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                timeline
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <p >Timeline {{ChapterDetails.timeline.name}} </p>
+                        <p>Timeline order: {{ChapterDetails.timeline.order  }}</p>
+                        <p>Timeline range: {{ChapterDetails.timeline.range  }} </p>
+                        <p>chapter position: {{ChapterDetails.chapter.range}}</p>
+
+
+        
+                    </mat-expansion-panel>
+                </mat-accordion>
+                <mat-accordion class="accordion">
+                    <mat-expansion-panel (opened)="panelpreviewState = true" (closed)="panelpreviewState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Storyline
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <p>Storyline {{ChapterDetails.storyLine.name}} </p>
+                        <p>Storyline order: {{ChapterDetails.storyLine.order  }}</p>
+                        <button mat-stroked-button>description</button>
+
+
+        
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </div>
+            
+        
+        </nav>
+        <mat-icon (click)="callMenu()">{{!openMenu? 'menu' : 'close'}}</mat-icon>
     </div>
-
-    <div [class]="menuClass" class="content" [ngStyle]="chapterBackgroundColor()">
-        <mat-accordion class="accordion">
-            <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        Chapter Info
-                    </mat-panel-title>
-
-                </mat-expansion-panel-header>
-                <p>chapter Description</p>
-                <p>Open Next Chapter</p>
-                <p>Open previous Chapter</p>
-
-            </mat-expansion-panel>
-        </mat-accordion>
-
-
-        <mat-accordion>
-            <mat-expansion-panel (opened)="panelpreviewState = true" (closed)="panelpreviewState = false">
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        preview Info
-                    </mat-panel-title>
-
-                </mat-expansion-panel-header>
-                <p>chapter Description</p>
-                <p>Open Next Chapter</p>
-                <p>Open previous Chapter</p>
-
-            </mat-expansion-panel>
-        </mat-accordion>
-
-    </div>
-
-    <div style="width: 50px;" class="menu" (click)="callMenu()">
-        <mat-icon class="menu">{{!openMenu? 'menu' : 'close'}}</mat-icon>
-    </div>
-
-
-</nav>
-
-<iframe [src]="ChapterDetails.documentUrl| safeUrl" width="100%" height="90%" style="border:none;">
-</iframe>
+    
+    <iframe [src]="ChapterDetails.documentUrl| safeUrl" class="docx" style="border: none;">
+    </iframe>
+</div>
