@@ -123,7 +123,6 @@ export class DialogService {
 
   openCreatePaperDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createPaperDialogComponent, {
-      width: '350px',
       enterAnimationDuration,
       exitAnimationDuration,
     });

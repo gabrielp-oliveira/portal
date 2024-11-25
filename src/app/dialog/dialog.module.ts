@@ -8,7 +8,7 @@ import {
   UpdateChapterDialogComponent, UpdatePaperDialogComponent, UpdateTimelineDialogComponent,
   createTimelineDialogComponent, createEventsDialogComponent, createStorylineDialogComponent,
   deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-  strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent,
+  strEditDialogComponent, UpdateEventDialogComponent,
   updateConnectionDialogComponent,
   createGroupConnectionDialogComponent,
   updateGroupConnectionDialogComponent
@@ -21,6 +21,12 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ModalComponent } from '../standAlone/modal/modal.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 
 
@@ -32,7 +38,7 @@ import { ModalComponent } from '../standAlone/modal/modal.component';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent, SettingsDialogComponent, ModalComponent,
+    strEditDialogComponent, UpdateEventDialogComponent, ModalComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [],
@@ -41,7 +47,12 @@ import { ModalComponent } from '../standAlone/modal/modal.component';
     MatDialogModule,
     ReactiveFormsModule,
     MatCardModule,
+    MatIconModule,
+    MatTooltipModule,
     MatNativeDateModule,
+    MatExpansionModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule,
+  
     MatDialogModule,
     MatButtonModule,
     FontAwesomeModule,

@@ -10,12 +10,56 @@
 .drop-group-list {
     margin: 5px;
 }
+.groupTable {
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px rgb(192, 192, 192);
+}
+.drop-group-list {
+    max-width: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 400px;
+    padding: 10px 0px;
 
-.drop-group-list button {
-    border: 1px solid rgb(210, 210, 210);
-    min-width: 80px;
-    
-  }
+}
+
   .drop-group-list mat-icon {
   text-shadow: 0 0 1px black;
   }
+
+  th {
+    height: 77px;
+    div {
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: start;
+      height: 100%;
+    }
+  input {
+    width: 75px;
+  }
+  }
+
+  .editButton {
+    display: flex;
+    justify-content: center;
+  }
+  .tableHeader {
+    display: flex;
+    justify-content: start;
+    padding: 5px;
+    align-items: start;
+    justify-content: start;
+  }
+  tr {
+    padding: 2px;
+    margin-bottom: 2px;
+  }
+
+.editButton {
+  cursor: pointer;
+}

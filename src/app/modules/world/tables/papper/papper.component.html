@@ -1,4 +1,4 @@
-<button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')">Create new paper</button>
+<button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')"  style="margin-bottom: 20px;">Create new paper</button>
 
 <div
   cdkDropList
@@ -73,7 +73,7 @@
         </th>
       <td mat-cell *matCellDef="let papper" [ngStyle]="papperBackgroundColor(papper)" class="transition" (mouseenter)="hoverPappeer(papper, true)" (mouseleave)="hoverPappeer(papper, false)">
        <button mat-flat-button>
-         {{ papper.created_at  | date: 'MM-dd-yy' }}
+         {{ papper.created_at  | date: 'MMM d, y' }}
         </button>
       </td>
     </ng-container>

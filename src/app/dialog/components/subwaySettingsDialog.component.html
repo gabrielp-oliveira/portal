@@ -1,29 +1,38 @@
-<h2 mat-dialog-title>Subway Settings</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="chapter_names">Display chapter names </label>
-    <input type="checkbox" id="chapter_names" name="chapter_names"  formControlName="chapter_names"  />
+<!-- <h2 mat-dialog-title>Subway Settings</h2>
+<mat-dialog-content> -->
+  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()" class="settingsForm">
+    <div>
+      <label for="chapter_names">Display chapter names </label>
+      <input type="checkbox" id="chapter_names" name="chapter_names"  formControlName="chapter_names"  />
+    </div>
    
-    <br>
-    <label for="display_table_chapters">Display time/story line chapters </label>
-    <input type="checkbox" id="display_table_chapters" name="display_table_chapters"  formControlName="display_table_chapters"  />
+    <div>
+
+      <label for="display_table_chapters">Display time/story line chapters </label>
+      <input type="checkbox" id="display_table_chapters" name="display_table_chapters"  formControlName="display_table_chapters"  />
+    </div>
    
-    <br>
-    <label for="timeline_update_chapter">update timeline updates chapters </label>
-    <input type="checkbox" id="timeline_update_chapter" name="timeline_update_chapter"  formControlName="timeline_update_chapter"  />
-   
-    <br>
-    <label for="storyline_update_chapter">update Storyline updates chapters </label>
-    <input type="checkbox" id="storyline_update_chapter" name="storyline_update_chapter"  formControlName="storyline_update_chapter"  />
-   
-    <br>
-    <label for="group_connection_update_chapter">update Storyline updates chapters </label>
-    <input type="checkbox" id="group_connection_update_chapter" name="group_connection_update_chapter"  formControlName="group_connection_update_chapter"  />
-   
+    <div>
+
+      <label for="timeline_update_chapter">update timeline updates chapters </label>
+      <input type="checkbox" id="timeline_update_chapter" name="timeline_update_chapter"  formControlName="timeline_update_chapter"  />
+    </div>
+   <div>
+     <label for="storyline_update_chapter">update Storyline updates chapters </label>
+     <input type="checkbox" id="storyline_update_chapter" name="storyline_update_chapter"  formControlName="storyline_update_chapter"  />
+    </div>
+    
+    <div>
+
+      <label for="group_connection_update_chapter">update Storyline updates chapters </label>
+      <input type="checkbox" id="group_connection_update_chapter" name="group_connection_update_chapter"  formControlName="group_connection_update_chapter"  />
+      
+    </div>
   
-    <mat-dialog-actions>
+    <div>
+
       <button mat-button mat-dialog-close>Cancel</button>
       <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
-    </mat-dialog-actions>
+    </div>
   </form>
-</mat-dialog-content>
+<!-- </mat-dialog-content> -->

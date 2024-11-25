@@ -1,0 +1,18 @@
+<p>sidenav works!</p>
+
+
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #sidenav mode="side" closed>
+      <mat-nav-list>
+        <mat-list-item *ngFor="let item of navItems">{{ item }}</mat-list-item>
+      </mat-nav-list>
+    </mat-sidenav>
+  
+    <mat-sidenav-content>
+      <button type="button" (click)="sidenav.toggle()">Toggle Sidenav</button>
+      <div class="content">
+        <h1>Conteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principalonteúdo principal</h1>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+  

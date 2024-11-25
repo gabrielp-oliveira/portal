@@ -1,16 +1,99 @@
-<div class="tables">
-  <app-papper></app-papper>
-  <app-chapter></app-chapter>
-</div> 
+<nav class="worldNav">
+  <h1 (click)="sidenav.toggle()">Welcome</h1>
+  <button mat-button type="button" (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
 
+</nav>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="side" opened="" position="end" class="worldSlide sidenav-fixed">
+    <mat-nav-list>
+      <h3 style="margin-top: 50px; margin-left: 15px; font-weight: 700;">World <u>{{worldData?.name}}</u> created at {{worldData?.created_at | date: 'MMM d, y'}}</h3>
+      <div class="creationButtons">
+        <button mat-button (click)="createStoryline()">
+          <mat-icon>add_road</mat-icon>
+          <span>Create Story line</span>
+          <strong [matTooltipPosition]="'above'"
+          matTooltip="A storyline is a narrative line that connects related chapters, showcasing the trajectory of characters or events throughout the map."
+          aria-label="Button that shows a red tooltip"
+          >!</strong>        </button>
+        <button mat-button (click)="createTimeline()">
+          <mat-icon>calendar_month</mat-icon>
+          <span>Create Timeline</span>
+          <strong [matTooltipPosition]="'left'" 
+          matTooltip="A timeline represents a time interval or event within the narrative map, where chapters and storylines are organized chronologically."
+          aria-label="Button that shows a red tooltip"
+          class="example-button">!</strong>
+        </button>
+        <button mat-button (click)="openCreateGroup()">
+          <mat-icon>timeline</mat-icon>
+          <span>Create Connection Group</span>
+          <strong [matTooltipPosition]="'left'"
+          matTooltip="A group connection is a grouping that links chapters or events related by a common theme, such as a character's journey or a specific storyline."
+          aria-label="Button that shows a red tooltip"
+          >!</strong>
+        </button>
+        <button mat-button (click)="createEvents()">
+          <mat-icon>theater_comedy</mat-icon>
+          <span>Create Events</span>
+          <strong [matTooltipPosition]="'left'"
+          matTooltip="An event is a specific point or period that can span one or more timelines, representing key occurrences where chapters or narrative connections converge."
+          aria-label="Button that shows a red tooltip"
+          >!</strong>
+         </button>
+      </div>
+      <hr>
+      <div class="SlideAccordion">
+        <mat-accordion class="accordion">
+          <mat-expansion-panel (opened)="panelSSOpenState = true" (closed)="panelSSOpenState = false">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Subway Settings
+              </mat-panel-title>
+
+            </mat-expansion-panel-header>
+            <div class="accordion-info">
+              <app-subwaySettingsDialog></app-subwaySettingsDialog>
+            </div>
+
+
+
+          </mat-expansion-panel>
+        </mat-accordion>
+
+        <app-group-connection></app-group-connection>
+
+
+      </div>
+
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content style="overflow: hidden;" style="padding: 10px;">
+    <div class="content">
+      <app-subway></app-subway>
+    </div>
+    <div class="tables">
+
+      <app-chapter></app-chapter>
+      <app-papper></app-papper>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+
+
+
+
+
+<!-- <app-group-connection></app-group-connection> -->
 
 
 <div>
 
-  <app-subway></app-subway>
-  
+
   <div class="tables">
-  </div> 
+  </div>
 </div>
 
 <footer style="height: 500px;">

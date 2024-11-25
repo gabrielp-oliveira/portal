@@ -1,0 +1,14 @@
+.sidenav-container {
+    height: 100%;
+  }
+  
+  mat-sidenav-content {
+    padding: 16px;
+  }
+  
+  @media (max-width: 600px) {
+    mat-sidenav {
+      width: 80%;
+    }
+  }
+  

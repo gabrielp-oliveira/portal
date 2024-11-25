@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, Connection, Event, GroupConnection, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
+import { Chapter, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 import { LoadingService } from '../../modules/loading.service';
 import { UtilsService } from '../../utils.service';
@@ -62,6 +62,7 @@ import { color } from 'd3';
       errorHandler: any;
     constructor(private fb: FormBuilder,private api:ApiService,
       private loading: LoadingService,
+      private utils:UtilsService,
       private wd: WorldDataService){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
@@ -77,6 +78,12 @@ import { color } from 'd3';
     papers$ = this.wd.papers$;
     chapters$ = this.wd.chapters$;
     world$ = this.wd.world$;
+
+    chapterBackgroundColor(pp:paper) {    
+    return {
+      'background-color': pp.color || this.utils.numberToHex(pp.id),
+    }
+  }
 
     onSubmit(){
       const body = this.worldForm.value
@@ -377,23 +384,26 @@ import { color } from 'd3';
     worldForm: FormGroup;
     worldId:string | undefined= ''
       errorHandler: any;
-      ss: Subway_Settings | null
+      ss: Subway_Settings
 
     constructor(private fb: FormBuilder,private api:ApiService,
        private wd: WorldDataService,
       private loading: LoadingService ){
 
       this.wd.settings$.subscribe((ss) => {
+        console.log(ss)
+        if(ss != null){
           this.ss = ss
+
+        }
+        this.worldForm = this.fb.group({
+          chapter_names: [this.ss?.chapter_names, [Validators.required]],
+          display_table_chapters: [this.ss?.display_table_chapters, [Validators.required]],
+          storyline_update_chapter: [this.ss?.storyline_update_chapter, [Validators.required]],
+          timeline_update_chapter: [this.ss?.timeline_update_chapter, [Validators.required]],
+          group_connection_update_chapter: [this.ss?.group_connection_update_chapter, [Validators.required]],
+        });
       })
-      this.worldForm = this.fb.group({
-        chapter_names: [this.ss?.chapter_names, [Validators.required]],
-        display_table_chapters: [this.ss?.display_table_chapters, [Validators.required]],
-        storyline_update_chapter: [this.ss?.storyline_update_chapter, [Validators.required]],
-        timeline_update_chapter: [this.ss?.timeline_update_chapter, [Validators.required]],
-        group_connection_update_chapter: [this.ss?.group_connection_update_chapter, [Validators.required]],
-        
-      });
 
     }
     onSubmit(){

@@ -1,17 +1,80 @@
-<h2 mat-dialog-title>Create new paper</h2>
-<mat-dialog-content>
-  chose your paper name
-</mat-dialog-content>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">paper Name: </label>
-    <input id="Name" type="Name" formControlName="Name" />
-    <label for="description">paper description: </label>
-    <input id="description" type="description" formControlName="description" />
-    <mat-dialog-actions>
-      <button mat-button mat-dialog-close>cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
-    </mat-dialog-actions>
-</form>
+<div class="modal">
+  <div class="header" >
+    <h2>Create new paper</h2>
 
-</mat-dialog-content>
+    <div class="headerButtons">
+
+      <strong class="info"
+      [matTooltipPosition]="'above'"
+      matTooltip="A paper is an organized collection of chapters that form a story or narrative within the world, linked to timelines, storylines, and events."
+      aria-label="Button that shows a black tooltip describing a timeline"
+      >!</strong>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
+    </div>
+  </div>
+  <div class="body">
+      <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+
+
+        <div class="group">      
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="Name">Input</mat-label>
+            <input matInput type="text" required id="Name" type="Name" formControlName="Name" >
+          </mat-form-field>
+  
+        </div>
+
+        
+        <div class="group">      
+
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="description">Textarea</mat-label>
+            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
+          </mat-form-field>
+  
+        </div>
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span>Color</span>
+              <strong class="info"
+              [matTooltipPosition]="'above'"
+              matTooltip="Paper color helps visually distinguish storylines and is used to group related chapters and connections on the map."
+              aria-label="Button that shows a black tooltip describing a timeline"
+              >!</strong>
+            </mat-panel-title>
+
+          </mat-expansion-panel-header>
+          <div class="accordion-info">
+            <div id="swatch" style="width: 100%;">
+
+              <label for="color">paper color: </label>
+              <input id="color" type="color" formControlName="color" id="color"  name="color" style="width: 100%;"/>
+              <div class="val">
+                <h2>{{this.worldForm.value.color}}</h2>
+              </div>
+                </div>
+              </div>
+
+
+
+        </mat-expansion-panel>
+
+
+        <mat-dialog-actions>
+          <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+            
+            <div>
+              <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+            </div>
+          </button>
+        </mat-dialog-actions>
+      </form>
+      
+</div>

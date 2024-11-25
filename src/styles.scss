@@ -69,3 +69,36 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   display: block;
 
 } 
+
+
+.mat-drawer-inner-container {
+  --sb-track-color: #ffffff;
+  --sb-thumb-color: #666666;
+  --sb-size: 12px;
+}
+
+.mat-drawer-inner-container::-webkit-scrollbar {
+  width: var(--sb-size)
+}
+
+.mat-drawer-inner-container::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 1px;
+}
+
+.mat-drawer-inner-container::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 1px;
+  border: 1px solid #b3dcf1;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--sb-thumb-color)
+                     var(--sb-track-color);
+  }
+}
+
+.mdc-dialog__surface{
+    background: transparent!important;
+}

@@ -17,14 +17,19 @@ import { ChapterComponent } from './tables/chapter/chapter.component';
 import { MatSortModule } from '@angular/material/sort'; // Importar o módulo de ícones
 import { MatPaginatorModule } from '@angular/material/paginator'; // Importar o módulo de ícones
 
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { GooglePickerComponent } from '../../standAlone/google-picker/google-picker.component';
 import { GroupConnectionComponent } from './tables/group-connection/group-connection.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { SidenavComponent } from './sidenav/sidenav.component';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { SettingsDialogComponent } from '../../dialog/components/dialog.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 
@@ -36,7 +41,9 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [WorldComponent, SubwayComponent, PapperComponent, ChapterComponent, GroupConnectionComponent],
+  declarations: [WorldComponent, SubwayComponent,
+     PapperComponent, ChapterComponent, GroupConnectionComponent, SettingsDialogComponent,
+     SidenavComponent],
   imports: [
     CommonModule,
     dialogModule,
@@ -48,10 +55,13 @@ const routes: Routes = [
     MatPaginatorModule,
     GooglePickerComponent,
     DragDropModule,
+    MatTooltipModule,
     FormsModule,
     MatInputModule,
+    MatExpansionModule,
     MatFormFieldModule,
-
+    MatListModule,
+    MatSidenavModule,
     MatIconModule, // Adicione o módulo de ícones aqui
     RouterModule.forChild(routes)
   ],

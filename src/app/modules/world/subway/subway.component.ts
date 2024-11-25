@@ -190,7 +190,7 @@ export class SubwayComponent implements OnDestroy, OnInit  {
             return a
           }
         }, 0)
-        const width = (tlRanges * 20) + ((c.range - 1) * 20)
+        const width = (tlRanges * RANGE_GAP) + ((c.range - 1) * RANGE_GAP)
         c.width = width + 100
         return c
       })
@@ -261,11 +261,12 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
   }
 
   private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-    const width = this.width < 1200 ? this.width : 1200
+    const height = this.svgHeight * this.gridHeight
+    console.log(height)
     return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
       .append("svg")
-      .attr("width", width)
-      .attr("height", 300)
+      .attr("width", '100%')
+      .attr("height", 350)
       .append("g") // Retorna o grupo <g> que vai conter outros elementos
 
   }
@@ -337,10 +338,10 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
     eleEnter
       .append("rect")
       .attr("id", (c) => `${c[0].height}-${c[0].width}-rect`)
-      .attr("width", 20)
-      .attr("height", 50)  // Define a altura de 50px
+      .attr("width", RANGE_GAP)
+      .attr("height", this.gridHeight)  
       .attr("x", (c) => c[0].width - 10) // Ajusta a posição horizontal para centralizar
-      .attr("y", (c) => c[0].height - 50) // Ajusta a posição vertical para centralizar
+      .attr("y", (c) => c[0].height - this.gridHeight) // Ajusta a posição vertical para centralizar
       .attr("fill", "transparent")
     // Itera por cada grupo de capítulos duplicados
     eleEnter.each((group: Chapter[], idx) => {
@@ -738,9 +739,9 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 private createEventBody(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, gridHeight: number) {
     el.append("rect")
       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-body`)
-      .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
-      .attr("y", 50)
-      .attr("width", (ev: Event) => (ev.range * 20) - 5)
+      .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + 100)
+      .attr("y", this.gridHeight)
+      .attr("width", (ev: Event) => (ev.range * RANGE_GAP) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(250, 20, 20, 0.2)");
 }
@@ -753,9 +754,9 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
     .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
     .attr("class",'event-bottom')
     .attr("pointer-events", 'none')
-    .attr("x", (ev: Event) => (ev.startRange * 20) + 100)
-    .attr("y", gridHeight + 50) // Posiciona no topo
-    .attr("width", (ev: Event) => (ev.range * 20) - 5)
+    .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + 100)
+    .attr("y", gridHeight + this.gridHeight) // Posiciona no topo
+    .attr("width", (ev: Event) => (ev.range * RANGE_GAP) - 5)
     .attr("height", 45) // Altura do header
     .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
     .style("stroke", "#000")  // Adiciona uma borda se necessário
@@ -766,7 +767,7 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
       .append("text")
       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-left`)
       .attr("class", `event-resize-left`)
-      .attr("x", (ev: Event) => (ev.startRange * 20) + 105)
+      .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + 105)
       .attr("y", gridHeight + 75) // Posiciona no topo
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
@@ -785,7 +786,7 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-right`)
       .attr("class", `event-resize-right`)
       .attr("font-weight", '700')
-      .attr("x", (ev: Event) => ((ev.startRange + ev.range) * 20) + 80)
+      .attr("x", (ev: Event) => ((ev.startRange + ev.range) * RANGE_GAP) + 80)
       .attr("y", gridHeight + 75) // Posiciona no topo
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
@@ -798,10 +799,10 @@ private createEventHeader(el: d3.Selection<SVGGElement, Event, SVGGElement, Even
           .on("end", () => this.eventResizeDragEnd(el))
       )
       .on("mousemove", (nativeEvent, event:Event) => {
-        if((((nativeEvent.x - 100) - event.startRange * 20)) <= 15) {
+        if((((nativeEvent.x - 100) - event.startRange * RANGE_GAP)) <= 15) {
           d3.select("body").style("cursor", "w-resize"); // seta para a esquerda
 
-        }else if(((((event.startRange + event.range) * 20) + 100) -  nativeEvent.x) <= 15) {
+        }else if(((((event.startRange + event.range) * RANGE_GAP) + 100) -  nativeEvent.x) <= 15) {
           d3.select("body").style("cursor", "e-resize"); // seta para a direita
         }  else {
           d3.select("body").style("cursor", "default");
@@ -820,7 +821,7 @@ eventDragResizeStart(nativeEvent:any, e:Event, direction:"" | "left" | "right" )
 eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
   // Calcular o novo valor de range com base na posição do mouse
   const newMouseX = nativeEvent.x - 100;
-  const gridUnit = 20;
+  const gridUnit = RANGE_GAP;
 
   // Limite do startRange para não ser menor que zero
   if (newMouseX <= 0) return;
@@ -878,7 +879,7 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
   // Botão de "grab" (movimentação)
   bottomEvent.append("text")
     .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-drag`)
-    .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+    .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + (ev.range * (RANGE_GAP / 2)) + 100) // Posição proporcional
     .attr("y", this.totalGridHeight + 85) // Posiciona no topo
     .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
     .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
@@ -894,7 +895,7 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
 
   bottomEvent.append("text")
     .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-txt`)
-    .attr("x", (ev: Event) => (ev.startRange * 20) + (ev.range * 10) + 100) // Posição proporcional
+    .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + (ev.range * (RANGE_GAP / 2)) + 100) // Posição proporcional
     .attr("y", this.totalGridHeight + 65) // Posiciona no topo
     .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
     .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
@@ -934,7 +935,7 @@ updateEvent(){
 private resizeEvent(event: Event) {
 
   const chaptersRelated = this.chapters.filter((c) => {
-    const range = (c.width - 100) / 20
+    const range = (c.width - 100) / RANGE_GAP
     if(range >= event.startRange && range <= (event.startRange + event.range )){
       if(c.event_Id == event.id){
         return false
@@ -964,33 +965,33 @@ private resizeEvent(event: Event) {
 private updateEventDisplay(event: Event) {
   // Seleciona o retângulo correspondente ao evento e atualiza a largura
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-body`))
-    .attr("width", (event.range * 20) - 5)
-    .attr("x", (event.startRange * 20) + 100)
+    .attr("width", (event.range * RANGE_GAP) - 5)
+    .attr("x", (event.startRange * RANGE_GAP) + 100)
 
 
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-bottom`))
-    .attr("width", (event.range * 20) - 5)
-    .attr("x", (event.startRange * 20) + 100)
+    .attr("width", (event.range * RANGE_GAP) - 5)
+    .attr("x", (event.startRange * RANGE_GAP) + 100)
 
 
   // Atualiza a posição do texto de nome e do botão de arrasto
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-txt`))
-    .attr("x", (event.startRange * 20) + (event.range * 10) + 100);
+    .attr("x", (event.startRange * RANGE_GAP) + (event.range * (RANGE_GAP / 2)) + 100);
 
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-drag`))
-    .attr("x", (event.startRange * 20) + (event.range * 10) + 100);
+    .attr("x", (event.startRange * RANGE_GAP) + (event.range * (RANGE_GAP / 2)) + 100);
 
 
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-right`))
   .transition()
   .duration(100)
-    .attr("x", (event.startRange * 20) + (event.range * 20) + 80);
+    .attr("x", (event.startRange * RANGE_GAP) + (event.range * RANGE_GAP) + 80);
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-left`))
   .transition()
   .duration(100)
-    .attr("x", (event.startRange * 20) + 105);
+    .attr("x", (event.startRange * RANGE_GAP) + 105);
 
 }
 
@@ -1103,7 +1104,7 @@ private updateEventDisplay(event: Event) {
     const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
     
 
-    if (relativeX < 100 || relativeY < 50 || relativeY > this.graphHeigh) {
+    if (relativeX < 100 || relativeY < this.gridHeight || relativeY > this.graphHeigh) {
       return
     }
 
@@ -1235,7 +1236,7 @@ private updateEventDisplay(event: Event) {
   // Funções para encontrar o timeline e storyline
   private findTimelineForChapter(t: Timeline[], x: number): { timeline: Timeline, range: number } {
 
-    let range = Math.round((x - 100) / 20) + 1
+    let range = Math.round((x - 100) / RANGE_GAP) + 1
 
     // const totalTimeLineRange = t.reduce((a, b) => a + b.range, 0)
     if (range <= 0) {
@@ -1262,7 +1263,7 @@ private updateEventDisplay(event: Event) {
     return result;
   }
   private findStorylineForChapter(s: StoryLine[], y: number): StoryLine {
-    let range = Math.round((y - 50) / this.gridHeight)
+    let range = Math.round((y - this.gridHeight) / this.gridHeight)
     if (range >= s.length - 1) {
       range = s.length - 1
     }
@@ -1373,12 +1374,12 @@ private updateEventDisplay(event: Event) {
           if(this.ChapterGroup[targetKey]){
             const sourceHeight = (source?.height ?? 0) - (sourcePos * 15)
             const targetHeight = (target?.height ?? 0) - (targetPos * 15)
-            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.6), false, false);
+            return this.createEdge((x0 + (RANGE_GAP / 2)), sourceHeight, (x0 + (RANGE_GAP / 2)), targetHeight, (controlPointX * 1.1), (y0 * 0.6), false, false);
           }else {
            
-            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + 10
-            const targetHeight = (target?.height ?? 0) - (targetPos* 8)  + 10
-            return this.createEdge((x0 + 10), sourceHeight, (x0 + 10), targetHeight, (controlPointX * 1.1), (y0 * 0.9), false, false);
+            const sourceHeight = (source?.height ?? 0) - (sourcePos * 8) + (RANGE_GAP / 2)
+            const targetHeight = (target?.height ?? 0) - (targetPos* 8)  + (RANGE_GAP / 2)
+            return this.createEdge((x0 + (RANGE_GAP / 2)), sourceHeight, (x0 + (RANGE_GAP / 2)), targetHeight, (controlPointX * 1.1), (y0 * 0.9), false, false);
           }
           
         } 
@@ -1531,7 +1532,7 @@ private updateEventDisplay(event: Event) {
     svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     strs: StoryLine[]
   ) {
-    const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
+    const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * RANGE_GAP) + (this.timelines.length * RANGE_GAP)
 
 
     const widthChapter = this.chapters
@@ -1550,7 +1551,7 @@ private updateEventDisplay(event: Event) {
       .attr("d", (st: StoryLine) => {
         const strHeight = (st.order * this.gridHeight);
         this.graphHeigh += this.gridHeight
-        return this.createEdge(MARGIN + 50, strHeight, width, strHeight, width, strHeight, true, false);
+        return this.createEdge(MARGIN + this.gridHeight, strHeight, width, strHeight, width, strHeight, true, false);
       })
       .attr("fill", "none")
       .style("stroke-dasharray", ("5,3"))  // Faz o traço ser pontilhado
@@ -1620,7 +1621,7 @@ private updateEventDisplay(event: Event) {
     const y = (event.y / this.zoom) - this.tiltY;
     this.reset = false;
 
-    let mousePos = Math.max(0, Math.round((y - 0.2) / 50) - 1);
+    let mousePos = Math.max(0, Math.round((y - 0.2) / this.gridHeight) - 1);
     mousePos = Math.min(mousePos, strs.length - 1);
     this.nextStorylineSelected = Math.min(mousePos + 1, strs.length - 2);
 
@@ -1945,13 +1946,13 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
     let range = 100;
     const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
     const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-    return ((anteriorRange - tl.range) * 20) + range + ((tl.range / 2) * 20);
+    return ((anteriorRange - tl.range) * RANGE_GAP) + range + ((tl.range / 2) * RANGE_GAP);
   };
 
 
   buttonPositions(tl: Timeline, timelines: Timeline[], index: number) {
-    const width = (tl.range * 20);
-    return this.calculateEditIconPosition(tl, timelines) + (tl.range * 10) - 10 + this.buttonsSpacing[index]; // Calcula a posição proporcional
+    const width = (tl.range * RANGE_GAP);
+    return this.calculateEditIconPosition(tl, timelines) + (tl.range * (RANGE_GAP / 2)) - (RANGE_GAP / 2) + this.buttonsSpacing[index]; // Calcula a posição proporcional
   };
 
   renderTimeLines(
@@ -1985,8 +1986,8 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       .attr("class", "timeline-body")
       .attr("id", (t) => t.id+"-timeline-body")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
-      .attr("y", 50)
-      .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
+      .attr("y", this.gridHeight)
+      .attr("width", (tl: Timeline) => (tl.range * RANGE_GAP) - 5)
       .attr("height", gridHeight)
       .style("fill", "rgba(100, 10, 0, 0.1)");
 
@@ -2002,7 +2003,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       .attr("class", "timeline-header")
       .attr("x", (tl: Timeline) => this.calculateEditIconPosition(tl, data))
       .attr("y", 0) // Posiciona no topo
-      .attr("width", (tl: Timeline) => (tl.range * 20) - 5)
+      .attr("width", (tl: Timeline) => (tl.range * RANGE_GAP) - 5)
       .attr("height", 45) // Altura do header
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
@@ -2046,7 +2047,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
     let range = 100;
     const currentOrder = data.filter((t: Timeline) => t.order <= tl.order);
     const anteriorRange = currentOrder.reduce((a: any, b: any) => a + b.range, 0);
-    return ((anteriorRange - tl.range) * 20) + range;
+    return ((anteriorRange - tl.range) * RANGE_GAP) + range;
   }
 
 
@@ -2068,7 +2069,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
   eventDragged(nativeEvent: any, e: Event) {
     if (this.selectedEvent) {
-      const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * 20) + (this.timelines.length * 20)
+      const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * RANGE_GAP) + (this.timelines.length * RANGE_GAP)
 
       const eventElementId = `${CSS.escape(e.id)}-event-group`;
 
@@ -2083,7 +2084,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
 
-      const relativeX = (((nativeEvent.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom) - (e.range * 10)
+      const relativeX = (((nativeEvent.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom) - (e.range * (RANGE_GAP / 2))
 
 
       if (relativeX < 100 || relativeX > widthTimelines) {
@@ -2092,13 +2093,13 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 
 
-      const rangeStart = (relativeX - 100) / 20
+      const rangeStart = (relativeX - 100) / RANGE_GAP
 
 
       eventBodyElement.attr("x", relativeX)
       eventBottomElement.attr("x", relativeX)
-      eventDragElement.attr("x", relativeX + (e.range * 10))
-      eventTxtElement.attr("x", relativeX + (e.range * 10))
+      eventDragElement.attr("x", relativeX + (e.range * (RANGE_GAP / 2)))
+      eventTxtElement.attr("x", relativeX + (e.range * (RANGE_GAP / 2)))
 
       // d3.select(eventElement)
       //   .attr("dx", d.width)
@@ -2110,7 +2111,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       this.selectedEvent.startRange = Math.round(rangeStart)
 
       d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-right`))
-      .attr("x", relativeX - (e.range *5) + (e.range * 20) + 80);
+      .attr("x", relativeX - (e.range *5) + (e.range * RANGE_GAP) + 80);
       
     d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-left`))
       .attr("x", relativeX - (e.range *5) + 105);
@@ -2129,7 +2130,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
       
       const chaptersRelated = this.chapters.filter((c) => {
-        const range = (c.width - 100) / 20
+        const range = (c.width - 100) / RANGE_GAP
         if(this.selectedEvent && range >= this.selectedEvent.startRange && range <= (this.selectedEvent.startRange + this.selectedEvent.range)){
           c.event_Id = this.selectedEvent.id
           this.wd.updateChapter(c)
@@ -2197,7 +2198,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 
     if (!isSame && this.selectedTimeline.order > newTimeline.order) {
-      const diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
+      const diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * RANGE_GAP
 
       rectElement
         .transition()
@@ -2221,7 +2222,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .attr("x", () => 30 + this.buttonPositions(newTimeline, timelines, pos) + diff)
       });
 
-      this.updateChapterWidth(selectedTimelineChapters, otherElementLocation -20)
+      this.updateChapterWidth(selectedTimelineChapters, otherElementLocation -RANGE_GAP)
 
       //  aqui ---------------------------
       if (this.prevTimeline != undefined && this.prevTimeline.order < newTimeline.order) {
@@ -2236,12 +2237,12 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
+          .attr('x', otherElementLocation - (this.prevTimeline?.range * RANGE_GAP));
         prevRectheaderElement
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr('x', otherElementLocation - (this.prevTimeline?.range * 20));
+          .attr('x', otherElementLocation - (this.prevTimeline?.range * RANGE_GAP));
 
         prevtextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
@@ -2252,10 +2253,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .attr("x", () => 30 + this.buttonPositions(timelines[newTimeline.order - 2], timelines, pos))
         });
         const prevTimelineChapters = this.getChapterByTimeline(this.prevTimeline)
-        this.updateChapterWidth(prevTimelineChapters, otherElementLocation - (this.prevTimeline?.range * 20))
+        this.updateChapterWidth(prevTimelineChapters, otherElementLocation - (this.prevTimeline?.range * RANGE_GAP))
 
       } else {
-        const elPos = otherElementLocation + (this.selectedTimeline.range * 20)
+        const elPos = otherElementLocation + (this.selectedTimeline.range * RANGE_GAP)
         newRectElement
           .transition()
           .duration(100)
@@ -2269,7 +2270,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .attr('x', elPos);
 
 
-        let diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * 20
+        let diff = ((this.selectedTimeline.range - newTimeline.range) / 2) * RANGE_GAP
 
         newTextElement._groups[0].forEach((element: any, i: number) => {
           const pos = i >= 3 ? 1 : i
@@ -2277,16 +2278,16 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (elPos + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
+            .attr("x", () => (elPos + (newTimeline.range * (RANGE_GAP / 2)) - 7 + this.buttonsSpacing[pos]))
 
         });
-        this.updateChapterWidth(newTimelineChapters, elPos - 20)
+        this.updateChapterWidth(newTimelineChapters, elPos - RANGE_GAP)
 
       }
 
     } else if (!isSame && this.selectedTimeline.order < newTimeline.order) {
 
-      const elPosition = currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20
+      const elPosition = currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * RANGE_GAP
       rectElement
         .transition()
         .duration(100)
@@ -2307,11 +2308,11 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           .transition()
           .duration(100)
           .ease(d3.easeCubic)
-          .attr("x", () => (elPosition + (this.selectedTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
+          .attr("x", () => (elPosition + (this.selectedTimeline.range * (RANGE_GAP / 2)) - 7 + this.buttonsSpacing[pos]))
           
-          // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * 20+ this.getElementCenter(rectElement)));
+          // .attr('x', (currentElementLocation + (newTimeline.range - this.selectedTimeline.range) * RANGE_GAP+ this.getElementCenter(rectElement)));
         });
-        this.updateChapterWidth(selectedTimelineChapters, elPosition - 20)
+        this.updateChapterWidth(selectedTimelineChapters, elPosition - RANGE_GAP)
 
 
       if (this.prevTimeline != undefined && this.prevTimeline?.order > newTimeline.order) {
@@ -2342,14 +2343,14 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (Location + (range * 10) - 7 + this.buttonsSpacing[pos]))
+            .attr("x", () => (Location + (range * (RANGE_GAP / 2)) - 7 + this.buttonsSpacing[pos]))
             
             // .attr('x', Location + this.getElementCenter(prevRectElement));
           });
 
 
       } else {
-        const elPosition = otherElementLocation - (this.selectedTimeline.range * 20)
+        const elPosition = otherElementLocation - (this.selectedTimeline.range * RANGE_GAP)
 
 
         newRectElement
@@ -2372,10 +2373,10 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .transition()
             .duration(100)
             .ease(d3.easeCubic)
-            .attr("x", () => (elPosition + (newTimeline.range * 10) - 7 + this.buttonsSpacing[pos]))
+            .attr("x", () => (elPosition + (newTimeline.range * (RANGE_GAP / 2)) - 7 + this.buttonsSpacing[pos]))
 
         });
-        this.updateChapterWidth(newTimelineChapters, elPosition - 20 )
+        this.updateChapterWidth(newTimelineChapters, elPosition - RANGE_GAP )
       }
 
 
@@ -2415,7 +2416,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
             .attr("x", () => 30 + this.buttonPositions(this.prevTimeline ?? this.selectedTimeline, timelines, pos))
             
           });
-          this.updateChapterWidth(prevTimelineChapters, Location - 20)
+          this.updateChapterWidth(prevTimelineChapters, Location - RANGE_GAP)
 
 
 
@@ -2471,8 +2472,8 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
               .ease(d3.easeCubic)
               .attr('x', () => 30 + this.buttonPositions(this.selectedTimeline, timelines, pos));
           });
-          this.updateChapterWidth(prevTimelineChapters, Location -20)
-          this.updateChapterWidth(selectedTimelineChapters, toWalk -20)
+          this.updateChapterWidth(prevTimelineChapters, Location -RANGE_GAP)
+          this.updateChapterWidth(selectedTimelineChapters, toWalk -RANGE_GAP)
         }
 
 
@@ -2562,7 +2563,7 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
   // Método para obter o timeline com base na posição x
 // Método para obter o timeline e o range ajustado para manter o chapter na mesma posição
 getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRange: number } | undefined {
-  const RANGE_MULTIPLIER = 20;
+  const RANGE_MULTIPLIER = RANGE_GAP;
   let accumulatedX = 0;
 
   for (const timeline of this.timelines.sort((a, b) => a.order - b.order)) {

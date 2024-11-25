@@ -6,7 +6,7 @@ import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
-import { Chapter, paper } from '../../../models/paperTrailTypes';
+import { basicWorld, Chapter, paper, world } from '../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-world',
@@ -28,6 +28,10 @@ papper: paper;
   papers$: paper[];
   worldId:String;
   chapters$: Chapter[]
+  worldData: basicWorld | null
+  panelSSOpenState = true;
+  panelCreationButtonsOpenState = true;
+  panelGroupConnectionOpenState = true;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -36,6 +40,9 @@ papper: paper;
         this.loadWorldData(id);
       }
 
+      this.wd.world$.subscribe((w) => {
+        this.worldData = w
+      })
       this.wd.chapters$.subscribe((c) => {
         this.chapters$ = c
       })
@@ -71,7 +78,21 @@ papper: paper;
     return `rgb(${r}, ${g}, ${b})`;
   }
 
-
+  createStoryline(){
+    this.dialog.openCreateStoryline('150ms', '150ms')
+  }
+  createTimeline(){
+    this.dialog.openCreateTimelineDialog('150ms', '150ms')
+  }
+  openSubwaySettings(){
+    this.dialog.openSubwaySettingsDialog('150ms', '150ms')
+  }
+  openCreateGroup(){
+    this.dialog.openCreateGroupConnectionDialog('150ms', '150ms')
+  }
+  createEvents(){
+    this.dialog.opencreateEventsDialog( this.wd.worldId , '150ms', '150ms')
+  }
   openChapter(worldId: string | undefined, papperId: string){
     this.router.navigate([`/world/${worldId}/chapter/${papperId}`]);
   }

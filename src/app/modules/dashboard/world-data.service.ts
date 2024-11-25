@@ -198,7 +198,8 @@ export class WorldDataService {
     const basicworldInfo :basicWorld = {
       created_at: data.created_at,
       id: data.id,
-      name: data.name
+      name: data.name,
+      description: data.description
   }
   this.setWorld(basicworldInfo)
   this.setPapers(data.papers)

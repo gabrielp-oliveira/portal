@@ -9,13 +9,12 @@
     mat-table
     [dataSource]="dataSource"
     matSort
-    class="mat-elevation-z8 paperTable"
+    class="groupTable"
     cdkDropListGroup
   >
 
-    <!-- Coluna Nome -->
     <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>
+      <th mat-header-cell *matHeaderCellDef style="margin: 0;">
         <div>
 
           <span class="tableHeader">
@@ -27,7 +26,7 @@
         </div>
 
       </th>
-      <td mat-cell *matCellDef="let group" [ngStyle]="BackgroundColor(group)" class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
+      <td mat-cell *matCellDef="let group"  class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
         <span class="nameChips" style="color: black;">
           
           {{ group.name }}
@@ -35,7 +34,6 @@
       </td>
     </ng-container>
 
-    <!-- Coluna Idade -->
   
     <ng-container matColumnDef="update">
       
@@ -46,12 +44,12 @@
           </span>
         </div>
            </th>
-      <td mat-cell *matCellDef="let group" [ngStyle]="BackgroundColor(group)" class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
-        <button mat-flat-button (click)="updateGroup(group)" class="editButton">
+      <td mat-cell *matCellDef="let group" class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
+        <span  (click)="updateGroup(group)" class="editButton">
           
           <mat-icon style="margin: 0px;" [style]="{color: group.color}">edit</mat-icon>
 
-        </button>
+        </span>
       </td>
     </ng-container>
     <ng-container matColumnDef="description">
@@ -63,12 +61,12 @@
           </span>
         </div>
            </th>
-      <td mat-cell *matCellDef="let group" [ngStyle]="BackgroundColor(group)" class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
-        <button mat-flat-button (click)="opengroupDescription(group)" class="editButton">
+      <td mat-cell *matCellDef="let group"  class="transition" (mouseenter)="hoverGroup(group, true)" (mouseleave)="hoverGroup(group, false)">
+        <span  (click)="opengroupDescription(group)" class="editButton">
           
-          <mat-icon style="margin: 0px;" [style]="{color: group.color}">description</mat-icon>
+          <mat-icon style="margin: 0px;" >description</mat-icon>
 
-        </button>
+        </span>
       </td>
     </ng-container>
 

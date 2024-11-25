@@ -1,4 +1,4 @@
-<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')">Create new Chapter</button>
+<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')" style="margin-bottom: 20px;">Create new Chapter</button>
 <div #circle class="circle"></div>
 
 <div cdkDropList #tableDropList="cdkDropList" 
@@ -12,6 +12,7 @@
     [dataSource]="dataSource"
     matSort
     class="mat-elevation-z8 chapterTable"
+    style="width: 1000px;"
     cdkDropListGroup
   >
     <!-- Coluna para Drag & Drop -->
@@ -27,7 +28,7 @@
         </div>
          </th>
       <td mat-cell *matCellDef="let chapter" class="order" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
           {{chapter.order}}
           <mat-icon class="drag-handle" cdkDragHandle>drag_handle</mat-icon>
         </button>
@@ -50,7 +51,7 @@
 
       </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
 
         {{ chapter.name }}
         </button>
@@ -70,7 +71,7 @@
 
       </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
 
         {{ chapter.papperName }}
         </button>
@@ -92,7 +93,7 @@
 
       </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
 
         {{ chapter.timelineName }}
         </button>
@@ -112,8 +113,8 @@
         </div>
 
       </th>
-      <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
+      <td mat-cell *matCellDef="let chapter"  [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
 
         {{ chapter.storylineName }}
         </button>
@@ -135,8 +136,8 @@
 
         </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button>
-        {{ chapter.created_at  | date: 'MM-dd-yy' }}
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;">
+        {{ chapter.created_at  | date: 'MMM d, y' }}
           </button> 
       </td>
     </ng-container>
@@ -150,7 +151,7 @@
         </div>
            </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button (click)="updateChapter(chapter.id)" class="editButton">
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;" (click)="updateChapter(chapter.id)" class="editButton">
           
           <mat-icon style="margin: 0px;" [ngStyle]="iconColors(chapter)">edit</mat-icon>
 
@@ -167,7 +168,7 @@
         </div>
            </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button (click)="openChapter(chapter.id)" class="editButton">
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;" (click)="openChapter(chapter.id)" class="editButton">
           
           <mat-icon style="margin: 0px;" [ngStyle]="iconColors(chapter)">open_in_new</mat-icon>
 
@@ -184,7 +185,7 @@
         </div>
            </th>
       <td mat-cell *matCellDef="let chapter" [ngStyle]="chapterBackgroundColor(chapter)" class="transition" (mouseenter)="hoverChapter(chapter, true)" (mouseleave)="hoverChapter(chapter, false)">
-        <button mat-flat-button (click)="openDescription(chapter)" class="editButton"  style="margin-left: 10px;">
+        <button mat-flat-button style="display: flex; justify-content: center; width: 100%;" (click)="openDescription(chapter)" class="editButton"  style="margin-left: 10px;">
           <mat-icon  [ngStyle]="iconColors(chapter)" style="margin-left: 10px;">description</mat-icon>
         </button>
       </td>

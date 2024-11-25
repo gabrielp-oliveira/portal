@@ -56,7 +56,6 @@ export class PapperComponent implements OnInit {
     this.dialog.openChapterDescription(pp, '150ms','150ms')
   }
   ngOnInit() {
-
     this.wd.papers$.pipe(
       distinctUntilChanged(() => {
         const valOrder = this.orderSearchValue ==  ""
