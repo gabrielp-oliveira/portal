@@ -3,12 +3,7 @@
     <h2>Create new chapter</h2>
 
     <div class="headerButtons">
-
-      <strong class="info"
-      [matTooltipPosition]="'above'"
-      matTooltip="A paper is an organized collection of chapters that form a story or narrative within the world, linked to timelines, storylines, and events."
-      aria-label="Button that shows a black tooltip describing a timeline"
-      >!</strong>
+      <app-chapter-info></app-chapter-info>
       <strong mat-dialog-close class="close"
       
       [matTooltipPosition]="'above'"
@@ -25,8 +20,8 @@
       <div class="group">      
    
         <mat-form-field style="width: 100%;" >
-          <mat-label for="Name">Input</mat-label>
-          <input matInput type="text" required id="Name" type="Name" formControlName="Name" >
+          <mat-label for="name">Input</mat-label>
+          <input matInput type="text" required id="name" type="name" formControlName="name" >
         </mat-form-field>
 
       </div>
@@ -57,13 +52,7 @@
 
 
 
-      <!-- <label for="paper">Choose a paper to save your new chapter: </label>
-      <select id="paper" formControlName="paper_id">
-        <option value="">Choose a paper</option>
-        <option *ngFor="let paper of papers$ | async" [value]="paper.id">
-          {{ paper.name }} - {{ paper.description }}
-        </option>
-      </select> -->
+
       
       <mat-dialog-actions>
         <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">

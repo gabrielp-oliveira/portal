@@ -1,7 +1,22 @@
-<h2 mat-dialog-title>Description</h2>
-<mat-dialog-content>
-  {{data.name}}
-</mat-dialog-content>
-<mat-dialog-content>
-  <p>{{data.description}}</p>
-</mat-dialog-content>
+<div class="modal">
+
+  <div class="header" >
+    <h2>{{data.name}} description</h2>
+
+    <div class="headerButtons">
+
+
+      <app-chapter-info></app-chapter-info>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
+    </div>
+  </div>
+
+  <div class="body">
+    <p>{{data.description}}</p>
+    </div>
+  </div>

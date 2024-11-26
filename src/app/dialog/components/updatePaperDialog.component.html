@@ -1,28 +1,83 @@
-<h2 mat-dialog-title>Update paper</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">paper Name: </label>
-    <input id="Name" type="text" formControlName="name" />
-    
-    <label for="description">paper Description: </label>
-    <input id="description" type="text" formControlName="description" />
-    
-    <label for="order">paper order: </label>
-    <input id="order" type="number" formControlName="order" />
-    
-    <div id="swatch">
+<div class="modal">
+  <div class="header" >
+    <h2>Update paper</h2>
 
-    <label for="color">paper color: </label>
-    <input id="color" type="color" formControlName="color" id="color"  name="color" />
-    <div class="val">
-      <h2>{{this.worldForm.value.color}}</h2>
+    <div class="headerButtons">
+      <app-paper-info></app-paper-info>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
     </div>
+  </div>
+  <div class="body">
+
+    <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+      <div class="group">      
+        <mat-form-field style="width: 100%;" >
+          <mat-label for="Name">name</mat-label>
+          <input matInput type="text" required id="Name" type="Name" formControlName="Name" >
+        </mat-form-field>
+
       </div>
 
+      <div class="group">      
+
+        <mat-form-field style="width: 100%;" >
+          <mat-label for="description">Textarea</mat-label>
+          <textarea matInput id="description" type="description" formControlName="description" ></textarea>
+        </mat-form-field>
+
+      </div>
+      <div class="group" style="width: 100%;">      
+        <mat-form-field class="example-full-width">
+          <mat-label for="order">order</mat-label>
+          <input matInput maxlength="5" id="order" type="number" formControlName="order">
+        </mat-form-field>
+      </div>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span>Color</span>
+            <strong class="info"
+            [matTooltipPosition]="'above'"
+            matTooltip="Paper color helps visually distinguish storylines and is used to group related chapters and connections on the map."
+            aria-label="Button that shows a black tooltip describing a timeline"
+            >!</strong>
+            <span [ngStyle]="chapterBackgroundColor()" class="paperColor" style="margin-left: 15px;"></span>
+
+          </mat-panel-title>
+
+        </mat-expansion-panel-header>
+        <div class="accordion-info">
+          <div id="swatch" style="width: 100%;">
+
+            <label for="color">paper color: </label>
+            <input id="color" type="color" formControlName="color" id="color"  name="color" style="width: 100%;"/>
+            <div class="val">
+              <h2>{{this.worldForm.value.color}}</h2>
+            </div>
+              </div>
+            </div>
+
+
+
+      </mat-expansion-panel>
+
+      
+      
+      <mat-dialog-actions>
+        <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+          
+          <div>
+            <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+          </div>
+        </button>
+      </mat-dialog-actions>
+    </form>
+
     
-    <mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
-    </mat-dialog-actions>
-  </form>
-</mat-dialog-content>
+</div>
+</div>

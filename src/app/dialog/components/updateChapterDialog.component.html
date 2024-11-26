@@ -1,55 +1,102 @@
-<h2 mat-dialog-title>Update chapter</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">Chapter Name: </label>
-    <input id="Name" type="text" formControlName="name" />
-    
-    <label for="description">Chapter Description: </label>
-    <input id="description" type="text" formControlName="description" />
-    
-    <label for="order">Chapter order: </label>
-    <input id="order" type="number" formControlName="order" />
-    
-    <label for="paper">Choose a paper to save your chapter: </label>
-    <select id="paper" formControlName="paper_id">
-      <option value="">Choose a paper</option>
-      <option *ngFor="let paper of papers$ | async" [value]="paper.id">
-        {{ paper.name }} - {{ paper.description }}
-      </option>
-    </select>
-    <select id="timeline" formControlName="timeline_id" (change)="getTimeLineDetails($event)">
+<div class="modal">
+  <div class="header" >
+    <h2>Update chapter</h2>
 
-      <option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
-        {{ timeline.name }}
-      </option>
-    </select>
+    <div class="headerButtons">
 
-    <br>
-    <mat-slider
-    *ngIf="selectedTl.range"
-    min="1"
-    
-    id="range"
-    max={{selectedTl.range}}
-    step="1"
-    showTickMarks
-    discrete
-    [displayWith]="formatLabel"
-    >
-    <input matSliderThumb formControlName="range"/>
-  </mat-slider>
+
+      <app-chapter-info></app-chapter-info>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
+    </div>
+  </div>
+
+  <div class="body">
+
+      <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+
+        <div class="group">      
+   
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="Name">chapter name</mat-label>
+            <input matInput type="text" required id="Name" type="Name" formControlName="name" >
+          </mat-form-field>
   
-  <br>
-    <select id="storyline" formControlName="storyline_id">
-      <!-- <option value="">Choose a storyline</option> -->
-      <option *ngFor="let storyline of storylines$ | async" [value]="storyline.id">
-        {{ storyline.name }}
-      </option>
-    </select>
+        </div>
+
+
+        <div class="group">      
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="description">description</mat-label>
+            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
+          </mat-form-field>
+          
+        </div>
+        <div class="inlineGroup">
+
+          <div class="group" style="width: 48%;">      
+            <mat-form-field class="example-full-width">
+              <mat-label for="order">order</mat-label>
+              <input matInput maxlength="5" id="order" type="number" formControlName="order">
+            </mat-form-field>
+          </div>
+
+          <div class="group" style="width: 48%;">      
+            <mat-form-field  >
+              <mat-label for="paper">Select paper</mat-label>
+              <mat-select id="paper" formControlName="paper_id" required>
+                <mat-option *ngFor="let paper of papers$ | async" [value]="paper.id">
+                  <span [ngStyle]="chapterBackgroundColor(paper)" class="paperColor"></span>  {{ paper.name }} 
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>          
+        </div>
+
+
+        <div class="inlineGroup">
+
+          
+          <div class="group" style="width: 48%;">      
+            <mat-form-field  >
+              <mat-label for="timeline">Select timeline</mat-label>
+              <mat-select id="timeline" formControlName="timeline_id" required>
+                <mat-option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
+                  {{ timeline.name }} 
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="group" style="width: 48%;">      
+            
+            <mat-form-field  >
+              <mat-label for="storyline">Select storyline</mat-label>
+              <mat-select id="storyline" formControlName="storyline_id" required>
+                <mat-option *ngFor="let storyline of storylines$ | async" [value]="storyline.id">
+                  {{ storyline.name }} 
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+          </div>
+          </div>      
+
     
+
     <mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+      <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+
+        <div>
+          <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+        </div>
+      </button>
     </mat-dialog-actions>
   </form>
-</mat-dialog-content>
+
+</div>
+</div>

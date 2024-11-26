@@ -13,33 +13,22 @@
         <button mat-button (click)="createStoryline()">
           <mat-icon>add_road</mat-icon>
           <span>Create Story line</span>
-          <strong [matTooltipPosition]="'above'"
-          matTooltip="A storyline is a narrative line that connects related chapters, showcasing the trajectory of characters or events throughout the map."
-          aria-label="Button that shows a red tooltip"
-          >!</strong>        </button>
+          <app-storyline-info></app-storyline-info>
+        </button>
         <button mat-button (click)="createTimeline()">
           <mat-icon>calendar_month</mat-icon>
           <span>Create Timeline</span>
-          <strong [matTooltipPosition]="'left'" 
-          matTooltip="A timeline represents a time interval or event within the narrative map, where chapters and storylines are organized chronologically."
-          aria-label="Button that shows a red tooltip"
-          class="example-button">!</strong>
+          <app-timeline-info></app-timeline-info>
         </button>
         <button mat-button (click)="openCreateGroup()">
           <mat-icon>timeline</mat-icon>
           <span>Create Connection Group</span>
-          <strong [matTooltipPosition]="'left'"
-          matTooltip="A group connection is a grouping that links chapters or events related by a common theme, such as a character's journey or a specific storyline."
-          aria-label="Button that shows a red tooltip"
-          >!</strong>
+          <app-connectionGroup-info></app-connectionGroup-info>
         </button>
         <button mat-button (click)="createEvents()">
           <mat-icon>theater_comedy</mat-icon>
           <span>Create Events</span>
-          <strong [matTooltipPosition]="'left'"
-          matTooltip="An event is a specific point or period that can span one or more timelines, representing key occurrences where chapters or narrative connections converge."
-          aria-label="Button that shows a red tooltip"
-          >!</strong>
+          <app-event-info></app-event-info>
          </button>
       </div>
       <hr>

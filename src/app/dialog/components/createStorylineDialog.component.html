@@ -1,17 +1,53 @@
-<h2 mat-dialog-title>create Storyline</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">Storyline Name: </label>
-    <input id="Name" type="text" formControlName="name" />
+<div class="modal">
+
+  <div class="header" >
+    <h2>Create Storyline</h2>
+
+    <div class="headerButtons">
+
+      <strong class="info"
+      [matTooltipPosition]="'above'"
+      matTooltip="A storyline is a narrative line that connects related chapters, showcasing the trajectory of characters or events throughout the map."
+      aria-label="Button that shows a black tooltip describing a timeline"
+      >!</strong>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
+    </div>
+  </div>
+
+  <div class="body">
+
+      <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+        <div class="group">      
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="name">name</mat-label>
+            <input matInput type="text" required id="Name" type="name" formControlname="Name" >
+          </mat-form-field>
+  
+        </div>
+        <div class="group">      
+
+          <mat-form-field style="width: 100%;" >
+            <mat-label for="description">Textarea</mat-label>
+            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
+          </mat-form-field>
+  
+        </div>
+        <br>
+        
+        <mat-dialog-actions>
+          <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+            
+            <div>
+              <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+            </div>
+          </button>
+        </mat-dialog-actions>
+      </form>
     
-    <label for="description">Storyline Description: </label>
-    <input id="description" type="text" formControlName="description" />
-    
-  <br>
-    
-    <mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
-    </mat-dialog-actions>
-  </form>
-</mat-dialog-content>
+  </div>
+</div>

@@ -11,6 +11,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChapterInfoComponent } from "../../standAlone/info/chapter-info/chapter-info.component";
 
 
 const routes: Routes = [
@@ -23,15 +25,17 @@ const routes: Routes = [
   declarations: [DocxComponent, SafeUrlPipe, PreviewComponent],
   exports: [DocxComponent],
   imports: [
+    ChapterInfoComponent,
     MatIconModule,
     HttpClientModule,
     CommonModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
+    MatTooltipModule,
     MatButtonModule,
     MatDatepickerModule,
-    RouterModule.forChild(routes)
-  ]
+    RouterModule.forChild(routes),
+]
 })
 export class DocxModule { }

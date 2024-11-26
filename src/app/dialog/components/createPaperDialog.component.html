@@ -4,11 +4,7 @@
 
     <div class="headerButtons">
 
-      <strong class="info"
-      [matTooltipPosition]="'above'"
-      matTooltip="A paper is an organized collection of chapters that form a story or narrative within the world, linked to timelines, storylines, and events."
-      aria-label="Button that shows a black tooltip describing a timeline"
-      >!</strong>
+      <app-paper-info></app-paper-info>
       <strong mat-dialog-close class="close"
       
       [matTooltipPosition]="'above'"
@@ -34,7 +30,7 @@
 
           <mat-form-field style="width: 100%;" >
             <mat-label for="description">Textarea</mat-label>
-            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
+            <textarea matInput id="description" type="description" formControlName="description"></textarea>
           </mat-form-field>
   
         </div>

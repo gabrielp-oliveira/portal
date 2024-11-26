@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ApiService } from '../../api.service';
-import { Chapter, ChapterDetails } from '../../../models/paperTrailTypes';
+import { Chapter, chapterBasicInfo, ChapterDetails } from '../../../models/paperTrailTypes';
 import { UtilsService } from '../../../utils.service';
 import { DialogService } from '../../../dialog/dialog.service';
 
@@ -50,8 +50,8 @@ export class DocxComponent {
     }
     console.log(this.ChapterDetails)
   }
-  openPreview(id:string){
-    this.dialog.openPreview(id, '150ms','150ms')
+  openPreview(data: Chapter| chapterBasicInfo){
+    this.dialog.openPreview(data, '150ms','150ms')
   }
 
   openDesctiprion(c:Chapter) {

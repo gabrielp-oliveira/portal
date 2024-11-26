@@ -1,4 +1,9 @@
-<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')" style="margin-bottom: 20px;">Create new Chapter</button>
+<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')" style="margin-bottom: 20px;">
+  <span>Create new Chapter</span>
+
+  <app-chapter-info></app-chapter-info>
+
+  </button>
 <div #circle class="circle"></div>
 
 <div cdkDropList #tableDropList="cdkDropList" 

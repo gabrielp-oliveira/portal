@@ -22,14 +22,14 @@
                                 <span>previously Chapter in order: {{ChapterDetails.prev.name}}</span>
                                 <div>
 
-                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.prev.id)">preview</button>
+                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.prev)">preview</button>
                                     <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.prev)">description</button>
                                 </div>
                             </div>
                             <div class="accordion-info">
                                 <span>next Chapter in order: {{ChapterDetails.next.name}}</span>
                                 <div>
-                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.next.id)">preview</button>
+                                    <button mat-stroked-button (click)="openPreview(ChapterDetails.next)">preview</button>
                                     <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.next)">description</button>
                                 </div>
                             </div>
@@ -51,7 +51,7 @@
                         <div *ngFor="let item of ChapterDetails?.relatedChapters">
                             <div class="accordion-info">
                                 <span>Chapter: {{item?.relatedChapter?.name}}</span>
-                                <button mat-stroked-button (click)="openPreview(item.relatedChapter.id)">preview</button>
+                                <button mat-stroked-button (click)="openPreview(item.relatedChapter)">preview</button>
 
                                 <p [style]="{color: item?.groupColor}">Connection: {{item?.groupName}}</p>
                             </div>

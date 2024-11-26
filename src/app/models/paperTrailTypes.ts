@@ -58,13 +58,14 @@ export type ChapterDetails = {
     prev: Chapter,
     relatedChapters: relatedChapter[]
 }
+export type chapterBasicInfo= {
+    id: string;
+    name: string;
+}
 
 export type relatedChapter =  {
     "chapterID": string, 
-    "relatedChapter": {
-        "id": string, 
-        "name": string
-    },
+    "relatedChapter": chapterBasicInfo,
     "groupName": string,
     "groupColor": string
 }

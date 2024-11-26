@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ModalComponent } from './modal.component';
+import { TimelineInfoComponent } from './timeline-info.component';
 
-describe('ModalComponent', () => {
-  let component: ModalComponent;
-  let fixture: ComponentFixture<ModalComponent>;
+describe('TimelineInfoComponent', () => {
+  let component: TimelineInfoComponent;
+  let fixture: ComponentFixture<TimelineInfoComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalComponent]
+      imports: [TimelineInfoComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(ModalComponent);
+    fixture = TestBed.createComponent(TimelineInfoComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

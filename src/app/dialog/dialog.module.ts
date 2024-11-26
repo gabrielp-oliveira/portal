@@ -20,13 +20,18 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { ModalComponent } from '../standAlone/modal/modal.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { PaperInfoComponent } from '../standAlone/info/paper-info/paper-info.component';
+import { ChapterInfoComponent } from '../standAlone/info/chapter-info/chapter-info.component';
+import { ConnectionGroupInfoComponent } from '../standAlone/info/connectionGroup-info/connectionGroup-info.component';
+import { StorylineInfoComponent } from '../standAlone/info/storyline-info/storyline-info.component';
+import { EventInfoComponent } from '../standAlone/info/event-info/event-info.component';
+import { TimelineInfoComponent } from '../standAlone/info/timeline-info/timeline-info.component';
 
 
 
@@ -38,7 +43,7 @@ import { MatSelectModule } from '@angular/material/select';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent, ModalComponent,
+    strEditDialogComponent, UpdateEventDialogComponent, 
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [],
@@ -47,6 +52,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatDialogModule,
     ReactiveFormsModule,
     MatCardModule,
+    PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,
     MatIconModule,
     MatTooltipModule,
     MatNativeDateModule,

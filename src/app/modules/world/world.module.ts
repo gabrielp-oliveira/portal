@@ -30,6 +30,12 @@ import { SidenavComponent } from './sidenav/sidenav.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SettingsDialogComponent } from '../../dialog/components/dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ConnectionGroupInfoComponent } from "../../standAlone/info/connectionGroup-info/connectionGroup-info.component";
+import { ChapterInfoComponent } from "../../standAlone/info/chapter-info/chapter-info.component";
+import { StorylineInfoComponent } from "../../standAlone/info/storyline-info/storyline-info.component";
+import { EventInfoComponent } from '../../standAlone/info/event-info/event-info.component';
+import { PaperInfoComponent } from '../../standAlone/info/paper-info/paper-info.component';
+import { TimelineInfoComponent } from '../../standAlone/info/timeline-info/timeline-info.component';
 
 
 
@@ -63,8 +69,10 @@ const routes: Routes = [
     MatListModule,
     MatSidenavModule,
     MatIconModule, // Adicione o módulo de ícones aqui
-    RouterModule.forChild(routes)
-  ],
+    PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,
+    RouterModule.forChild(routes),
+
+],
   providers: [SubwayService, LoadingService]
 })
 export class worldModule { }

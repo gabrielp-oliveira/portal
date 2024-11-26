@@ -128,7 +128,7 @@ import { color } from 'd3';
         created_at: '',
 
       }
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
@@ -142,7 +142,6 @@ import { color } from 'd3';
         order: ['', [Validators.required]],
         timeline_id: ['', [Validators.required]],
         storyline_id: ['', [Validators.required]],
-        range: [0, [Validators.required]],
       });
 
       this.chapters$.subscribe((cpList) => {
@@ -164,6 +163,14 @@ import { color } from 'd3';
 
 
     }
+
+    chapterBackgroundColor(pp:paper) {    
+      return {
+        'background-color': pp.color || this.utils.numberToHex(pp.id),
+      }
+    }
+  
+
 
     papers$ = this.wd.papers$;
     timelines$ = this.wd.timelines$;
@@ -359,12 +366,12 @@ import { color } from 'd3';
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        range: [0, [Validators.required]],
       });
 
     }
     onSubmit(){
-      const body = this.worldForm.value
+      const body: Timeline= this.worldForm.value
+      body.range = 20
       body.world_id = this.wd.worldId
       this.loading.loadingOn()
       this.api.createTimeline(body).subscribe(
@@ -515,6 +522,7 @@ import { color } from 'd3';
     worldId:string | undefined= ''
       errorHandler: any;
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+      private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: { papperId: string }
     ){
       this.worldForm = this.fb.group({
@@ -540,6 +548,11 @@ import { color } from 'd3';
     papers$ = this.wd.papers$;
     chapters$ = this.wd.chapters$;
 
+    chapterBackgroundColor() {    
+      return {
+        'background-color': this.worldForm.value.color || this.utils.numberToHex(this.data.papperId),
+      }
+    }
     onSubmit(){
       const body = this.worldForm.value
       body.world_id = this.worldId
@@ -747,6 +760,12 @@ import { color } from 'd3';
       });
 
      }
+
+     chapterBackgroundColor(color:string) {    
+      return {
+        'background-color': color
+      }
+      }
 
      onSubmit(){
       const body:GroupConnection = { ...this.data,...this.worldForm.value}

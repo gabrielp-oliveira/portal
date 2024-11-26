@@ -1,21 +1,52 @@
-<h2 mat-dialog-title>Create new Connection group</h2>
-<mat-dialog-content>
-  chose your group name
-</mat-dialog-content>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <div>
+<div class="modal">
 
-      <label for="name">name: </label>
-      <input id="name" type="name" formControlName="name" />
-      <label for="description">description: </label>
-      <input id="description" type="description" formControlName="description" />
+  <div class="header" >
+    <h2>Create connection Group</h2>
+
+    <div class="headerButtons">
+
+      <strong class="info"
+      [matTooltipPosition]="'above'"
+      matTooltip="A group connection is a grouping that links chapters or events related by a common theme, such as a character's journey or a specific storyline."
+      aria-label="Button that shows a black tooltip describing a timeline"
+      >!</strong>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
 
     </div>
-    <mat-dialog-actions>
-      <button mat-button mat-dialog-close>cancel</button>
+  </div>
+
+  <div class="body">
+    <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+      <div class="group">      
+        <mat-form-field style="width: 100%;" >
+          <mat-label for="name">name</mat-label>
+          <input matInput type="text" required id="Name" type="name" formControlname="Name" >
+        </mat-form-field>
+
+      </div>
+
+      <div class="group">      
+
+        <mat-form-field style="width: 100%;" >
+          <mat-label for="description">Textarea</mat-label>
+          <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
+        </mat-form-field>
+
+      </div>
+
+
+  
+  
+  
+  <mat-dialog-actions>
+      <button mat-button mat-dialog-close>Cancel</button>
       <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
     </mat-dialog-actions>
-</form>
+  </form>
+</div>
 
-</mat-dialog-content>
+</div>

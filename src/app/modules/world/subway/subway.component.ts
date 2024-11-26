@@ -11,7 +11,6 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
 import { NumberInput } from '@angular/cdk/coercion';
 import { Router } from '@angular/router';
-import { ModalComponent } from '../../../standAlone/modal/modal.component';
 import { ErrorService } from '../../error.service';
 import { UtilsService } from '../../../utils.service';
 
@@ -1524,7 +1523,7 @@ private updateEventDisplay(event: Event) {
 
   callPreviewDialog() {
     if (this.selectedChapter) {
-      this.dialog.openPreview(this.selectedChapter.id, `150ms`, `150ms`)
+      this.dialog.openPreview(this.selectedChapter, `150ms`, `150ms`)
     }
   }
 
