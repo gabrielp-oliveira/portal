@@ -1,4 +1,7 @@
-<button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')"  style="margin-bottom: 20px;">Create new paper</button>
+<button mat-raised-button (click)="callCreatePaperDialog('150ms', '150ms')"  style="margin-bottom: 20px;">
+  <span>Create new paper</span>
+  <app-paper-info></app-paper-info>
+</button>
 
 <div
   cdkDropList
