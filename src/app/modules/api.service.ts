@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, ChapterDetails, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterDetails, Connection, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +51,12 @@ export class ApiService {
   }
   updateChapter(chapterId: string, body:Chapter): Observable<Chapter> {
     return this.http.put<Chapter>(`http://localhost:9090/updateChapter?id=${chapterId}`, body);
+  }
+  updateDescription(description: description): Observable<description> {
+    return this.http.put<description>(`http://localhost:9090/updateDescription?id=${description.id}`, description);
+  }
+  getDescription(description: description): Observable<description> {
+    return this.http.get<description>(`http://localhost:9090/description?resource_id=${description.resource_id}`);
   }
   updateChapterList( body:Chapter[]): Observable<Chapter[]> {
     return this.http.put<Chapter[]>(`http://localhost:9090/updateChapterList?id=${body[0].id}`, body);

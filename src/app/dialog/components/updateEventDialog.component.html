@@ -1,8 +1,8 @@
 <h2 mat-dialog-title>update event {{data.name}}</h2>
 <mat-dialog-content>
   <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="Name">event Name: </label>
-    <input id="Name" type="text" formControlName="name" />
+    <label for="name">event Name: </label>
+    <input id="name" type="text" formControlName="name" />
     
     <label for="description">event Description: </label>
     <input id="description" type="text" formControlName="description" />

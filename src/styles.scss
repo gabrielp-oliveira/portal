@@ -102,3 +102,18 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mdc-dialog__surface{
     background: transparent!important;
 }
+
+
+.angular-editor-toolbar-set {
+  border: 1px solid rgb(140, 140, 140);
+  border-radius: 5px;
+}
+.angular-editor-toolbar {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  height: 100px;
+  align-items: center;
+  font-size: 16px!important;
+
+}

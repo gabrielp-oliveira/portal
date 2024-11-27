@@ -32,6 +32,8 @@ import { ConnectionGroupInfoComponent } from '../standAlone/info/connectionGroup
 import { StorylineInfoComponent } from '../standAlone/info/storyline-info/storyline-info.component';
 import { EventInfoComponent } from '../standAlone/info/event-info/event-info.component';
 import { TimelineInfoComponent } from '../standAlone/info/timeline-info/timeline-info.component';
+import {MatTabsModule} from '@angular/material/tabs';
+import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.component";
 
 
 
@@ -54,17 +56,18 @@ import { TimelineInfoComponent } from '../standAlone/info/timeline-info/timeline
     MatCardModule,
     PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,
     MatIconModule,
+    MatTabsModule,
     MatTooltipModule,
     MatNativeDateModule,
     MatExpansionModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-  
     MatDialogModule,
     MatButtonModule,
     FontAwesomeModule,
     MatDatepickerModule,
     MatNativeDateModule, // Aqui está o adaptador de data nativo
-    MatSliderModule
-  ]
+    MatSliderModule,
+    TxtEditorComponent
+]
 })
 export class dialogModule { }

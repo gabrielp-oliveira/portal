@@ -2,13 +2,9 @@
 
   <div class="header" >
     <h2>{{data.name}} description</h2>
-
     <div class="headerButtons">
-
-
       <app-chapter-info></app-chapter-info>
       <strong mat-dialog-close class="close"
-      
       [matTooltipPosition]="'above'"
       matTooltip="Close Modal"
       aria-label="Button that shows a black tooltip describing a timeline">x</strong>
@@ -17,6 +13,18 @@
   </div>
 
   <div class="body">
-    <p>{{data.description}}</p>
+    <mat-tab-group>
+      <mat-tab label="read"> 
+        <div [innerHTML]="this.description.description_data" class="reader"></div>
+
+      </mat-tab>
+      <mat-tab label="edit"> 
+        <app-txt-editor [data]="description" (valueChanged)="onDescriptionChange($event)"></app-txt-editor>
+        <button mat-button (click)="updateDescription()">save</button>
+      </mat-tab>
+
+    </mat-tab-group>
+
+    <!-- <p>{{data.description}}</p> -->
     </div>
   </div>

@@ -22,20 +22,36 @@
         <div class="group">      
    
           <mat-form-field style="width: 100%;" >
-            <mat-label for="Name">chapter name</mat-label>
-            <input matInput type="text" required id="Name" type="Name" formControlName="name" >
+            <mat-label for="name">chapter name</mat-label>
+            <input matInput type="text" required id="name" type="Name" formControlName="name" >
           </mat-form-field>
   
         </div>
 
 
         <div class="group">      
-          <mat-form-field style="width: 100%;" >
-            <mat-label for="description">description</mat-label>
-            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
-          </mat-form-field>
+
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span>Description</span>
+                <strong class="info"
+                [matTooltipPosition]="'above'"
+                matTooltip="depois coloco a info pra descricao >;[ "
+                aria-label="Button that shows a black tooltip describing a timeline"
+                >!</strong>
+              </mat-panel-title>
+  
+            </mat-expansion-panel-header>
+            <div class="accordion-info">
+              <app-txt-editor [data]="description" ></app-txt-editor>
+            </div>
+          </mat-expansion-panel>
           
+  
+  
         </div>
+  
         <div class="inlineGroup">
 
           <div class="group" style="width: 48%;">      

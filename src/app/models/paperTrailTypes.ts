@@ -63,6 +63,12 @@ export type chapterBasicInfo= {
     name: string;
 }
 
+export type description = {
+    id: string,
+    resource_type: string,
+    resource_id?: string,
+    description_data?: string
+}
 export type relatedChapter =  {
     "chapterID": string, 
     "relatedChapter": chapterBasicInfo,

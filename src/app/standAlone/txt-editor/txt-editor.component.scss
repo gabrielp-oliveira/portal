@@ -1,0 +1,29 @@
+/* Estilizar os botões da barra de ferramentas */
+angular-editor-toolbar {
+  display: flex!important;
+  height: 100px!important;
+  flex-wrap: wrap; /* Permite que os botões quebrem em várias linhas */
+  gap: 10px;       /* Espaçamento entre os botões */
+  border: 1px solid red;
+  
+}
+
+/* Estilizar os botões para ficarem maiores */
+angular-editor-toolbar button {
+  padding: 10px 15px;   /* Aumenta o tamanho dos botões */
+  font-size: 16px;      /* Aumenta o tamanho da fonte */
+  border-radius: 5px;   /* Bordas arredondadas */
+  margin: 5px;          /* Espaçamento entre os botões */
+  background-color: #f4f4f4;  /* Cor de fundo padrão */
+  border: 1px solid #ccc;     /* Borda dos botões */
+  transition: background-color 0.3s ease;
+}
+
+angular-editor-toolbar button:hover {
+  background-color: #e0e0e0; /* Cor ao passar o mouse */
+}
+
+/* Ajustar os ícones para ficarem maiores */
+angular-editor-toolbar button mat-icon {
+  font-size: 20px; /* Aumenta o tamanho dos ícones */
+}

@@ -1,15 +1,15 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
+import { Chapter, Connection, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
 import { combineLatest } from 'rxjs';
 import { LoadingService } from '../../modules/loading.service';
 import { UtilsService } from '../../utils.service';
-import { color } from 'd3';
+import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.component';
 
 
 
@@ -27,7 +27,7 @@ import { color } from 'd3';
       private loading: LoadingService,
       private wd: WorldDataService){
         this.worldForm = this.fb.group({
-            Name: ['', [Validators.required, Validators.minLength(3)]],
+            name: ['', [Validators.required, Validators.minLength(3)]],
             description: ['', [Validators.required]],
         });
         this.wd.world$.subscribe((w) => {
@@ -58,6 +58,9 @@ import { color } from 'd3';
   })
   export class createChapterDialogComponent  {
     worldForm: FormGroup;
+    description:description
+    @ViewChild(TxtEditorComponent) txtEditor!: TxtEditorComponent;
+
     worldId:string | undefined= ''
       errorHandler: any;
     constructor(private fb: FormBuilder,private api:ApiService,
@@ -70,6 +73,13 @@ import { color } from 'd3';
         paper_id: ['', [Validators.required]],
       });
 
+      this.description = {
+        id: '',
+        resource_type: 'chapter',
+        resource_id: ''
+      }
+      
+
       this.wd.world$.subscribe((w) => {
         this.worldId = w?.id
       })
@@ -79,6 +89,10 @@ import { color } from 'd3';
     chapters$ = this.wd.chapters$;
     world$ = this.wd.world$;
 
+    onDescriptionChange(value: string): void {
+      this.description.description_data = value;
+    }
+    
     chapterBackgroundColor(pp:paper) {    
     return {
       'background-color': pp.color || this.utils.numberToHex(pp.id),
@@ -89,15 +103,14 @@ import { color } from 'd3';
       const body = this.worldForm.value
       body.world_id = this.worldId
 
+      body.description = this.description.description_data
       this.loading.loadingOn()
-      this.api.createChapter(this.worldForm.value).subscribe(
-        
+
+      this.api.createChapter(body).subscribe(
         {
             next: (data) => this.addNewChapter(data),
             error: (err) =>this.errorHandler.errHandler(err)
           }
-
-
     )
     }
     addNewChapter(newChapter: Chapter){
@@ -115,6 +128,8 @@ import { color } from 'd3';
   })
   export class UpdateChapterDialogComponent  {
     worldForm: FormGroup;
+    description:description
+
     worldId:string | undefined= ''
       errorHandler: any;
       tl: Timeline[]
@@ -126,12 +141,22 @@ import { color } from 'd3';
         description: '',
         order: 0,
         created_at: '',
-
       }
     constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
+      const d = {
+        id: '',
+        resource_type: 'chapter',
+        resource_id: data.chapterId
+      }
+
+      this.api.getDescription(d).subscribe((desc) => {
+        this.description = desc
+        console.log(this.description)
+      })
+      
       this.timelines$.subscribe((tl) => {
         this.tl = tl
       })
@@ -161,9 +186,13 @@ import { color } from 'd3';
       })
 
 
-
+      
     }
-
+    
+    onDescriptionChange(value: string): void {
+      this.description.description_data = value;
+    }
+    
     chapterBackgroundColor(pp:paper) {    
       return {
         'background-color': pp.color || this.utils.numberToHex(pp.id),
@@ -360,8 +389,7 @@ import { color } from 'd3';
 
     constructor(private fb: FormBuilder,private api:ApiService,
        private wd: WorldDataService,
-       private loading: LoadingService,
-      @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
+       private loading: LoadingService
     ){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
@@ -374,6 +402,7 @@ import { color } from 'd3';
       body.range = 20
       body.world_id = this.wd.worldId
       this.loading.loadingOn()
+
       this.api.createTimeline(body).subscribe(
         {
             next: (data) => this.wd.addTimeline(data),
@@ -398,7 +427,6 @@ import { color } from 'd3';
       private loading: LoadingService ){
 
       this.wd.settings$.subscribe((ss) => {
-        console.log(ss)
         if(ss != null){
           this.ss = ss
 
@@ -621,13 +649,28 @@ import { color } from 'd3';
   })
   export class createWorldDialogComponent {
     worldForm: FormGroup;
+    description:description
     constructor(private fb: FormBuilder, private api: ApiService, private wd: WorldDataService) {
       this.worldForm = this.fb.group({
-        Name: ['', [Validators.required]],
+        name: ['', [Validators.required]],
       });
+      this.description = {
+        id: '',
+        resource_type: 'world',
+      }
     }
+    
+  onDescriptionChange(value: string): void {
+    this.description.description_data = value;
+  }
+
+
     onSubmit() {
-      this.api.Createworld(this.worldForm.value).subscribe((world) => {
+      const body = this.worldForm.value
+      const desc:string =this.description.description_data??"" 
+      body.description = desc
+
+      this.api.Createworld(body).subscribe((world) => {
       })
     }
   
@@ -649,8 +692,25 @@ import { color } from 'd3';
   })
   export class chapteDescriptionDialogComponent {
 
-    constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter ){
+    description:description
+    constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter, private api:ApiService ){
+      this.description = {
+        id: '',
+        resource_type: 'chapter',
+        resource_id: data.id
+      }
   }
+
+  onDescriptionChange(value: string): void {
+    this.description.description_data = value;
+  }
+
+  updateDescription(){
+    this.api.updateDescription(this.description).subscribe((d) => {
+      this.description = d
+    })
+  }
+
   }
   @Component({
     selector: 'app-updateConnectionDialog',

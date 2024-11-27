@@ -24,17 +24,32 @@
 
         <div class="group">      
           <mat-form-field >
-            <mat-label for="Name">world Name</mat-label>
-            <input matInput type="text" required id="Name" type="Name" formControlName="name" >
+            <mat-label for="name">world Name</mat-label>
+            <input matInput type="text" required id="name" type="Name" formControlName="name" >
           </mat-form-field>
         </div>
 
+
         <div class="group">      
 
-          <mat-form-field >
-            <mat-label for="description">Textarea</mat-label>
-            <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
-          </mat-form-field>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span>Description</span>
+                <strong class="info"
+                [matTooltipPosition]="'above'"
+                matTooltip="depois coloco a info pra descricao >;[ "
+                aria-label="Button that shows a black tooltip describing a timeline"
+                >!</strong>
+              </mat-panel-title>
+  
+            </mat-expansion-panel-header>
+            <div class="accordion-info">
+              <app-txt-editor [data]="description" (valueChanged)="onDescriptionChange($event)"></app-txt-editor>
+            </div>
+          </mat-expansion-panel>
+          
+  
   
         </div>
 

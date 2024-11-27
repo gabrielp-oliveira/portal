@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, distinctUntilChanged,  } from 'rxjs';
 import { PapperComponent } from '../papper/papper.component';
 import { UtilsService } from '../../../../utils.service';
+import { MatMenuTrigger } from '@angular/material/menu';
 
 
 
@@ -23,12 +24,13 @@ import { UtilsService } from '../../../../utils.service';
   styleUrl: './chapter.component.scss'
 })
 export class ChapterComponent implements OnInit {
-  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','description', 'update', 'open'];
+  displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','options'];
   dataSource = new MatTableDataSource<ExtendedChapter>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
 
   chapter$: ExtendedChapter[];
+  selectedChapter:Chapter
   paper$: paper[];
   settings: Subway_Settings | null;
   isDrag: boolean = true;
@@ -69,9 +71,10 @@ export class ChapterComponent implements OnInit {
   timelineNameSearchValue:String = ""
   // eventNameSearchValue:String = ""
   storylineNameSearchValue:String = ""
-
+  
   startDateSearchValue: string = ""
   endDateSearchValue: string = ""
+  @ViewChild("chapterOptionsTrigger") chapterOptionsTrigger!: MatMenuTrigger;
 
   constructor(
     private wd: WorldDataService,
@@ -82,6 +85,27 @@ export class ChapterComponent implements OnInit {
     private errorHandler: ErrorService
   ) { }
 
+  openChapterOptions(event: MouseEvent, c: Chapter) {
+    event.preventDefault();
+
+
+    // this.trigger.menuData ={ xPosition: ev.clientX, yPosition: ev.clientY }
+
+    this.chapterOptionsTrigger.openMenu();
+    // const menu = document.querySelector("#" + this.chapterOptionsTrigger.menu?.panelId)
+    const menuElement = document.querySelector("#" + this.chapterOptionsTrigger.menu?.panelId) as HTMLElement;
+
+    console.log('..')
+    if (menuElement) {
+      // Defina o estilo de posicionamento
+      menuElement.style.position = 'absolute';
+      menuElement.style.left = `${event.x + 5}px`;
+      menuElement.style.top = `${event.y + 5}px`;
+    }
+    this.selectedChapter = c
+
+  }
+
   openChapter(papperId: string){
     const url = `/world/${this.wd.worldId}/chapter/${papperId}`;
     window.open(url, '_blank');
@@ -90,6 +114,12 @@ export class ChapterComponent implements OnInit {
    openDescription(c:Chapter){
     this.dialog.openChapterDescription(c, '150ms','150ms')
    }
+   openDescriptionMenu(){
+    if(this.selectedChapter){ 
+      this.dialog.openChapterDescription(this.selectedChapter, '150ms','150ms')
+    }
+   }
+
   compareUpdates(): boolean {
     const valOrder = this.orderSearchValue ==  ""
     const valName = this.nameSearchValue ==  ""
@@ -98,7 +128,7 @@ export class ChapterComponent implements OnInit {
     const valTlName = this.timelineNameSearchValue == ""
     // const valEvtName = this.eventNameSearchValue == ""
     const valStName = this.storylineNameSearchValue == ""
-    
+
     const searchCondition = !valOrder || !valName || !valPaperName || !valTlName || !valStName
     const sortCondition =  (this.sortCriteria !== "order" && !this.sortDirection) || (this.sortCriteria !== "order" && !this.sortDirection)
     if(searchCondition || sortCondition ){
@@ -117,6 +147,7 @@ export class ChapterComponent implements OnInit {
   }
   ngOnInit() {
 
+    // this.dialog.openCreateChapterDialog('150ms', '150ms')
 
     combineLatest({
       "timelines": this.wd.timelines$, "storyLines": this.wd.storylines$,
@@ -507,5 +538,26 @@ export class ChapterComponent implements OnInit {
   updateChapter(chpId: string) {
     this.dialog.openUpdateChapterDialog('150ms', '150ms', chpId)
   }
+  updateChapterMenu() {
+    if(this.selectedChapter){
+      this.dialog.openUpdateChapterDialog('150ms', '150ms', this.selectedChapter.id)
+    }
+  }
+  openChapterMenu(){
+    if(this.selectedChapter){
+      const url = `/world/${this.wd.worldId}/chapter/${this.selectedChapter.id}`;
+      window.open(url, '_blank');
+    }
+   }
+   openPreview() {
+    if (this.selectedChapter) {
+      this.dialog.openPreview(this.selectedChapter, `150ms`, `150ms`)
+    }
+  }
+  openDelete(){
+    if (this.selectedChapter) {
+    }
+  }
+
 
 }

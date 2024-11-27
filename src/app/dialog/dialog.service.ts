@@ -33,7 +33,7 @@ export class DialogService {
 
   openCreateWorldDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createWorldDialogComponent, {
-      width: '450px',
+      width: '550px',
       enterAnimationDuration,
       exitAnimationDuration,
     });
@@ -161,14 +161,14 @@ export class DialogService {
   }
   openCreateChapterDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(createChapterDialogComponent, {
-      width: '450px',
+      width: '650px',
       enterAnimationDuration,
       exitAnimationDuration,
     });
   }
   openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection , enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(chapteDescriptionDialogComponent, {
-      width: '500px',
+      width: '650px',
       enterAnimationDuration,
       exitAnimationDuration,
       data:data
