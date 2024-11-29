@@ -1,15 +1,17 @@
-import { Component, Inject, inject, ViewChild } from '@angular/core';
+import { Component, ErrorHandler, Inject, inject, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Chapter, Connection, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../models/paperTrailTypes';
-import { combineLatest } from 'rxjs';
-import { LoadingService } from '../../modules/loading.service';
+import { Chapter, Connection, createWorld, description, Event, GroupConnection, info, infoDialog, paper, StoryLine, Subway_Settings, Timeline, world } from '../../models/paperTrailTypes';
+import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
 import { UtilsService } from '../../utils.service';
 import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.component';
+import { ErrorService } from '../../modules/error.service';
+import { DialogService } from '../dialog.service';
+import { tree } from 'd3';
 
 
 
@@ -22,32 +24,50 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   })
   export class createPaperDialogComponent  {
     worldForm: FormGroup;
-    worldId:string = ''
-    constructor(private fb: FormBuilder,private api:ApiService,
-      private loading: LoadingService,
+      destroy$ = new Subject<void>();
+worldId:string = ''
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(private fb: FormBuilder,private api:ApiService,
+      private errorHandler:ErrorService,
       private wd: WorldDataService){
         this.worldForm = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],
             description: ['', [Validators.required]],
         });
-        this.wd.world$.subscribe((w) => {
-            this.worldId = String(w?.id)
-          })
+        this.wd.world$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((w) =>  this.worldId = String(w?.id))
 
     }
-    world$ = this.wd.world$;
+   
+     ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  } world$ = this.wd.world$;
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
-      this.loading.loadingOn()
       
       body.world_id = this.worldId
-      this.api.createPaper(this.worldForm.value).subscribe((paper) => {
-        if(!!paper.chapter){
-          this.wd.addChapter(paper.chapter[0])
+      this.api.createPaper(this.worldForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        {
+          next: (paper) => {
+            this.wd.setLoading(false)
+
+            if(!!paper.chapter){
+              this.wd.addChapter(paper.chapter[0])
+            }
+            delete paper.chapter
+            this.wd.addPaper(paper)
+          },
+          error: (err) =>this.errorHandler.errHandler(err)
+
         }
-        delete paper.chapter
-        this.wd.addPaper(paper)
-      })
+      )
     }
   
   }
@@ -62,17 +82,21 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     @ViewChild(TxtEditorComponent) txtEditor!: TxtEditorComponent;
 
     worldId:string | undefined= ''
-      errorHandler: any;
-    constructor(private fb: FormBuilder,private api:ApiService,
-      private loading: LoadingService,
-      private utils:UtilsService,
-      private wd: WorldDataService){
-      this.worldForm = this.fb.group({
-        name: ['', [Validators.required, Validators.minLength(3)]],
-        description: ['', [Validators.required]],
-        paper_id: ['', [Validators.required]],
-      });
+      destroy$ = new Subject<void>();
+      Showloading: Observable<boolean> = this.wd.loading$
 
+      constructor(private fb: FormBuilder,private api:ApiService,
+        private dialog: DialogService,
+        private utils:UtilsService,private errorHandler:ErrorService,
+        private wd: WorldDataService){
+          this.worldForm = this.fb.group({
+            name: ['', [Validators.required, Validators.minLength(3)]],
+            description: ['', [Validators.required]],
+            paper_id: ['', [Validators.required]],
+          });
+          
+
+      
       this.description = {
         id: '',
         resource_type: 'chapter',
@@ -80,9 +104,9 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
       }
       
 
-      this.wd.world$.subscribe((w) => {
-        this.worldId = w?.id
-      })
+      this.wd.world$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((w) =>  this.worldId = w?.id)
     }
 
     papers$ = this.wd.papers$;
@@ -99,21 +123,39 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     }
   }
 
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
       body.world_id = this.worldId
-
+      
       body.description = this.description.description_data
-      this.loading.loadingOn()
-
-      this.api.createChapter(body).subscribe(
+      
+      this.api.createChapter(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (data) => this.addNewChapter(data),
+          next: (data) => {
+            this.wd.setLoading(false)
+            this.addNewChapter(data)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
     )
     }
     addNewChapter(newChapter: Chapter){
+      const info :infoDialog= {
+        status: 'success',
+        action: "CreateChapter",
+        message:"you successfully create chapter " + newChapter.name,
+        header: "chapter created"
+      }
+      this.dialog.openInfoDialog(info)
+      
         this.wd.addChapter(newChapter)
     }
   }
@@ -131,7 +173,6 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     description:description
 
     worldId:string | undefined= ''
-      errorHandler: any;
       tl: Timeline[]
       selectedTl: Timeline = {
         range: 0,
@@ -142,7 +183,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
         order: 0,
         created_at: '',
       }
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      destroy$ = new Subject<void>();
+    Showloading: Observable<boolean> = this.wd.loading$
+
+      constructor(private fb: FormBuilder,
+      private api:ApiService, 
+      private errorHandler:ErrorService,
+      private wd: WorldDataService, private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
@@ -152,14 +199,21 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
         resource_id: data.chapterId
       }
 
-      this.api.getDescription(d).subscribe((desc) => {
-        this.description = desc
-        console.log(this.description)
+      this.api.getDescription(d)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (desc) => {
+          this.wd.setLoading(false)
+
+          this.description = desc
+          console.log(this.description)
+        },
+        error: (err) => this.errorHandler.errHandler(err)
       })
       
-      this.timelines$.subscribe((tl) => {
-        this.tl = tl
-      })
+      this.timelines$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((tl) =>  this.tl = tl)
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
@@ -169,7 +223,9 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
         storyline_id: ['', [Validators.required]],
       });
 
-      this.chapters$.subscribe((cpList) => {
+      this.chapters$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((cpList) => {
         const chapter = cpList.filter((cp) => cp.id == this.data.chapterId)[0]
         const e = {target: {value: chapter.timeline_id}}
         this.getTimeLineDetails(e)
@@ -208,14 +264,25 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     world$ = this.wd.world$;
     range:number = 1
 
+
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.chapterId
-      this.api.updateChapter(this.data.chapterId, this.worldForm.value).subscribe(
-        
+      this.api.updateChapter(this.data.chapterId, this.worldForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (data) => this.addNewChapter(data),
+            next: (data) => {
+              this.wd.setLoading(false)
+              this.addNewChapter(data)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -245,10 +312,14 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class UpdateTimelineDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
+      
+  destroy$ = new Subject<void>();
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      @Inject(MAT_DIALOG_DATA) public data: Timeline
+  Showloading: Observable<boolean> = this.wd.loading$
+  description:description
+
+  constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+      @Inject(MAT_DIALOG_DATA) public data: Timeline,private errorHandler:ErrorService
     ){
 
  
@@ -269,17 +340,32 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
     }
 
-
+    onDescriptionChange(value: string): void {
+      this.description.description_data = value;
+    }
 
     range:number = 1
     
 
+      ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+      }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = {...this.data, ...this.worldForm.value, }
-      this.api.updateTimeline(body).subscribe(
+      this.api.updateTimeline(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         
         {
-            next: (tl) => this.wd.updateTimeline(tl),
+          next: (tl) => {
+            this.wd.setLoading(false)
+
+            
+              this.wd.updateTimeline(tl)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -301,9 +387,12 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class deleteTimelineDialogComponent  {
     worldForm: FormGroup;
 
-    errorHandler: any;
+  destroy$ = new Subject<void>();
 
-    constructor(private api:ApiService, private wd: WorldDataService, private fb: FormBuilder,
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private api:ApiService, private fb: FormBuilder,
+      private errorHandler:ErrorService, private dialog:DialogService,private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: {timeline: Timeline, timelines: Timeline[], chapters: Chapter[]}
     ){
       this.worldForm = this.fb.group({
@@ -314,44 +403,67 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
     range:number = 1
 
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
 
-      if(this.worldForm.value.confirm){
-        if(this.data.timelines.length > 1 ) {
-  this.api.deleteTimeline(this.data.timeline.id)
-        .subscribe(
-          
-          {
-            next: (results) => {
-
-
-
-
+  
+  if(this.worldForm.value.confirm){
+    if(this.data.timelines.length > 1 ) {
+      this.api.deleteTimeline(this.data.timeline.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (results) => {
+          this.wd.setLoading(false)
 
               const chaptersToUpdate = this.data.chapters.filter((c) => c.timeline_id == this.data.timeline.id)
               const nextTimeline = this.data.timelines.filter((t) => t.order == this.data.timeline.order +1 )[0]
               const prevTimeline = this.data.timelines.filter((t) => t.order == this.data.timeline.order -1 )[0] 
               const newTimeline = nextTimeline || prevTimeline
 
-              const unsubscribeLater = chaptersToUpdate.map((e) => {
+              chaptersToUpdate.map((e) => {
                 if(!newTimeline){
       
                   e.storyline_id = ""
                   e.timeline_id = ""
-                  return this.api.updateChapter(e.id, e).subscribe((c) => this.wd.updateChapter(c))
+                  return this.api.updateChapter(e.id, e)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (c) => {
+                      this.wd.setLoading(false)
+                      this.wd.updateChapter(c)},
+                    error: (e) => this.errorHandler.errHandler(e)
+                  })
                 }else {
                   e.timeline_id = newTimeline.id
-                  return this.api.updateChapter(e.id, e).subscribe((c) => this.wd.updateChapter(c))
+                  return this.api.updateChapter(e.id, e)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (c) => {
+                      this.wd.setLoading(false)
+                      this.wd.updateChapter(c)},
+                    error: (e) => this.errorHandler.errHandler(e)
+                  })
                   
                 }
               })
 
               this.wd.removeTimeline(results.id)
 
-              const unsubscribeLater2 = this.data.timelines.map((tl) => {
+              this.data.timelines.map((tl) => {
                 if(tl.order > this.data.timeline.order) {
                   tl.order -= 1
-                  return this.api.updateTimeline(tl).subscribe((tl) => this.wd.updateTimeline(tl))
+                  return this.api.updateTimeline(tl)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (tl) => {
+                      this.wd.setLoading(false)
+                      this.wd.updateTimeline(tl)},
+                    error: (e) => this.errorHandler.errHandler(e)
+                  })
                 }
                 return undefined
                 
@@ -361,7 +473,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
           }
         )
       }else {
-        alert("you must have at least one timeline")
+        const info :infoDialog= {
+          status: 'warning',
+          action: "Delete Timeline",
+          message:"you must have at least one timeline",
+          header: "fail to delete timeline"
+        }
+        this.dialog.openInfoDialog(info)
       }
     }
     }
@@ -385,27 +503,40 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class createTimelineDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
+      
+  destroy$ = new Subject<void>();
 
-    constructor(private fb: FormBuilder,private api:ApiService,
-       private wd: WorldDataService,
-       private loading: LoadingService
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private fb: FormBuilder,private api:ApiService,
+       private wd: WorldDataService, private errorHandler:ErrorService,
     ){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
       });
 
+   
     }
+    ngOnDestroy(): void {
+   this.destroy$.next();
+   this.destroy$.complete();
+ }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body: Timeline= this.worldForm.value
       body.range = 20
       body.world_id = this.wd.worldId
-      this.loading.loadingOn()
-
-      this.api.createTimeline(body).subscribe(
+      
+      this.api.createTimeline(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (data) => this.wd.addTimeline(data),
+          next: (data) => {
+              this.wd.setLoading(false)
+              this.wd.addTimeline(data)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -419,14 +550,17 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class SettingsDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
       ss: Subway_Settings
+  destroy$ = new Subject<void>();
 
-    constructor(private fb: FormBuilder,private api:ApiService,
-       private wd: WorldDataService,
-      private loading: LoadingService ){
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private fb: FormBuilder,private api:ApiService,
+       private wd: WorldDataService, private errorHandler:ErrorService){
 
-      this.wd.settings$.subscribe((ss) => {
+      this.wd.settings$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ss) => {
         if(ss != null){
           this.ss = ss
 
@@ -440,13 +574,26 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
         });
       })
 
+   
     }
+    ngOnDestroy(): void {
+   this.destroy$.next();
+   this.destroy$.complete();
+ } 
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
       body.id = this.ss?.id
-      this.loading.loadingOn()
-      this.api.updateSettings(body.id, body).subscribe((ss) => {
-        this.wd.setSettings(ss)
+      this.api.updateSettings(body.id, body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ss) => {
+          this.wd.setLoading(false)
+
+          this.wd.setSettings(ss)
+        },
+        error: (e) => this.errorHandler.errHandler(e)
       })
     }
   }
@@ -460,12 +607,14 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class createStorylineDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
+      
       sl: StoryLine[]
+  destroy$ = new Subject<void>();
 
-    constructor(private fb: FormBuilder,private api:ApiService,
-      private loading: LoadingService,
-      private wd: WorldDataService,
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private fb: FormBuilder,private api:ApiService,
+      private wd: WorldDataService, private errorHandler:ErrorService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
@@ -476,13 +625,23 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
     }
 
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
       body.world_id = this.wd.worldId
-      this.loading.loadingOn()
-      this.api.createStoryLine(this.worldForm.value).subscribe(
+      this.api.createStoryLine(this.worldForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (data) =>         this.wd.addStoryline(data)
+          next: (data) => {
+              this.wd.setLoading(false)
+              this.wd.addStoryline(data)
+            }
             ,
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -499,11 +658,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   })
   export class createEventsDialogComponent  {
     worldForm: FormGroup;
-      errorHandler: any;
 
-    constructor(private fb: FormBuilder,private api:ApiService,
-      private loading: LoadingService,
-      private wd: WorldDataService,
+      destroy$ = new Subject<void>();
+
+    Showloading: Observable<boolean> = this.wd.loading$
+
+      constructor(private fb: FormBuilder,private api:ApiService,
+      private wd: WorldDataService, private errorHandler:ErrorService,
       @Inject(MAT_DIALOG_DATA) private data: string
     ){
 
@@ -518,16 +679,26 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     }
 
 
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body :Event= this.worldForm.value
       body.world_id =  this.data
       body.range = 20
       body.startRange = 0
-      this.loading.loadingOn()
-      this.api.createEvent(body).subscribe(
+      this.api.createEvent(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         
         {
-            next: (data) => this.addEvent(data),
+          next: (data) => {
+              this.wd.setLoading(false)
+              this.addEvent(data)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -547,10 +718,12 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   })
   export class UpdatePaperDialogComponent  {
     worldForm: FormGroup;
-    worldId:string | undefined= ''
-      errorHandler: any;
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      private utils:UtilsService,
+      destroy$ = new Subject<void>();
+worldId:string | undefined= ''
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+      private utils:UtilsService,private errorHandler:ErrorService,
       @Inject(MAT_DIALOG_DATA) public data: { papperId: string }
     ){
       this.worldForm = this.fb.group({
@@ -561,14 +734,21 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
       });
 
       console.log(this.data)
-      this.api.getPaperData(this.data.papperId).subscribe((paper) => {
-        this.worldId = paper.world_id
-        this.worldForm.patchValue({
-          name: paper.name,
-          description: paper.description,
-          order: paper.order,
-          color: paper.color,
-        });
+      this.api.getPaperData(this.data.papperId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (paper) => {
+          this.wd.setLoading(false)
+
+          this.worldId = paper.world_id
+          this.worldForm.patchValue({
+            name: paper.name,
+            description: paper.description,
+            order: paper.order,
+            color: paper.color,
+          });
+        },
+        error: (e) => this.errorHandler.errHandler(e)
       })
 
     }
@@ -580,17 +760,29 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
       return {
         'background-color': this.worldForm.value.color || this.utils.numberToHex(this.data.papperId),
       }
+   
     }
+    ngOnDestroy(): void {
+   this.destroy$.next();
+   this.destroy$.complete();
+ }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = this.worldForm.value
       body.world_id = this.worldId
       body.id = this.data.papperId
       body.color = this.worldForm.value.color
       console.log(this.worldForm.value.color)
-      this.api.updatePaper(this.data.papperId, this.worldForm.value).subscribe(
+      this.api.updatePaper(this.data.papperId, this.worldForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         
         {
-            next: (data) => this.wd.updatePaper(data),
+            next: (data) => {
+              this.wd.setLoading(false)
+              this.wd.updatePaper(data)
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -608,9 +800,12 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class UpdateEventDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      @Inject(MAT_DIALOG_DATA) public data: Event
+      destroy$ = new Subject<void>();
+  
+    Showloading: Observable<boolean> = this.wd.loading$
+
+      constructor(private fb: FormBuilder,private api:ApiService,
+      @Inject(MAT_DIALOG_DATA) public data: Event, private errorHandler:ErrorService,private wd: WorldDataService
     ){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
@@ -626,14 +821,25 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     }
 
 
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const event:Event = this.data
       event.name = this.worldForm.value.name
       event.description = this.worldForm.value.description
-      this.api.updateEvent(event).subscribe(
+      this.api.updateEvent(event)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         
         {
-            next: (data) => this.wd.updateEvent(data),
+            next: (data) => {
+              this.wd.setLoading(false)
+              this.wd.updateEvent(data)}
+              ,
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -649,8 +855,16 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   })
   export class createWorldDialogComponent {
     worldForm: FormGroup;
-    description:description
-    constructor(private fb: FormBuilder, private api: ApiService, private wd: WorldDataService) {
+      destroy$ = new Subject<void>();
+description:description
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(private fb: FormBuilder,
+       private api: ApiService,
+      private wd: WorldDataService,
+      private dialog: DialogService,
+      private errorHandler: ErrorService,
+      ) {
       this.worldForm = this.fb.group({
         name: ['', [Validators.required]],
       });
@@ -666,11 +880,24 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
 
     onSubmit() {
+      this.wd.setLoading(true)
       const body = this.worldForm.value
       const desc:string =this.description.description_data??"" 
       body.description = desc
-
-      this.api.Createworld(body).subscribe((world) => {
+      
+      this.api.Createworld(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(      {
+        next: (w:createWorld) => {
+          const info :infoDialog= {...w}
+          this.dialog.openInfoDialog(info)
+          this.wd.setLoading(false)
+          setTimeout(() => {
+            const url = `/world/${w.world.id}}`;
+            window.open(url, '_blank');
+          }, 2000);
+        },
+        error: (err) =>this.errorHandler.errHandler(err)
       })
     }
   
@@ -692,8 +919,12 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   })
   export class chapteDescriptionDialogComponent {
 
-    description:description
-    constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter, private api:ApiService ){
+      destroy$ = new Subject<void>();
+description:description
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter, private api:ApiService, private errorHandler:ErrorService,
+private wd: WorldDataService ){
       this.description = {
         id: '',
         resource_type: 'chapter',
@@ -706,8 +937,14 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   }
 
   updateDescription(){
-    this.api.updateDescription(this.description).subscribe((d) => {
-      this.description = d
+    this.api.updateDescription(this.description)
+    .pipe(takeUntil(this.destroy$))
+      .subscribe({
+      next: (d) => {
+        this.wd.setLoading(false)
+        this.description = d
+      },
+      error: (e) => this.errorHandler.errHandler(e)
     })
   }
 
@@ -720,12 +957,17 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class updateConnectionDialogComponent {
     worldForm: FormGroup;
     gc:GroupConnection[]
+  destroy$ = new Subject<void>();
 
-    errorHandler:any
-    constructor(
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      private errorHandler :ErrorService,
       @Inject(MAT_DIALOG_DATA) public cnn: Connection ){
-        this.wd.groupConnection$.subscribe((c) => this.gc = c)
+        this.wd.groupConnection$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((c) => this.gc = c)
         
         this.worldForm = this.fb.group({
           groupConnection: ['', [Validators.required, Validators.minLength(3)]],
@@ -737,7 +979,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
      }
 
+       ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
      onSubmit(){
+      this.wd.setLoading(true)
+      
       const body:GroupConnection = this.worldForm.value
       body.world_id = this.wd.worldId
       // this.cnn.group_id = 
@@ -745,9 +993,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
       this.cnn.group_id = this.worldForm.value.groupConnection
 
-      this.api.updateConnection(this.cnn).subscribe(
+      this.api.updateConnection(this.cnn)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (gcs) => this.wd.updateConnection(gcs),
+            next: (gcs) => {
+              this.wd.setLoading(false)
+              this.wd.updateConnection(gcs)},
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -763,9 +1015,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
     worldForm: FormGroup;
     gc:GroupConnection
 
-    errorHandler:any
-    constructor(
+      destroy$ = new Subject<void>();
+errorHandler:any
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      
       ){
         
         this.worldForm = this.fb.group({
@@ -775,16 +1031,28 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
      }
 
+       ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
      onSubmit(){
+      this.wd.setLoading(true)
+      
       const body:GroupConnection = this.worldForm.value
       body.world_id = this.wd.worldId
       body.color = 'red'
       // this.cnn.group_id = 
 
 
-      this.api.createGroupConnection(body).subscribe(
+      this.api.createGroupConnection(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (gc) => this.wd.addGroupConnection(gc),
+            next: (gc) => {
+              this.wd.addGroupConnection(gc)
+              this.wd.setLoading(false)
+
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -799,8 +1067,11 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class updateGroupConnectionDialogComponent {
     worldForm: FormGroup;
 
-    errorHandler:any
-    constructor(
+      destroy$ = new Subject<void>();
+errorHandler:any
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: GroupConnection
   
@@ -827,15 +1098,25 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
       }
       }
 
+        ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
      onSubmit(){
+      this.wd.setLoading(true)
+      
       const body:GroupConnection = { ...this.data,...this.worldForm.value}
       // this.cnn.group_id = 
 
       console.log(body)
 
-      this.api.updateGroupConnection(body).subscribe(
+      this.api.updateGroupConnection(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         {
-            next: (gc) => this.wd.updateGroupConnection(gc),
+            next: (gc) => {
+              this.wd.setLoading(false)
+              this.wd.updateGroupConnection(gc)},
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -852,10 +1133,13 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
   export class strEditDialogComponent  {
     worldForm: FormGroup;
     worldId:string | undefined= ''
-      errorHandler: any;
+      
+  destroy$ = new Subject<void>();
 
-    constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
-      @Inject(MAT_DIALOG_DATA) public data: StoryLine
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private fb: FormBuilder,private api:ApiService,
+      @Inject(MAT_DIALOG_DATA) public data: StoryLine,private errorHandler:ErrorService,private wd: WorldDataService
     ){
 
  
@@ -875,13 +1159,23 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
     
 
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
     onSubmit(){
+      this.wd.setLoading(true)
+    
       const body = {...this.data, ...this.worldForm.value, }
       body.world_id = this.wd.worldId
-      this.api.updateStoryLine(body).subscribe(
+      this.api.updateStoryLine(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
         
         {
-            next: (str) => this.wd.updateStoryline(str),
+            next: (str) => {
+              this.wd.setLoading(false)
+              this.wd.updateStoryline(str)},
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -891,6 +1185,41 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 
 
 
+  }
+  
+
+  
+  @Component({
+    selector: 'app-infoDialog',
+    templateUrl: './infoDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class InfoDialogComponent  {
+
+    icon:string
+      destroy$ = new Subject<void>();
+color:string
+Showloading: Observable<boolean> = this.wd.loading$
+    
+constructor( @Inject(MAT_DIALOG_DATA) public data: infoDialog,private wd: WorldDataService
+    ){
+
+      console.log(data)
+      if(data.status == 'error'){
+        this.icon = "crisis_alert"
+        this.color = "red"
+
+      }else if (data.status == 'success'){
+        this.icon = "task_alt"
+        this.color = "green"
+
+      }else if (data.status == 'warning'){
+        this.icon = "warning"
+        this.color = "orange"
+
+      }
+
+    }
   }
   
 

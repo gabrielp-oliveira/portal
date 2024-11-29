@@ -3,10 +3,11 @@ import { ApiService } from '../../api.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
-import { paper, world } from '../../../models/paperTrailTypes';
+import { infoDialog, paper, world } from '../../../models/paperTrailTypes';
 import { ErrorService } from '../../error.service';
 import { WorldDataService } from '../world-data.service';
 import { DialogService } from '../../../dialog/dialog.service';
+import { Observable, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,16 +21,20 @@ export class DashboardComponent {
     private api: ApiService,
     private auth: AuthService,
     private dialog: DialogService,
-    private wp:WorldDataService
+    private wd:WorldDataService,
   ) { }
-
   worldList: world[] = []
   papperList: paper[] = []
+  destroy$ = new Subject<void>();
 
+  Showloading: Observable<boolean> = this.wd.loading$
   ngOnInit() {
-    this.api.getWorldList().subscribe({
+    // this.wd.loadingOn()
+    this.api.getWorldList()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
       next: (worldList) => {
-        this.worldList = worldList
+          this.worldList = worldList
       },
       error: (err) => {
         this.err.errHandler(err)
@@ -39,6 +44,22 @@ export class DashboardComponent {
       }
     });
 
+    // this.wd.loading$.subscribe((status) => {
+      
+    //   const info:infoDialog = {
+    //     header:"error loading worlds list",
+    //     status: 'warning',
+    //     message:"error loading world list, please try again later or contact our support page.",
+    //     action: "getWorldList"
+    //   }
+    //   // this.dialog.openInfoDialog(info)
+    // })
+  }
+
+
+  ngOnDestroy() {
+      this.destroy$.next();
+      this.destroy$.complete();
   }
 
   logOut() {
@@ -46,7 +67,9 @@ export class DashboardComponent {
   }
 
   getPaperList(worldId: string) {
-    this.api.getPaperList(worldId).subscribe({
+    this.api
+    .getPaperList(worldId)
+    .pipe(takeUntil(this.destroy$)).subscribe({
       next: (worldList) => {
         this.papperList = worldList
       },

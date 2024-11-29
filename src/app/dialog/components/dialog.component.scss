@@ -297,3 +297,107 @@
   margin: 10px;
   box-shadow: inset 2px 2px 10px rgb(212, 210, 207);
 }
+
+.infoDialog {
+  display: flex;
+  width: 450px;
+  height: 100px;
+  overflow: hidden;
+  background-color: red;
+  border-radius: 20px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+  .infoStatus {
+    width: 110px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+    height: 100%;
+    // margin-right: 10px;
+    background-color: whitesmoke;
+
+  }
+  .infoContent {
+    display: flex;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+    background-color: whitesmoke;
+    height: 100%;
+    width: 100%;
+
+
+
+  }
+  .infoHeader {
+    width: 100%;
+
+    span {
+      display: flex;
+      justify-content: center;
+      align-self: center;
+      font-weight: 500;
+      font-size: 18px;
+
+    }
+    display: flex;
+    justify-content: space-between;
+  }
+  .infoBody {
+
+    width: 100%;
+
+  }
+  .icon {
+    border: 3px solid white;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    border-radius: 100%;
+    background-color: white;
+    box-shadow: inset 2px 2px 15px white, 2px 2px 5px rgb(0, 0, 0, 0.6);
+    
+    mat-icon {
+      color: white;
+      font-weight: 700;
+
+    }
+  }
+}
+
+
+.slide-in-right {
+	-webkit-animation: slide-in-right 400ms cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+	        animation: slide-in-right 400ms cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+
+ @-webkit-keyframes slide-in-right {
+  0% {
+    -webkit-transform: translateX(1000px);
+            transform: translateX(1000px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-right {
+  0% {
+    -webkit-transform: translateX(1000px);
+            transform: translateX(1000px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+}
+

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, ChapterDetails, Connection, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterDetails, Connection, createWorld, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -73,8 +73,8 @@ export class ApiService {
   updateGroupConnection( body:GroupConnection): Observable<GroupConnection> {
     return this.http.put<GroupConnection>(`http://localhost:9090/updateGroupConnection?id=${body.id}`, body);
   }
-  Createworld(body: any):Observable<world>  {
-   return this.http.post<world>('http://localhost:9090/createWorld', body)
+  Createworld(body: any):Observable<createWorld>  {
+   return this.http.post<createWorld>('http://localhost:9090/createWorld', body)
   }
   createGroupConnection(body: GroupConnection):Observable<GroupConnection>  {
    return this.http.post<GroupConnection>('http://localhost:9090/createGroupConnection', body)

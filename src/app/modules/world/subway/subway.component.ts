@@ -2,10 +2,9 @@ import { ChangeDetectorRef, Component, ElementRef, ViewChild, Renderer2, OnDestr
 import * as d3 from 'd3';
 import { SubwayService } from '../subway.service';
 import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap, RANGE_GAP } from '../../../models/graphsTypes';
-import {  combineLatest, Subject, takeUntil, tap } from 'rxjs';
-import { LoadingService } from '../../loading.service';
+import {  combineLatest, finalize, Observable, Subject, takeUntil, tap } from 'rxjs';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, Event, GroupConnection, infoDialog, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -22,7 +21,7 @@ const D3_ROOT_ELEMENT_ID = "subway";
   templateUrl: './subway.component.html',
   styleUrls: ['./subway.component.scss']
 })
-export class SubwayComponent implements OnDestroy, OnInit  {
+export class SubwayComponent implements OnDestroy  {
 
   width: number;
   height: number;
@@ -93,7 +92,7 @@ export class SubwayComponent implements OnDestroy, OnInit  {
   uniqueChapters: Chapter[]
   duplicateChapters: Chapter[][]
   ChapterGroup: any = {}
-  
+  Showloading:boolean
   destroy$ = new Subject<void>();
 
 
@@ -102,30 +101,55 @@ export class SubwayComponent implements OnDestroy, OnInit  {
     private wd: WorldDataService,
     private api: ApiService,
     private err: ErrorService,
-    private loading: LoadingService,
-    private utils:UtilsService
+    private utils:UtilsService,
+    private errorHandler: ErrorService
 
   ) {
     this.cleanItemsOnSvg();
   }
+
+ 
   
-  OnDestroy(): void {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  test(){
+    this.wd.setLoading(!this.Showloading)
+
+  }
+
+  private resizeSvg() {
+    const width = this.root?.nativeElement.offsetWidth || 800;
+    const height = this.svgHeight * this.gridHeight || 400;
+    
+    d3.select(`#${D3_ROOT_ELEMENT_ID} svg`)
+      .attr("viewBox", `0 0 ${width} ${height}`);
   }
 
   ngAfterViewInit(): void {
     this.width = this.root?.nativeElement.offsetWidth;
     this.height = this.root?.nativeElement.offsetHeight;
     
+    // this.wd.loadingOn()
+
+
+    this.wd.loading$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((loading) => this.Showloading = loading)
+    console.log('init')
     let svg = this.initSvg();
+    window.addEventListener('resize', () => this.resizeSvg());
 
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
       "chapters": this.chapters$, "papers": this.papers$, "connections": this.connections$, "events": this.events$,
       "ss": this.settings$, "tbChp": this.tableChapter$, "gc": this.wd.groupConnection$, "globalGc": this.wd.SsGroupConnection$
     })
-    .subscribe({next: (data) => {
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (data) => {
       data.chapters = data.chapters.map((c) => {
         c.color = c.color == '' ? (data.papers.find((pp) => pp.id == c.paper_id)?.color || this.utils.numberToHex(c.paper_id)) : this.utils.numberToHex(c.paper_id) 
         return c
@@ -201,28 +225,19 @@ export class SubwayComponent implements OnDestroy, OnInit  {
       this.cleanItemsOnSvg();
       data.chapters = chpList
       this.handleGraphEvents(svg, data);
-      this.loading.loadingOff()
+      return
     },
-      error: (err) => {
-      this.err.errHandler(err)
-      this.loading.loadingOn()
-
-    },
+    error: (err) => this.err.errHandler(err),
+    
     complete: () => {
-      console.log('Operação concluída');
+      alert(',,,')
 
     }})
     // Subscribe events for graph
 
   }
 
-  ngOnInit(){
-    this.loading.loadingOn()
 
-    this.loading.loading$.subscribe((loading) => {
-      console.log(loading)
-    })
-  }
 
 separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
   // Agrupa capítulos por width e height
@@ -255,20 +270,21 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 
 
 
-  ngOnDestroy() {
-    console.log('remove all subscriptions')
-  }
 
-  private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-    const height = this.svgHeight * this.gridHeight
-    console.log(height)
-    return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
-      .append("svg")
-      .attr("width", '100%')
-      .attr("height", 350)
-      .append("g") // Retorna o grupo <g> que vai conter outros elementos
+private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
+  const width = this.root?.nativeElement.offsetWidth || 800;
+  const height = 400;
 
-  }
+  // Seleciona o elemento e define atributos responsivos
+  return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
+    .append("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`) // Proporção de visualização
+    .attr("preserveAspectRatio", "xMidYMid meet") // Mantém centralizado e proporcional
+    .style("width", "100%")
+    .style("height", "auto") // Ajusta a altura proporcionalmente
+    .append("g"); // Retorna o grupo <g>
+}
+
 
   getFillColor(chp: Chapter): string {
     const pps = this.papers
@@ -863,10 +879,13 @@ eventResizeDragEnd(svg:any){
   this.resizeDirection = ""
 
   if(this.selectedEvent){
+
     // this.resizeEvent(this.selectedEvent)
-    this.api.updateEvent(this.selectedEvent).subscribe((e) => {
-      this.wd.updateEvent(e)
-      // this.selectedEvent = undefined
+    this.api.updateEvent(this.selectedEvent)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (e) =>  this.wd.updateEvent(e),
+      error: (e) => this.errorHandler.errHandler(e)
     })
 
   }
@@ -917,11 +936,16 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
 removeEvent(){
   if(this.selectedEvent){
     const id = this.selectedEvent.id
-    this.loading.loadingOn()
-    this.api.deleteEvent(id).subscribe((e) => {
-      this.wd.removeEvent(id)
-      this.selectedEvent = undefined
+    this.api.deleteEvent(id)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (e) => {
+        this.wd.removeEvent(id)
+        this.selectedEvent = undefined
+      },
+      error: (e) => this.errorHandler.errHandler(e)
     })
+
   }
 }
 updateEvent(){
@@ -954,9 +978,16 @@ private resizeEvent(event: Event) {
 
 
   if(chaptersRelated.length > 0){
-    this.api.updateChapterList(chaptersRelated).subscribe((c) => {
-      return c
+
+    this.api.updateChapterList(chaptersRelated)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (c) => {
+        return c
+      },
+      error: (e) => this.errorHandler.errHandler(e)
     })
+
   }
 }
 
@@ -1004,22 +1035,30 @@ private updateEventDisplay(event: Event) {
       this.isCreateConnectionSet = true
 
       this.wd.updateChapter(this.selectedChapter)
-      alert("chose a chapter to connect.")
+      const info :infoDialog= {
+        status: 'warning',
+        action: "create connection",
+        message:"chose a chapter to create a connection!",
+        header: "connection"
+      }
+      this.dialog.openInfoDialog(info)
+
     }
 
   }
 
   removeStoryline() {
-    this.loading.loadingOn()
     this.storylineSelected.world_id = this.wd.worldId
-    this.api.deleteStoryline(this.storylineSelected.id, this.storylineSelected).subscribe({
+    this.api.deleteStoryline(this.storylineSelected.id, this.storylineSelected)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
       next: (data) => this.wd.setWorldData(data),
-      error: (err) => console.error(err)
+      error: (err) => this.errorHandler.errHandler(err)
     })
   }
   removeConnection() {
     if (this.selectedConnection != undefined) {
-      this.loading.loadingOn()
+
       const target = this.chapters.filter((chp) => chp.id == this.selectedConnection?.targetChapterID)[0]
       target.color = "white"
       target.selected = true
@@ -1028,17 +1067,26 @@ private updateEventDisplay(event: Event) {
       source.selected = true
       this.wd.updateChapter(target)
       this.wd.updateChapter(source)
-      alert("remove connection")
-      this.api.removeConnection(this.selectedConnection).subscribe(() => {
-        this.wd.removeConnection(this.selectedConnection?.id || "")
-        this.selectedConnection = undefined
-        setTimeout(() => {
 
-          source.selected = false
-          target.selected = false
-          this.wd.updateChapter(target)
-          this.wd.updateChapter(source)
-        }, 1000);
+
+      this.api.removeConnection(this.selectedConnection)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+
+    
+          this.wd.removeConnection(this.selectedConnection?.id || "")
+          this.selectedConnection = undefined
+          setTimeout(() => {
+  
+            source.selected = false
+            target.selected = false
+            this.wd.updateChapter(target)
+            this.wd.updateChapter(source)
+          }, 1000);
+        },
+        error: (e) => this.errorHandler.errHandler(e)
+
       })
     }
 
@@ -1052,7 +1100,16 @@ private updateEventDisplay(event: Event) {
   private dragStarted(event: any, d: Chapter) {
     if (this.isCreateConnectionSet && this.selectedChapter) {
       if (this.selectedChapter.id == d.id) {
-        alert("you cannot create connection with the same chapter")
+
+        const info :infoDialog= {
+          status: 'warning',
+          action: "create connection",
+          message:"you cannot create connection with the same chapter",
+          header: "fail tocreate connection"
+        }
+        this.dialog.openInfoDialog(info)
+  
+
         return
       }
       const body: Connection =
@@ -1065,19 +1122,26 @@ private updateEventDisplay(event: Event) {
         "group_id": null
       }
 
-      this.api.createConnection(body).subscribe((cnn) => {
-        const selected = this.chapters.filter((c) => {
-          if (this.selectedChapter != undefined && c.id == this.selectedChapter.id) {
-            c.color = c.color
-            c.selected = false
-            return c
-          }else {
-            return false
-          }
-        })
-        this.isCreateConnectionSet =false
-        this.wd.updateChapter(selected[0])
-        this.wd.addConnection(cnn)
+
+      this.api.createConnection(body)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next:(cnn) => {
+          const selected = this.chapters.filter((c) => {
+            if (this.selectedChapter != undefined && c.id == this.selectedChapter.id) {
+              c.color = c.color
+              c.selected = false
+              return c
+            }else {
+              return false
+            }
+          })
+          this.isCreateConnectionSet =false
+          this.wd.updateChapter(selected[0])
+          this.wd.addConnection(cnn)
+        },
+        error: (e) => this.errorHandler.errHandler(e)
+
       })
 
       return
@@ -1185,6 +1249,8 @@ private updateEventDisplay(event: Event) {
     if(this.isCreateConnectionSet ){
       return
     }
+  
+
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
     // erro ao criar connection, programa esta jogando o chapter point para o ultimo storyline.
@@ -1217,11 +1283,14 @@ private updateEventDisplay(event: Event) {
       storyline_id: newStorylineId,
       timeline_id: newTimeline.timeline?.id
     }
-    this.api.updateChapter(d.id, body).subscribe(
+
+    this.api.updateChapter(d.id, body)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(
 
       {
         next: (data) => this.addNewChapter(data),
-        error: (err) => console.error(err)
+        error: (err) => this.errorHandler.errHandler(err)
       }
     )
     this.selectedChapter = undefined
@@ -1290,17 +1359,22 @@ private updateEventDisplay(event: Event) {
       this.selectedChapter.focus = false
 
 
-      this.loading.loadingOn()
+
       const elementId = `${CSS.escape(this.selectedChapter.id)}-chapter-circle`;
       const elementTxtId = `${CSS.escape(this.selectedChapter.id)}-chapter-group-txt`;
 
       const chp = d3.select(elementId).remove()
       d3.select(elementTxtId).remove()
 
-      this.api.updateChapter(this.selectedChapter.id, this.selectedChapter).subscribe((c) => {
-        this.wd.updateChapter(c)
-        this.removeConnection()
-        this.selectedChapter = undefined
+      this.api.updateChapter(this.selectedChapter.id, this.selectedChapter)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (c) => {
+          this.wd.updateChapter(c)
+          this.removeConnection()
+          this.selectedChapter = undefined
+        },
+        error: (e) => this.errorHandler.errHandler(e) 
       })
     }
 
@@ -1919,10 +1993,15 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
       const storylinesToUpdate = this.reset ? strs : reordenadas;
 
-      this.api.updateStoryLineList(storylinesToUpdate).subscribe((data) => {
-        data.forEach(str => {
-          this.wd.updateStoryline(str)
-        });
+      this.api.updateStoryLineList(storylinesToUpdate)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          data.forEach(str => {
+            this.wd.updateStoryline(str)
+          });
+        },
+        error: (e)=>this.errorHandler.errHandler(e)
       })
    
       if(!this.ss?.storyline_update_chapter){
@@ -1932,10 +2011,15 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
           c.storyline_id = storyline?.id || c.storyline_id
           return c
         })
-      this.api.updateChapterList(chps).subscribe((chpList) => {
-        chpList.forEach((c) => {
-          this.wd.updateChapter(c)
-        })
+      this.api.updateChapterList(chps)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (chpList) => {
+          chpList.forEach((c) => {
+            this.wd.updateChapter(c)
+          })
+        },
+        error: (e) => this.errorHandler.errHandler(e)
       })
     }
     this.prevTimeline = undefined;
@@ -2123,8 +2207,13 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
   }
   eventDragEnd(el: any, e: Event) {
     if (this.selectedEvent) {
-      this.api.updateEvent(this.selectedEvent).subscribe((e) => {
-        this.wd.updateEvent(e)
+      this.api.updateEvent(this.selectedEvent)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (e) => {
+          this.wd.updateEvent(e)
+        },
+        error: (e) => this.errorHandler.errHandler(e)
       })
 
       
@@ -2144,7 +2233,11 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
         }
       })
       if(chaptersRelated.length > 0){
-        this.api.updateChapterList(chaptersRelated).subscribe((c) => {
+        console.log(chaptersRelated)
+        this.api.updateChapterList(chaptersRelated)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((c) => {
+
           return c
         })
       }
@@ -2523,8 +2616,11 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 
 
-    this.api.updateTimelineList(reordenadas).subscribe((e) => {
-      this.wd.updateTimeline(e)
+    this.api.updateTimelineList(reordenadas)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (e) =>this.wd.updateTimeline(e),
+      error: (e) => this.errorHandler.errHandler(e)
     })
     
     if(!this.ss?.timeline_update_chapter){
@@ -2536,11 +2632,17 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
         c.range = (tl?.adjustedRange || c.range) - 4
         return c
       })
-    this.api.updateChapterList(chps).subscribe((chpList) => {
-      chpList.forEach((c) => {
-        this.wd.updateChapter(c)
-      })
+    this.api.updateChapterList(chps)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next:(chpList) => {
+        chpList.forEach((c) => {
+          this.wd.updateChapter(c)
+        })
+      },
+      error: (e) => this.errorHandler.errHandler(e)
     })
+
   }
     
 

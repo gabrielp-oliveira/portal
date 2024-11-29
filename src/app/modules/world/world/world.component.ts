@@ -6,7 +6,8 @@ import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
-import { basicWorld, Chapter, paper, world } from '../../../models/paperTrailTypes';
+import { basicWorld, Chapter, infoDialog, paper, world } from '../../../models/paperTrailTypes';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-world',
@@ -22,7 +23,7 @@ papper: paper;
     private api: ApiService,
     private dialog: DialogService,
     private wd: WorldDataService,
-    private errorHandler: ErrorService
+    private errorHandler: ErrorService,
   ) { }
 
   papers$: paper[];
@@ -32,24 +33,45 @@ papper: paper;
   panelSSOpenState = true;
   panelCreationButtonsOpenState = true;
   panelGroupConnectionOpenState = true;
-
+  destroy$ = new Subject<void>();
+  showLoading = this.wd.loading$
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
       if (id) {
         this.worldId = id
         this.loadWorldData(id);
       }
-
-      this.wd.world$.subscribe((w) => {
+      
+      this.wd.world$
+        .pipe(takeUntil(this.destroy$))
+      .subscribe((w) => {
         this.worldData = w
       })
-      this.wd.chapters$.subscribe((c) => {
+      this.wd.chapters$
+        .pipe(takeUntil(this.destroy$))
+      .subscribe((c) => {
         this.chapters$ = c
       })
-      this.wd.papers$.subscribe((p) => {
+      this.wd.papers$
+        .pipe(takeUntil(this.destroy$))
+      .subscribe((p) => {
         this.papers$ = p
       })
+
+      // const info :infoDialog= {
+      //   status: 'warning',
+      //   action: "Delete Timeline",
+      //   message:"you must have at least one timeline",
+      //   header: "fail to delete timeline"
+      // }
+      // this.dialog.openInfoDialog(info)
+      }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
+
 
   papperBackgroundColor(pp: paper){
     return {
@@ -105,10 +127,21 @@ papper: paper;
     this.dialog.openUpdatePaperrDialog('150ms', '150ms', papperId) 
   }
   private loadWorldData(id: string): void {
-    this.api.getWorldData(id).subscribe({
-      next: (data) => this.wd.setWorldData(data),
-      error: (err) =>this.errorHandler.errHandler(err)
+
+    
+    this.api.getWorldData(id)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (data) => {  
+        this.wd.setWorldData(data)
+      },
+      error
+      : (err) =>this.errorHandler.errHandler(err)
     });
+    // setTimeout(() => {
+    //   this.wd.loadingOff()
+
+    // }, 2000);
   }
 
   callCreatePaperDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {

@@ -11,7 +11,8 @@ import {
   strEditDialogComponent, UpdateEventDialogComponent,
   updateConnectionDialogComponent,
   createGroupConnectionDialogComponent,
-  updateGroupConnectionDialogComponent
+  updateGroupConnectionDialogComponent,
+  InfoDialogComponent
 } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
@@ -34,6 +35,7 @@ import { EventInfoComponent } from '../standAlone/info/event-info/event-info.com
 import { TimelineInfoComponent } from '../standAlone/info/timeline-info/timeline-info.component';
 import {MatTabsModule} from '@angular/material/tabs';
 import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.component";
+import { LoadingComponent } from '../standAlone/loading/loading.component';
 
 
 
@@ -46,12 +48,14 @@ import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.componen
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
     strEditDialogComponent, UpdateEventDialogComponent, 
+    InfoDialogComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [],
   imports: [
     CommonModule,
     MatDialogModule,
+    LoadingComponent,
     ReactiveFormsModule,
     MatCardModule,
     PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,

@@ -1,0 +1,28 @@
+<div class="infoDialog slide-in-right" >
+    <div class="infoStatus">
+        
+        <span class="icon" [style.background-color]="color">
+
+            <mat-icon class="mat-18" [style.color]="'white'">{{icon}}</mat-icon>
+        </span>
+    </div>
+    
+    <div class="infoContent">
+        <div class="infoHeader">
+            <span>{{data.header}} | {{data.action}}</span> 
+            <div class="headerButtons">
+                <!-- <strong mat-dialog-close class="close" style="margin-right: 10px;"
+                
+                [matTooltipPosition]="'above'"
+                matTooltip="Close info"
+                aria-label="Button that shows a black tooltip describing a timeline">x</strong> -->
+          
+              </div>
+            
+        </div>
+        <div class="infoBody">
+            <p>{{data.message}}</p>
+            
+        </div>
+    </div>
+</div>

@@ -1,8 +1,7 @@
+<div  id="subway" #subway></div>
 
-  <div  id="subway" #subway></div>
 
 <button id="menuBtn" mat-button [matMenuTriggerFor]="menu" #chapterMenuTrigger="matMenuTrigger" style="display: none;" ></button>
-
 <mat-menu #menu="matMenu" yPosition="above" (closed)="onMenuClosed()">
   <button mat-menu-item (click)="openChapter()">open</button>
   <button mat-menu-item (click)="callPreviewDialog()">preview</button>

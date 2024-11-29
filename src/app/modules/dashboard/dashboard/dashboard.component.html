@@ -1,4 +1,5 @@
-<p>dashboard works!</p>
+<app-loading *ngIf="Showloading | async"></app-loading>
+
 <a routerLink="/">home</a>
 <br>
 <button (click)="logOut()">Log out</button>

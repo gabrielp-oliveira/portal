@@ -1,35 +1,76 @@
-<h2 mat-dialog-title>Update timeline</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="name">Timeline Name: </label>
-    <input id="name" type="text" formControlName="name" />
-    
-    <label for="description">timeline Description: </label>
-    <input id="description" type="text" formControlName="description" />
-    
+<div class="modal">
+  <div class="header" >
+    <h2>Update Timeline</h2>
 
+    <div class="headerButtons">
+      <app-timeline-info></app-timeline-info>
+      <strong mat-dialog-close class="close"
+      
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
 
+    </div>
+  </div>
+  <div class="body">
+    <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+      <div class="group" style="width: 100%;">      
+          
+        <mat-form-field>
+          <mat-label for="name">Timeline name</mat-label>
+          <input matInput type="text" required id="name" type="name" formControlName="name" >
+        </mat-form-field>
+        
+      </div>
+      
+      <div class="group">      
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span>Description</span>
+              <strong class="info"
+              [matTooltipPosition]="'above'"
+              matTooltip="depois coloco a info pra descricao >;[ "
+              aria-label="Button that shows a black tooltip describing a timeline"
+              >!</strong>
+            </mat-panel-title>
+
+          </mat-expansion-panel-header>
+          <div class="accordion-info">
+            <app-txt-editor [data]="description" (valueChanged)="onDescriptionChange($event)"></app-txt-editor>
+          </div>
+        </mat-expansion-panel>
+</div>
+      
+      <br>
+      <mat-slider
+      *ngIf="data.range"
+      min="1"
+     
+      style="width:100%"
+      id="range"
+      max=30
+      step="1"
+      showTickMarks
+      discrete
+      [displayWith]="formatLabel"
+      >
+      <input matSliderThumb formControlName="range"/>
+    </mat-slider>
+    
     <br>
-    <mat-slider
-    *ngIf="data.range"
-    min="1"
-    
-    id="range"
-    max=30
-    step="1"
-    showTickMarks
-    discrete
-    [displayWith]="formatLabel"
-    >
-    <input matSliderThumb formControlName="range"/>
-  </mat-slider>
-  
-  <br>
     
     
     <mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
+      <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+        
+        <div>
+          <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+        </div>
+      </button>
     </mat-dialog-actions>
   </form>
-</mat-dialog-content>
+
+  </div>
+</div>

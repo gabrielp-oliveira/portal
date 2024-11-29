@@ -7,6 +7,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ErrorService } from '../error.service';
 import { WorldDataService } from './world-data.service';
+import { LoadingComponent } from '../../standAlone/loading/loading.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     MatDialogModule,
+    LoadingComponent,
     ReactiveFormsModule,
     RouterModule.forChild(routes)
   ]

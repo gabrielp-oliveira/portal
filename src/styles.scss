@@ -117,3 +117,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-size: 16px!important;
 
 }
+
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  box-shadow: none!important;
+  overflow: hidden!important;
+}
+.mat-tooltip.tooltip {
+  font-size: 20px!important;
+}

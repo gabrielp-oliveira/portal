@@ -6,7 +6,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { dialogModule } from '../../dialog/dialog.module';
 import { SubwayComponent } from './subway/subway.component';
 import { SubwayService } from './subway.service';
-import { LoadingService } from '../loading.service';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatButtonModule} from '@angular/material/button';
 import {MatTableModule} from '@angular/material/table';
@@ -36,6 +35,7 @@ import { StorylineInfoComponent } from "../../standAlone/info/storyline-info/sto
 import { EventInfoComponent } from '../../standAlone/info/event-info/event-info.component';
 import { PaperInfoComponent } from '../../standAlone/info/paper-info/paper-info.component';
 import { TimelineInfoComponent } from '../../standAlone/info/timeline-info/timeline-info.component';
+import { LoadingComponent } from '../../standAlone/loading/loading.component';
 
 
 
@@ -53,6 +53,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     dialogModule,
+    LoadingComponent,
     ReactiveFormsModule,
     MatMenuModule,
     MatButtonModule,
@@ -73,6 +74,6 @@ const routes: Routes = [
     RouterModule.forChild(routes),
 
 ],
-  providers: [SubwayService, LoadingService]
+  providers: [SubwayService]
 })
 export class worldModule { }

@@ -46,7 +46,16 @@ export type paper = {
     focus: boolean,
     color: string
 }
+export interface createWorld extends infoDialog {
+     "world": world,
+}
 
+export type infoDialog = {
+    status: 'warning'|'error'|'success',
+    header: string,
+    message: string,
+    action:String
+}
 export type ChapterDetails = {
 	chapter: Chapter,
 	timeline:Timeline,

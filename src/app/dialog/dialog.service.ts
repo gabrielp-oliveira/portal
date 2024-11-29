@@ -6,9 +6,10 @@ import { chapteDescriptionDialogComponent, createChapterDialogComponent,
       strEditDialogComponent, UpdateChapterDialogComponent, UpdateEventDialogComponent,
        UpdatePaperDialogComponent, UpdateTimelineDialogComponent, 
        createGroupConnectionDialogComponent,
-       updateGroupConnectionDialogComponent} from './components/dialog.component';
+       updateGroupConnectionDialogComponent,
+       InfoDialogComponent} from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Chapter, chapterBasicInfo, ChapterDetails, Connection, Event, GroupConnection, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
+import { Chapter, chapterBasicInfo, ChapterDetails, Connection, Event, GroupConnection, info, infoDialog, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
 
 @Injectable({
@@ -190,6 +191,16 @@ export class DialogService {
       enterAnimationDuration,
       exitAnimationDuration,
       data:{id: data.id, name: data.name}
+    });
+  }
+  openInfoDialog(data:infoDialog, top: string = '10px', right: string='80px' ): void {
+    this.dialog.open(InfoDialogComponent, {
+      width: '400px',
+      position: {
+        top,
+        right
+      },
+      data
     });
   }
 
