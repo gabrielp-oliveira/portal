@@ -1,14 +1,14 @@
 <app-loading *ngIf="showLoading | async"></app-loading>
 
 <nav class="worldNav">
-  <h1 (click)="sidenav.toggle()">Welcome</h1>
+  <h1>Welcome</h1>
   <button mat-button type="button" (click)="sidenav.toggle()">
     <mat-icon>menu</mat-icon>
   </button>
 
 </nav>
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="side" opened="" position="end" class="worldSlide sidenav-fixed">
+  <mat-sidenav #sidenav mode="side" position="end" class="worldSlide sidenav-fixed">
     <mat-nav-list>
       <h3 style="margin-top: 50px; margin-left: 15px; font-weight: 700;">World <u>{{worldData?.name}}</u> created at {{worldData?.created_at | date: 'MMM d, y'}}</h3>
       <div class="creationButtons">
@@ -60,8 +60,8 @@
     </mat-nav-list>
   </mat-sidenav>
 
-  <mat-sidenav-content style="overflow: hidden;" style="padding: 10px;">
-    <div class="content">
+  <mat-sidenav-content   class="content" >
+    <div>
       <app-subway></app-subway>
     </div>
     <div class="tables">

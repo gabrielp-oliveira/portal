@@ -63,7 +63,7 @@ editorConfig: AngularEditorConfig = {
     // Configura o debounceTime para atrasar a execução do emitVal
     this.contentSubject
       .pipe(
-        debounceTime(1000), // 30 segundos de debounce
+        // debounceTime(1000), // 30 segundos de debounce
         takeUntil(this.destroy$)
       )
       .subscribe((content) => {
@@ -78,6 +78,7 @@ editorConfig: AngularEditorConfig = {
 
 
 emitVal(a:string): void {
+  console.log(this.data)
   this.data.description_data = a
   this.valueChanged.emit(a);
 }
@@ -85,6 +86,7 @@ emitVal(a:string): void {
 ngOnChanges(changes: any) {
   const data = changes.data.currentValue
   const val :string = !data?.description_data ? "": data?.description_data
+  console.log(val)
   this.content.setValue(val)
 }
   ngOnInit(): void {

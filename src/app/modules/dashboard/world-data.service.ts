@@ -172,6 +172,10 @@ export class WorldDataService {
     const papers = this.papersSubject.value.filter(p => p.id !== papperId);
     this.papersSubject.next(papers);
   }
+  removeGroupConnection(gcId: string): void { 
+    const gc = this.groupConnectionSubject.value.filter(p => p.id !== gcId);
+    this.groupConnectionSubject.next(gc);
+  }
 
   removeChapter(chapterId: string): void { 
     const chapters = this.chaptersSubject.value.filter(c => c.id !== chapterId);

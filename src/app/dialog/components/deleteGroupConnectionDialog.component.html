@@ -1,7 +1,7 @@
 <div class="modal">
 
   <div class="header" >
-    <h2>delete {{data.timeline.name}}</h2>
+    <h2>delete {{data.name}}</h2>
     <div class="headerButtons">
       <app-chapter-info></app-chapter-info>
       <strong mat-dialog-close class="close"
@@ -13,8 +13,8 @@
   </div>
 
   <div class="body">
-    <p>Are you sure that you want to remove the {{data.timeline.name}} timeline?</p>
-    <p>the positon of the chapters in the subway will not change, thet will be "trow" to the next one.</p>
+    <p>Are you sure that you want to remove the {{data.name}} group connection?</p>
+    <p>the connections will remain, but will lost the identification.</p>
 
 
 
@@ -25,7 +25,7 @@
       
       <mat-dialog-actions>
         <button mat-button mat-dialog-close>Cancel</button>
-        <button mat-button cdkFocusInitial type="submit">Ok</button>
+        <button mat-button  cdkFocusInitial type="submit">Ok</button>
       </mat-dialog-actions>
     </form>
   </div>

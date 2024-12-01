@@ -12,7 +12,9 @@ import {
   updateConnectionDialogComponent,
   createGroupConnectionDialogComponent,
   updateGroupConnectionDialogComponent,
-  InfoDialogComponent
+  InfoDialogComponent,
+  deleteChapterDialogComponent,
+  deleteGroupConnectionDialogComponent
 } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
@@ -48,7 +50,7 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
     strEditDialogComponent, UpdateEventDialogComponent, 
-    InfoDialogComponent,
+    InfoDialogComponent,deleteChapterDialogComponent,deleteGroupConnectionDialogComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [],

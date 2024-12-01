@@ -5,7 +5,7 @@
     <div class="headerButtons">
       <app-timeline-info></app-timeline-info>
       <strong mat-dialog-close class="close"
-      
+    
       [matTooltipPosition]="'above'"
       matTooltip="Close Modal"
       aria-label="Button that shows a black tooltip describing a timeline">x</strong>
@@ -63,10 +63,11 @@
     
     
     <mat-dialog-actions>
-      <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+      <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
         
         <div>
-          <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+                        <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
+
         </div>
       </button>
     </mat-dialog-actions>

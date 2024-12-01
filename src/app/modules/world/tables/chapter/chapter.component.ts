@@ -8,7 +8,7 @@ import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, distinctUntilChanged,  } from 'rxjs';
+import { combineLatest, distinctUntilChanged, Subject, takeUntil,  } from 'rxjs';
 import { PapperComponent } from '../papper/papper.component';
 import { UtilsService } from '../../../../utils.service';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -61,9 +61,11 @@ export class ChapterComponent implements OnInit {
 
   gridHeight = 50
 
+  destroy$ = new Subject<void>();
 
   orderSearchValue: string = ""
   nameSearchValue: string = ""
+  pageWidth: number
   timelines: Timeline[] = []
   storylines: StoryLine[] = []
   dateSearchValue: string = ""
@@ -85,6 +87,12 @@ export class ChapterComponent implements OnInit {
     private errorHandler: ErrorService
   ) { }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    window.removeEventListener('resize', () => {});
+    this.destroy$.complete();
+  }
+
   openChapterOptions(event: MouseEvent, c: Chapter) {
     event.preventDefault();
 
@@ -95,11 +103,10 @@ export class ChapterComponent implements OnInit {
     // const menu = document.querySelector("#" + this.chapterOptionsTrigger.menu?.panelId)
     const menuElement = document.querySelector("#" + this.chapterOptionsTrigger.menu?.panelId) as HTMLElement;
 
-    console.log('..')
     if (menuElement) {
       // Defina o estilo de posicionamento
       menuElement.style.position = 'absolute';
-      menuElement.style.left = `${event.x + 5}px`;
+      menuElement.style.left = `${event.x - (menuElement.offsetWidth + 10)}px`;
       menuElement.style.top = `${event.y + 5}px`;
     }
     this.selectedChapter = c
@@ -145,7 +152,14 @@ export class ChapterComponent implements OnInit {
       'color': c.color ==''? this.utils.numberToHex(c.paper_id): c.color,
     }
   }
+
+  resizeSvg(e:any){
+    this.pageWidth = e.currentTarget.innerWidth
+  }
   ngOnInit() {
+
+    this.pageWidth = window.innerWidth
+    window.addEventListener('resize', (e) => this.resizeSvg(e));
 
     // this.dialog.openCreateChapterDialog('150ms', '150ms')
 
@@ -157,6 +171,7 @@ export class ChapterComponent implements OnInit {
     .pipe(
       distinctUntilChanged(() => this.compareUpdates())
     )
+    .pipe(takeUntil(this.destroy$))
     .subscribe((data) => {
       let { chapters, papers, storyLines, timelines, ss } = data
 
@@ -277,7 +292,9 @@ export class ChapterComponent implements OnInit {
       chapter.timeline_id = tl?.timeline.id || ''
       chapter.range= tl?.adjustedRange || 0
       console.log(tl?.adjustedRange)
-      this.api.updateChapter(chapter.id, chapter).subscribe((c) => {
+      this.api.updateChapter(chapter.id, chapter)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((c) => {
         this.wd.updateChapter(c)
       })
       console.log(tl)
@@ -322,7 +339,9 @@ export class ChapterComponent implements OnInit {
     this.dataSource._updateChangeSubscription();
   
     // Envia a atualização ao servidor apenas para os capítulos do mesmo `paper`
-    this.api.updateChapterList(chaptersInSamePaper).subscribe((updatedChapters) => {
+    this.api.updateChapterList(chaptersInSamePaper)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((updatedChapters) => {
       updatedChapters.forEach((c) => {
         this.wd.updateChapter(c);
       });
@@ -556,6 +575,7 @@ export class ChapterComponent implements OnInit {
   }
   openDelete(){
     if (this.selectedChapter) {
+      this.dialog.openDeleteChapter(this.selectedChapter, `150ms`, `150ms`)
     }
   }
 

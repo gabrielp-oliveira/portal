@@ -8,7 +8,7 @@ import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { distinctUntilChanged } from 'rxjs';
+import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { UtilsService } from '../../../../utils.service';
 
 
@@ -42,7 +42,8 @@ export class PapperComponent implements OnInit {
   dateSearchValue: string = ""
   startDateSearchValue: string = ""
   endDateSearchValue: string = ""
-
+  destroy$ = new Subject<void>();
+  pageWidth:number
   constructor(
     private wd: WorldDataService,
     private router: Router,
@@ -56,6 +57,9 @@ export class PapperComponent implements OnInit {
     this.dialog.openChapterDescription(pp, '150ms','150ms')
   }
   ngOnInit() {
+    this.pageWidth = window.innerWidth
+    window.addEventListener('resize', (e) => this.resizeSvg(e));
+
     this.wd.papers$.pipe(
       distinctUntilChanged(() => {
         const valOrder = this.orderSearchValue ==  ""
@@ -69,15 +73,29 @@ export class PapperComponent implements OnInit {
           return false
         }
       })
-    ).subscribe((p) => {
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((p) => {
       this.dataSource.data = p
       this.papers$ = p
     })
 
-    this.wd.chapters$.subscribe((c) => {
+    this.wd.chapters$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((c) => {
       this.chapters$ = c
     })
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    window.removeEventListener('resize', () => {});
+    this.destroy$.complete();
+  }
+
+  resizeSvg(e:any){
+    this.pageWidth = e.currentTarget.innerWidth
   }
 
   // Função para reorganizar os itens da tabela
@@ -92,7 +110,9 @@ export class PapperComponent implements OnInit {
       pp.order = idx + 1
       return pp
     })
-    this.api.updatePaperList(data).subscribe((a) => {
+    this.api.updatePaperList(data)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((a) => {
       data.forEach((p) => {
         this.wd.updatePaper(p)
       })

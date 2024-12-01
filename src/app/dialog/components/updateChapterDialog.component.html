@@ -28,36 +28,12 @@
   
         </div>
 
-
-        <div class="group">      
-
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <span>Description</span>
-                <strong class="info"
-                [matTooltipPosition]="'above'"
-                matTooltip="depois coloco a info pra descricao >;[ "
-                aria-label="Button that shows a black tooltip describing a timeline"
-                >!</strong>
-              </mat-panel-title>
-  
-            </mat-expansion-panel-header>
-            <div class="accordion-info">
-              <app-txt-editor [data]="description" ></app-txt-editor>
-            </div>
-          </mat-expansion-panel>
-          
-  
-  
-        </div>
-  
         <div class="inlineGroup">
 
           <div class="group" style="width: 48%;">      
             <mat-form-field class="example-full-width">
               <mat-label for="order">order</mat-label>
-              <input matInput maxlength="5" id="order" type="number" formControlName="order">
+              <input matInput maxlength="5" id="order" type="number" formControlName="order" min="1">
             </mat-form-field>
           </div>
 
@@ -80,7 +56,7 @@
           <div class="group" style="width: 48%;">      
             <mat-form-field  >
               <mat-label for="timeline">Select timeline</mat-label>
-              <mat-select id="timeline" formControlName="timeline_id" required>
+              <mat-select id="timeline" formControlName="timeline_id">
                 <mat-option *ngFor="let timeline of timelines$ | async" [value]="timeline.id">
                   {{ timeline.name }} 
                 </mat-option>
@@ -92,7 +68,7 @@
             
             <mat-form-field  >
               <mat-label for="storyline">Select storyline</mat-label>
-              <mat-select id="storyline" formControlName="storyline_id" required>
+              <mat-select id="storyline" formControlName="storyline_id">
                 <mat-option *ngFor="let storyline of storylines$ | async" [value]="storyline.id">
                   {{ storyline.name }} 
                 </mat-option>
@@ -105,10 +81,11 @@
     
 
     <mat-dialog-actions>
-      <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+      <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
 
         <div>
-          <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+                        <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
+
         </div>
       </button>
     </mat-dialog-actions>

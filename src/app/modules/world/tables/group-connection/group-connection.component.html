@@ -4,6 +4,8 @@
   (cdkDropListDropped)="drop($event)"
   [cdkDropListData]="dataSource.data"
   class="drop-group-list"
+  [style]="{width: pageWidth < 320? pageWidth + 'px' : 'auto'}"
+
 >
   <table
     mat-table
@@ -11,6 +13,7 @@
     matSort
     class="groupTable"
     cdkDropListGroup
+  
   >
 
     <ng-container matColumnDef="name">

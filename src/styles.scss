@@ -105,7 +105,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
 .angular-editor-toolbar-set {
-  border: 1px solid rgb(140, 140, 140);
+  border: none;
   border-radius: 5px;
 }
 .angular-editor-toolbar {
@@ -115,7 +115,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   height: 100px;
   align-items: center;
   font-size: 16px!important;
-
+  overflow: auto;
 }
 
 
@@ -126,3 +126,4 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-tooltip.tooltip {
   font-size: 20px!important;
 }
+

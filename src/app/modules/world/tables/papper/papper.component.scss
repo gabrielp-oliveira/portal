@@ -16,6 +16,12 @@
   .editButton {
     background-color: white;
     transition: ease-in-out 100ms;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    cursor: pointer;
+
   }
   .editButton:hover {
     background-color: antiquewhite;
@@ -29,7 +35,15 @@
     display: table-row; /* Faz com que os itens arrastáveis mantenham a estrutura de linha de tabela */
   }
   
-
+  
+  .table-cell {
+    border: 1px solid rgb(0, 0, 0, 0.4);
+    border-radius: 3px;
+    height: 30px;
+    width: 100%;
+    background-color: white;
+    font-family: sans-serif;
+  }
   
   td, th {
     padding: 10px 5px; /* Certifica que o espaçamento das células seja consistente */
@@ -95,6 +109,40 @@
 .orderr:hover {
   color: black;
 }
+.drop-paper-list {
+  max-height: 400px;
+  overflow: auto;
+  padding: 10px 0px;
+}
+
+
+.drop-paper-list {
+  --sb-track-color: #ffffff;
+  --sb-thumb-color: #262d29;
+  --sb-size: 8px;
+}
+
+.drop-paper-list::-webkit-scrollbar {
+  width: var(--sb-size)
+}
+
+.drop-paper-list::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 1px;
+}
+
+.drop-paper-list::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 1px;
+  border: 1px solid #b3dcf1;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--sb-thumb-color)
+                     var(--sb-track-color);
+  }
+}
 
 .drop-paper-list button {
   border: 1px solid rgb(210, 210, 210);
@@ -104,3 +152,106 @@
 .drop-paper-list mat-icon {
 text-shadow: 0 0 1px black;
 }
+
+.paperTable {
+  max-width: 600px;
+  min-width: 590px!important; /* A largura mínima da tabela para que o scroll apareça */
+}
+
+.drop-list-container {
+  max-width: 600px;
+  min-width: 590px!important; 
+}
+
+@media (max-width: 590px) {
+  .table-container {
+    overflow-x: scroll; /* Aparece o scroll horizontal */
+  }
+  .paperTable {
+    width: 100%;
+  }
+}
+
+
+
+
+
+.heartbeat {
+	-webkit-animation: heartbeat 1.5s ease-in-out infinite both;
+	        animation: heartbeat 1.5s ease-in-out infinite both;
+          height: auto;
+          width: auto;
+          
+}
+
+
+ @-webkit-keyframes heartbeat {
+  from {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-transform-origin: center center;
+            transform-origin: center center;
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  10% {
+    -webkit-transform: scale(0.91);
+            transform: scale(0.91);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  17% {
+    -webkit-transform: scale(0.98);
+            transform: scale(0.98);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  33% {
+    -webkit-transform: scale(0.87);
+            transform: scale(0.87);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  45% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+}
+@keyframes heartbeat {
+  from {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-transform-origin: center center;
+            transform-origin: center center;
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  10% {
+    -webkit-transform: scale(0.91);
+            transform: scale(0.91);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  17% {
+    -webkit-transform: scale(0.98);
+            transform: scale(0.98);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  33% {
+    -webkit-transform: scale(0.87);
+            transform: scale(0.87);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  45% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+}
+
+

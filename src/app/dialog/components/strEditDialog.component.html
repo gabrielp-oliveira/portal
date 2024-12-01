@@ -1,23 +1,68 @@
-<h2 mat-dialog-title>Update storyline</h2>
-<mat-dialog-content>
-  <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-    <label for="name">Storyline Name: </label>
-    <input id="name" type="text" formControlName="name" />
-    
-    <label for="description">Storyline Description: </label>
-    <input id="description" type="text" formControlName="description" />
-    
+<div class="modal">
+
+  <div class="header" >
+    <h2>edit storyline</h2>
+
+    <div class="headerButtons">
+
+      <strong class="info"
+      [matTooltipPosition]="'above'"
+      matTooltip="A group connection is a grouping that links chapters or events related by a common theme, such as a character's journey or a specific storyline."
+      aria-label="Button that shows a black tooltip describing a timeline"
+      >!</strong>
+      <strong mat-dialog-close class="close"
+      [matTooltipPosition]="'above'"
+      matTooltip="Close Modal"
+      aria-label="Button that shows a black tooltip describing a timeline">x</strong>
+
+    </div>
+  </div>
+
+  <div class="body">
+    <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
+      <div class="group">      
+        <mat-form-field style="width: 100%;" >
+          <mat-label for="name">name</mat-label>
+          <input matInput type="text" required id="name" type="name" formControlName="name" >
+        </mat-form-field>
+
+      </div>
+
+      <div class="group">      
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span>Description</span>
+              <strong class="info"
+              [matTooltipPosition]="'above'"
+              matTooltip="depois coloco a info pra descricao >;[ "
+              aria-label="Button that shows a black tooltip describing a timeline"
+              >!</strong>
+            </mat-panel-title>
+
+          </mat-expansion-panel-header>
+          <div class="accordion-info">
+            <app-txt-editor [data]="description" (valueChanged)="onDescriptionChange($event)"></app-txt-editor>
+          </div>
+        </mat-expansion-panel>
+      </div>
 
 
-    <br>
 
   
-  <br>
-    
-    
-    <mat-dialog-actions>
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button mat-dialog-close cdkFocusInitial type="submit">Ok</button>
-    </mat-dialog-actions>
+  
+  
+
+      <mat-dialog-actions>
+        <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
+  
+          <div>
+                          <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
+
+          </div>
+        </button>
+      </mat-dialog-actions>
   </form>
-</mat-dialog-content>
+</div>
+
+</div>

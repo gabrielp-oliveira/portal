@@ -88,12 +88,15 @@ export class SubwayComponent implements OnDestroy  {
   timelines: Timeline[] = [];
   timelineOrderToUpdate: number
   storylineOrderToUpdate: number
+  storylineY: number
+  timelineX: number
   prevTimeline: Timeline | undefined
   uniqueChapters: Chapter[]
   duplicateChapters: Chapter[][]
   ChapterGroup: any = {}
   Showloading:boolean
   destroy$ = new Subject<void>();
+  storylines: StoryLine[];
 
 
   constructor(
@@ -112,6 +115,7 @@ export class SubwayComponent implements OnDestroy  {
   
   ngOnDestroy(): void {
     this.destroy$.next();
+    window.removeEventListener('resize', () => {});
     this.destroy$.complete();
   }
 
@@ -120,27 +124,30 @@ export class SubwayComponent implements OnDestroy  {
 
   }
 
-  private resizeSvg() {
-    const width = this.root?.nativeElement.offsetWidth || 800;
-    const height = this.svgHeight * this.gridHeight || 400;
+  private resizeSvg(e: any) {
+    this.width = e.currentTarget.innerWidth
+
+    const width = e.currentTarget.innerWidth || 800;
+    const height =  400;
     
     d3.select(`#${D3_ROOT_ELEMENT_ID} svg`)
       .attr("viewBox", `0 0 ${width} ${height}`);
   }
 
   ngAfterViewInit(): void {
-    this.width = this.root?.nativeElement.offsetWidth;
+    this.width = window.innerWidth;
     this.height = this.root?.nativeElement.offsetHeight;
     
     // this.wd.loadingOn()
 
 
+
     this.wd.loading$
     .pipe(takeUntil(this.destroy$))
     .subscribe((loading) => this.Showloading = loading)
-    console.log('init')
+
     let svg = this.initSvg();
-    window.addEventListener('resize', () => this.resizeSvg());
+    window.addEventListener('resize', (e) => this.resizeSvg(e));
 
     combineLatest({
       "timelines": this.timelines$, "storyLines": this.storylines$,
@@ -159,7 +166,7 @@ export class SubwayComponent implements OnDestroy  {
       this.gcs = gc
       this.ss = data.ss
       this.timelines = timelines
-
+      this.storylines = storyLines
       const showTableChapters = data.ss?.display_table_chapters
       const showGroupConnections = data.ss?.group_connection_update_chapter
 
@@ -230,7 +237,7 @@ export class SubwayComponent implements OnDestroy  {
     error: (err) => this.err.errHandler(err),
     
     complete: () => {
-      alert(',,,')
+      console.log(',,,')
 
     }})
     // Subscribe events for graph
@@ -272,8 +279,8 @@ separateChaptersByDimensions(chapters: Chapter[]): Record<string, Chapter[]> {
 
 
 private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
-  const width = this.root?.nativeElement.offsetWidth || 800;
-  const height = 400;
+  const width =  this.width || 800;
+  const height =  400;
 
   // Seleciona o elemento e define atributos responsivos
   return d3.select(`#${D3_ROOT_ELEMENT_ID}`)
@@ -281,6 +288,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
     .attr("viewBox", `0 0 ${width} ${height}`) // Proporção de visualização
     .attr("preserveAspectRatio", "xMidYMid meet") // Mantém centralizado e proporcional
     .style("width", "100%")
+    .style("border-radius", "8px")
     .style("height", "auto") // Ajusta a altura proporcionalmente
     .append("g"); // Retorna o grupo <g>
 }
@@ -1049,10 +1057,30 @@ private updateEventDisplay(event: Event) {
 
   removeStoryline() {
     this.storylineSelected.world_id = this.wd.worldId
+    this.wd.setLoading(true)
+
     this.api.deleteStoryline(this.storylineSelected.id, this.storylineSelected)
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: (data) => this.wd.setWorldData(data),
+      next: (chapters) => {
+        const storylines = this.storylines.filter(c => c.id !== this.storylineSelected.id);
+
+        const data :StoryLine[]= storylines.sort((a, b) => a.order - b.order);
+        data.forEach((elemento, index) => {
+          elemento.order = index + 1;
+        });
+
+            
+        this.api.updateStoryLineList(data)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((list) => {
+          this.wd.setStorylines(list)
+        })
+
+        this.wd.setChapters(chapters)
+        this.wd.removeStoryLine(this.storylineSelected.id)
+        this.wd.setLoading(false)
+      },
       error: (err) => this.errorHandler.errHandler(err)
     })
   }
@@ -1158,13 +1186,16 @@ private updateEventDisplay(event: Event) {
     const elementCircleId = `#${CSS.escape(d.id)}-chapter-group circle`;
     const elementtextId = `#${CSS.escape(d.id)}-chapter-group text`;
 
-    const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+    // const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+    // const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
+    // const transform = d3.zoomTransform(el.node()!);
+    // const relativeX = (event.sourceEvent.clientX - (boundingBox?.left || 0) - transform.x) / transform.k;
+    // const relativeY = (event.sourceEvent.clientY - (boundingBox?.top || 0) - transform.y) / transform.k;
+    const relativeY = event.y
+    const relativeX = event.x;
 
-    const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
-
-    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
-    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
+    console.log(relativeX, event.x)
     
 
     if (relativeX < 100 || relativeY < this.gridHeight || relativeY > this.graphHeigh) {
@@ -1257,12 +1288,14 @@ private updateEventDisplay(event: Event) {
     d3.select(elementCircleId).attr("stroke", d.color);
     d3.select(elementtextId).attr("stroke", 'black');
 
-    const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
+    // const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
 
-    const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
+    // const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
 
-    const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
-    const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
+    // const relativeX = ((event.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom
+    // const relativeY = ((event.sourceEvent.clientY - (boundingBox?.top || 0)) - this.tiltY) / this.zoom;
+    const relativeX = event.x
+    const relativeY = event.y
 
 
 
@@ -1609,9 +1642,9 @@ private updateEventDisplay(event: Event) {
 
 
     const widthChapter = this.chapters
-      .sort((a, b) => b.width - a.width)[0]?.width
+      .sort((a, b) => b.width - a.width)[0]?.width ?? 1535
     let width = widthTimelines > widthChapter ? widthTimelines : widthChapter
-    width = width > 1535? width : 1535
+
     let el = svg.selectAll("g.storyline-group")
       .data(strs)
       .enter()
@@ -1640,9 +1673,9 @@ private updateEventDisplay(event: Event) {
       .text((node: any) => node.name)
       .call(
         d3.drag<SVGTextElement, StoryLine>()
-          .on("start", (event, str) => this.storyLineSwapDragStart(str, strs))
+          .on("start", (event, str) => this.storyLineSwapDragStart(event, str, strs))
           .on("drag", (event, str) => this.storyLineSwapDragged(event, strs))
-          .on("end", (event, str) => this.storyLineSwapDragEnded(svg, strs))
+          .on("end", (event, str) => this.storyLineSwapDragEnded(event, svg, strs))
       )
       .on('contextmenu', (event: MouseEvent, str: StoryLine) => {
         event.preventDefault();
@@ -1664,10 +1697,11 @@ private updateEventDisplay(event: Event) {
       })
   }
 
-  storyLineSwapDragStart(str: StoryLine, strs: StoryLine[]) {
+  storyLineSwapDragStart(event: MouseEvent,str: StoryLine, strs: StoryLine[]) {
     if (strs.length <= 1) {
       return
     }
+    this.storylineY = event.y
     this.storylineOrderToUpdate = str.order
 
     this.storylineSelected = str
@@ -1965,11 +1999,25 @@ updateConnectionByChapter(chapter: Chapter, newNumber: number, isHeight:boolean)
 }
 
 
-storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
+storyLineSwapDragEnded(event: MouseEvent, svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>, strs: StoryLine[]) {
     const elementId = `${CSS.escape(this.storylineSelected.id)}-storyline-group`;
     d3.select(document.getElementById(elementId)).select("text").attr("font-size", "12");
     if (!this.storylineSelected) {
       return
+    }
+
+    const diff = Math.abs(this.storylineY - event.y); // Calcula a diferença absoluta
+
+    if (diff < 25) {
+      this.storylineSelected = {
+        Created_at: "" ,
+        description: "",
+        id: "",
+        order: 0,
+        world_id: "",
+        name: ""
+      }
+      return; // Retorna se a diferença for menor que 25
     }
     this.storylineSelected.order = this.storylineOrderToUpdate;
 
@@ -2091,6 +2139,14 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       .style("fill", "rgba(100, 100, 0, 0.25)")  // Define a cor do header
       .style("stroke", "#000")  // Adiciona uma borda se necessário
       .style("stroke-width", "1px")
+      .attr("cursor", "pointer")
+      .call(
+        d3.drag<SVGRectElement, Timeline>()
+          .on("start", (event, t) => this.timelineSwapDragStart(event, t, data))
+          .on("drag", (event, t) => this.timelineSwapDragged(event, data))
+          .on("end", (event, t) => this.timelineSwapDragEnded(event, svg, data))
+      )
+      .on('contextmenu', (e: MouseEvent, tl: Timeline) => this.timeLineMenu(e, tl))
 
 
     // Nome da timeline no header, centralizado abaixo dos botões
@@ -2105,9 +2161,9 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
       .text((tl: Timeline) => tl.name)
       .call(
         d3.drag<SVGTextElement, Timeline>()
-          .on("start", (event, t) => this.timelineSwapDragStart(t, data))
+          .on("start", (event, t) => this.timelineSwapDragStart(event, t, data))
           .on("drag", (event, t) => this.timelineSwapDragged(event, data))
-          .on("end", (event, t) => this.timelineSwapDragEnded(svg, data))
+          .on("end", (event, t) => this.timelineSwapDragEnded(event, svg, data))
       )
       .on('contextmenu', (e: MouseEvent, tl: Timeline) => this.timeLineMenu(e, tl))
 
@@ -2135,10 +2191,12 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
 
 
 
-  timelineSwapDragStart(t: Timeline, timelines: Timeline[]) {
+  timelineSwapDragStart(event:MouseEvent ,t: Timeline, timelines: Timeline[]) {
     if (timelines.length <= 1) {
       return
     }
+    this.timelineX = event.x
+
     this.selectedTimeline = t
     const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
     d3.select(document.getElementById(elementId)).attr("stroke", "black");
@@ -2588,12 +2646,32 @@ storyLineSwapDragEnded(svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>
   }
 
 
-  timelineSwapDragEnded(element: any, timelines: Timeline[]) {
+  timelineSwapDragEnded(event:MouseEvent ,element: any, timelines: Timeline[]) {
     d3.select(element._groups[0][0]).attr("stroke", "none");
     if (timelines.length <= 1) {
       return
     }
 
+    const diff = Math.abs(this.timelineX - event.x); // Calcula a diferença absoluta
+
+    if (diff < 25) {
+      const elementId = `${CSS.escape(this.selectedTimeline.id)}-timeline-group`;
+      d3.select(document.getElementById(elementId)).attr("stroke", "none");
+
+      this.selectedTimeline = {
+        world_id: '',
+        created_at: '',
+        description: '',
+        id: '',
+        name: '',
+        order: 0,
+        range: 0,
+
+      }
+      this.prevTimeline = undefined;
+
+      return; // Retorna se a diferença for menor que 25
+    }
     this.selectedTimeline.order = this.timelineOrderToUpdate;
 
     const reordenadas: Timeline[] = [];
@@ -2788,7 +2866,7 @@ getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRa
     data: { "chapters": Chapter[], "storyLines": StoryLine[], "connections": Connection[], "timelines": Timeline[], "events": Event[] }) {
 
       
-      const { timelines, storyLines, connections, chapters, events } = data
+    const { timelines, storyLines, connections, chapters, events } = data
     this.renderTimeLines(svg, timelines, storyLines.length);
     this.renderStoryLines(svg, storyLines);
     this.renderConnections(svg, chapters, connections);

@@ -1,7 +1,7 @@
 import { Component, ErrorHandler, Inject, inject, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
@@ -24,17 +24,24 @@ import { tree } from 'd3';
   })
   export class createPaperDialogComponent  {
     worldForm: FormGroup;
-      destroy$ = new Subject<void>();
-worldId:string = ''
-Showloading: Observable<boolean> = this.wd.loading$
-    
+    destroy$ = new Subject<void>();
+    worldId:string = ''
+    Showloading: Observable<boolean> = this.wd.loading$
+    description:description
+
 constructor(private fb: FormBuilder,private api:ApiService,
+  private dialogRef: MatDialogRef<createPaperDialogComponent>,
       private errorHandler:ErrorService,
+      private dialog:DialogService,
       private wd: WorldDataService){
         this.worldForm = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],
-            description: ['', [Validators.required]],
+            color: [''],
         });
+        this.worldForm.setValue({
+          name: "",
+          color: ""
+        })
         this.wd.world$
         .pipe(takeUntil(this.destroy$))
         .subscribe((w) =>  this.worldId = String(w?.id))
@@ -44,18 +51,35 @@ constructor(private fb: FormBuilder,private api:ApiService,
      ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  } world$ = this.wd.world$;
+  } 
+
+  onDescriptionChange(value: string): void {
+    this.description.description_data = value;
+  }
+  
     onSubmit(){
+      if(!this.worldForm.valid) {
+        console.log(this.worldForm)
+        const info :infoDialog= {
+          status: 'warning',
+          action: "create Paper",
+          message:"fill all the required fields in the form.",
+          header: "not able to create paper"
+        }
+        this.dialog.openInfoDialog(info)
+        return
+      }
       this.wd.setLoading(true)
     
       const body = this.worldForm.value
-      
+      console.log('..')
       body.world_id = this.worldId
       this.api.createPaper(this.worldForm.value)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         {
           next: (paper) => {
+   
             this.wd.setLoading(false)
 
             if(!!paper.chapter){
@@ -63,6 +87,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
             }
             delete paper.chapter
             this.wd.addPaper(paper)
+            this.dialogRef.close()
           },
           error: (err) =>this.errorHandler.errHandler(err)
 
@@ -86,12 +111,12 @@ constructor(private fb: FormBuilder,private api:ApiService,
       Showloading: Observable<boolean> = this.wd.loading$
 
       constructor(private fb: FormBuilder,private api:ApiService,
+        private dialogRef: MatDialogRef<createChapterDialogComponent>,
         private dialog: DialogService,
         private utils:UtilsService,private errorHandler:ErrorService,
         private wd: WorldDataService){
           this.worldForm = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],
-            description: ['', [Validators.required]],
             paper_id: ['', [Validators.required]],
           });
           
@@ -128,6 +153,17 @@ constructor(private fb: FormBuilder,private api:ApiService,
     this.destroy$.complete();
   }
     onSubmit(){
+      if(!this.worldForm.valid) {
+        const info :infoDialog= {
+          status: 'warning',
+          action: "create chapter",
+          message:"fill all the required fields in the form.",
+          header: "not able to create chapter"
+        }
+        this.dialog.openInfoDialog(info)
+        return
+      }
+
       this.wd.setLoading(true)
     
       const body = this.worldForm.value
@@ -140,8 +176,10 @@ constructor(private fb: FormBuilder,private api:ApiService,
       .subscribe(
         {
           next: (data) => {
+  
             this.wd.setLoading(false)
             this.addNewChapter(data)
+            this.dialogRef.close()
             },
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -170,7 +208,6 @@ constructor(private fb: FormBuilder,private api:ApiService,
   })
   export class UpdateChapterDialogComponent  {
     worldForm: FormGroup;
-    description:description
 
     worldId:string | undefined= ''
       tl: Timeline[]
@@ -180,47 +217,30 @@ constructor(private fb: FormBuilder,private api:ApiService,
         world_id: '',
         name: '',
         description: '',
-        order: 0,
+        order: 1,
         created_at: '',
       }
       destroy$ = new Subject<void>();
     Showloading: Observable<boolean> = this.wd.loading$
 
       constructor(private fb: FormBuilder,
+        private dialogRef: MatDialogRef<UpdateChapterDialogComponent>,
       private api:ApiService, 
       private errorHandler:ErrorService,
       private wd: WorldDataService, private utils:UtilsService,
       @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
     ){
 
-      const d = {
-        id: '',
-        resource_type: 'chapter',
-        resource_id: data.chapterId
-      }
-
-      this.api.getDescription(d)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (desc) => {
-          this.wd.setLoading(false)
-
-          this.description = desc
-          console.log(this.description)
-        },
-        error: (err) => this.errorHandler.errHandler(err)
-      })
       
       this.timelines$
       .pipe(takeUntil(this.destroy$))
       .subscribe((tl) =>  this.tl = tl)
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
-        description: ['', [Validators.required]],
         paper_id: ['', [Validators.required]],
-        order: ['', [Validators.required]],
-        timeline_id: ['', [Validators.required]],
-        storyline_id: ['', [Validators.required]],
+        order: ['', [Validators.required, Validators.min(1)]],
+        timeline_id: ['',[]],
+        storyline_id: [''],
       });
 
       this.chapters$
@@ -232,7 +252,6 @@ constructor(private fb: FormBuilder,private api:ApiService,
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
           name: chapter.name,
-          description: chapter.description,
           order: chapter.order,
           paper_id: chapter.paper_id,
           timeline_id: chapter?.timeline_id,
@@ -244,10 +263,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
       
     }
-    
-    onDescriptionChange(value: string): void {
-      this.description.description_data = value;
-    }
+
     
     chapterBackgroundColor(pp:paper) {    
       return {
@@ -280,6 +296,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
       .subscribe(
         {
             next: (data) => {
+              this.dialogRef.close()
               this.wd.setLoading(false)
               this.addNewChapter(data)
             },
@@ -319,17 +336,36 @@ constructor(private fb: FormBuilder,private api:ApiService,
   description:description
 
   constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+    private dialogRef: MatDialogRef<UpdateTimelineDialogComponent>,
       @Inject(MAT_DIALOG_DATA) public data: Timeline,private errorHandler:ErrorService
     ){
 
  
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
-        description: ['', [Validators.required]],
-        paper_id: ['', [Validators.required]],
-        range: [0, [Validators.required]],
+        description: [''],
+        range: [0],
       });
+      
+      const d = {
+        id: '',
+        resource_type: 'timeline',
+        resource_id: data.id
+      }
 
+
+      this.wd.setLoading(false)
+
+      this.api.getDescription(d)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (desc) => {
+          this.wd.setLoading(false)
+
+          this.description = desc
+        },
+        error: (err) => this.errorHandler.errHandler(err)
+      })
         this.worldForm.patchValue({
           name: data.name,
           description: data.description,
@@ -341,6 +377,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
     }
 
     onDescriptionChange(value: string): void {
+      console.log(value)
       this.description.description_data = value;
     }
 
@@ -355,15 +392,15 @@ constructor(private fb: FormBuilder,private api:ApiService,
       this.wd.setLoading(true)
     
       const body = {...this.data, ...this.worldForm.value, }
+      body.description = this.description.description_data
+      console.log(body)
       this.api.updateTimeline(body)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
-        
         {
           next: (tl) => {
             this.wd.setLoading(false)
-
-            
+              this.dialogRef.close()
               this.wd.updateTimeline(tl)
             },
             error: (err) =>this.errorHandler.errHandler(err)
@@ -392,6 +429,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
   Showloading: Observable<boolean> = this.wd.loading$
   
   constructor(private api:ApiService, private fb: FormBuilder,
+    private dialogRef: MatDialogRef<deleteTimelineDialogComponent>,
       private errorHandler:ErrorService, private dialog:DialogService,private wd: WorldDataService,
       @Inject(MAT_DIALOG_DATA) public data: {timeline: Timeline, timelines: Timeline[], chapters: Chapter[]}
     ){
@@ -494,6 +532,120 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
 
   }
+  @Component({
+    selector: 'app-deleteGroupConnectionDialog',
+    templateUrl: './deleteGroupConnectionDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class deleteGroupConnectionDialogComponent  {
+    worldForm: FormGroup;
+
+  destroy$ = new Subject<void>();
+
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private api:ApiService, private fb: FormBuilder,
+      private errorHandler:ErrorService, private dialog:DialogService,
+      private wd: WorldDataService, private dialogRef: MatDialogRef<deleteGroupConnectionDialogComponent>,
+
+      @Inject(MAT_DIALOG_DATA) public data: GroupConnection
+    ){
+      // console.log(data)
+      this.worldForm = this.fb.group({
+        confirm: [false, [Validators.required]],
+      });
+    }
+
+
+    range:number = 1
+
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+    onSubmit(){
+      this.wd.setLoading(true)
+
+  
+      console.log(this.worldForm.value.confirm)
+  if(this.worldForm.value.confirm){
+      this.api.deleteGroupConnection(this.data.id, this.data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (results) => {
+          this.wd.setConnections(results)
+          this.wd.removeGroupConnection(this.data.id)
+          this.wd.setLoading(false)
+          this.dialogRef.close()
+
+        }
+      })
+
+     
+      
+    }
+    }
+
+  }
+  @Component({
+    selector: 'app-deleteChapterDialog',
+    templateUrl: './deleteChapterDialog.component.html',
+    styleUrl: './dialog.component.scss'
+  })
+  export class deleteChapterDialogComponent  {
+    worldForm: FormGroup;
+
+  destroy$ = new Subject<void>();
+
+  Showloading: Observable<boolean> = this.wd.loading$
+  
+  constructor(private api:ApiService, private fb: FormBuilder,
+    private dialogRef: MatDialogRef<deleteChapterDialogComponent>,
+      private errorHandler:ErrorService, private dialog:DialogService,private wd: WorldDataService,
+      @Inject(MAT_DIALOG_DATA) public data: Chapter
+    ){
+      this.worldForm = this.fb.group({
+        confirm: [false, [Validators.required]],
+      });
+    }
+
+
+    range:number = 1
+
+      ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+    onSubmit(){
+      this.wd.setLoading(true)
+      
+      
+      if(this.worldForm.value.confirm){
+        
+        this.api.deleteChapter(this.data.id).subscribe({
+          next:(chp:Chapter) => {
+            this.wd.removeChapter(chp.id)
+            this.wd.setLoading(false)
+            const info :infoDialog= {
+              status: 'success',
+              action: "Delete Chapter",
+              message:`you successfully deleted chapter ${chp.name}.`,
+              header: "chapter removed"
+            }
+            this.dialog.openInfoDialog(info)
+            this.dialogRef.close()
+          },
+          error: (e) => {
+        this.wd.setLoading(false)
+        this.errorHandler.errHandler(e)}
+        })
+    }
+    }
+ 
+
+
+
+  }
 
   @Component({
     selector: 'app-createTimelineDialog',
@@ -507,8 +659,10 @@ constructor(private fb: FormBuilder,private api:ApiService,
   destroy$ = new Subject<void>();
 
   Showloading: Observable<boolean> = this.wd.loading$
-  
+  description:description
+
   constructor(private fb: FormBuilder,private api:ApiService,
+    private dialogRef: MatDialogRef<createTimelineDialogComponent>,
        private wd: WorldDataService, private errorHandler:ErrorService,
     ){
       this.worldForm = this.fb.group({
@@ -522,6 +676,10 @@ constructor(private fb: FormBuilder,private api:ApiService,
    this.destroy$.next();
    this.destroy$.complete();
  }
+ onDescriptionChange(value: string): void {
+  this.description.description_data = value;
+}
+
     onSubmit(){
       this.wd.setLoading(true)
     
@@ -534,8 +692,9 @@ constructor(private fb: FormBuilder,private api:ApiService,
       .subscribe(
         {
           next: (data) => {
-              this.wd.setLoading(false)
-              this.wd.addTimeline(data)
+            this.wd.addTimeline(data)
+            this.wd.setLoading(false)
+              this.dialogRef.close()
             },
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -612,11 +771,15 @@ constructor(private fb: FormBuilder,private api:ApiService,
   destroy$ = new Subject<void>();
 
   Showloading: Observable<boolean> = this.wd.loading$
-  
-  constructor(private fb: FormBuilder,private api:ApiService,
-      private wd: WorldDataService, private errorHandler:ErrorService,
-      @Inject(MAT_DIALOG_DATA) public data: { chapterId: string }
-    ){
+  description:description= {
+    id: '',
+    description_data: '',
+    resource_type: 'storyline',
+    resource_id: ''
+  }
+
+  constructor(private fb: FormBuilder,private api:ApiService,private dialogRef: MatDialogRef<createStorylineDialogComponent>,
+      private wd: WorldDataService, private errorHandler:ErrorService ){
 
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
@@ -629,11 +792,22 @@ constructor(private fb: FormBuilder,private api:ApiService,
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  onDescriptionChange(value: string): void {
+    this.description.description_data = value;
+
+  }
+  
+  
     onSubmit(){
-      this.wd.setLoading(true)
+      console.log(this.description.description_data, this.worldForm.value)
+      // this.wd.setLoading(true)
     
       const body = this.worldForm.value
       body.world_id = this.wd.worldId
+      const desc:string =this.description.description_data??"" 
+
+      body.description = desc
       this.api.createStoryLine(this.worldForm.value)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
@@ -641,6 +815,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
           next: (data) => {
               this.wd.setLoading(false)
               this.wd.addStoryline(data)
+              this.dialogRef.close()
             }
             ,
             error: (err) =>this.errorHandler.errHandler(err)
@@ -660,10 +835,11 @@ constructor(private fb: FormBuilder,private api:ApiService,
     worldForm: FormGroup;
 
       destroy$ = new Subject<void>();
+      description:description
 
     Showloading: Observable<boolean> = this.wd.loading$
 
-      constructor(private fb: FormBuilder,private api:ApiService,
+      constructor(private fb: FormBuilder,private api:ApiService,private dialogRef: MatDialogRef<createEventsDialogComponent>,
       private wd: WorldDataService, private errorHandler:ErrorService,
       @Inject(MAT_DIALOG_DATA) private data: string
     ){
@@ -677,7 +853,9 @@ constructor(private fb: FormBuilder,private api:ApiService,
       this.worldForm.value.startRange = 0
 
     }
-
+    onDescriptionChange(value: string): void {
+      this.description.description_data = value;
+    }
 
       ngOnDestroy(): void {
     this.destroy$.next();
@@ -698,6 +876,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
           next: (data) => {
               this.wd.setLoading(false)
               this.addEvent(data)
+              this.dialogRef.close()
             },
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -721,19 +900,28 @@ constructor(private fb: FormBuilder,private api:ApiService,
       destroy$ = new Subject<void>();
 worldId:string | undefined= ''
 Showloading: Observable<boolean> = this.wd.loading$
-    
+description:description
+
 constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
+  private dialogRef: MatDialogRef<UpdatePaperDialogComponent>,
       private utils:UtilsService,private errorHandler:ErrorService,
       @Inject(MAT_DIALOG_DATA) public data: { papperId: string }
     ){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
-        order: ['', [Validators.required]],
-        color: ['', [Validators.required]],
+        order: ['', [Validators.required, Validators.min(1)]],
+        color: [''],
       });
 
-      console.log(this.data)
+      this.worldForm.setValue({
+        name: "",
+        color: '',
+        order: 1,
+        description: ''
+      })
+
+
       this.api.getPaperData(this.data.papperId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -782,6 +970,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
             next: (data) => {
               this.wd.setLoading(false)
               this.wd.updatePaper(data)
+              this.dialogRef.close()
             },
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -804,7 +993,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
   
     Showloading: Observable<boolean> = this.wd.loading$
 
-      constructor(private fb: FormBuilder,private api:ApiService,
+      constructor(private fb: FormBuilder,private api:ApiService,private dialogRef: MatDialogRef<UpdateEventDialogComponent>,
       @Inject(MAT_DIALOG_DATA) public data: Event, private errorHandler:ErrorService,private wd: WorldDataService
     ){
       this.worldForm = this.fb.group({
@@ -838,7 +1027,9 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
         {
             next: (data) => {
               this.wd.setLoading(false)
-              this.wd.updateEvent(data)}
+              this.wd.updateEvent(data)
+              this.dialogRef.close()
+            }
               ,
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -862,6 +1053,7 @@ Showloading: Observable<boolean> = this.wd.loading$
 constructor(private fb: FormBuilder,
        private api: ApiService,
       private wd: WorldDataService,
+      private dialogRef: MatDialogRef<createWorldDialogComponent>,
       private dialog: DialogService,
       private errorHandler: ErrorService,
       ) {
@@ -890,9 +1082,10 @@ constructor(private fb: FormBuilder,
       .subscribe(      {
         next: (w:createWorld) => {
           const info :infoDialog= {...w}
-          this.dialog.openInfoDialog(info)
-          this.wd.setLoading(false)
           setTimeout(() => {
+            this.dialog.openInfoDialog(info)
+            this.wd.setLoading(false)
+            this.dialogRef.close()
             const url = `/world/${w.world.id}}`;
             window.open(url, '_blank');
           }, 2000);
@@ -924,6 +1117,7 @@ description:description
 Showloading: Observable<boolean> = this.wd.loading$
     
 constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter, private api:ApiService, private errorHandler:ErrorService,
+private dialogRef: MatDialogRef<chapteDescriptionDialogComponent>,
 private wd: WorldDataService ){
       this.description = {
         id: '',
@@ -963,6 +1157,7 @@ private wd: WorldDataService ){
   
   constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
+      private dialogRef: MatDialogRef<updateConnectionDialogComponent>,
       private errorHandler :ErrorService,
       @Inject(MAT_DIALOG_DATA) public cnn: Connection ){
         this.wd.groupConnection$
@@ -983,6 +1178,12 @@ private wd: WorldDataService ){
     this.destroy$.next();
     this.destroy$.complete();
   }
+  chapterBackgroundColor(color:String) {    
+    return {
+      'background-color': color,
+    }
+  }
+
      onSubmit(){
       this.wd.setLoading(true)
       
@@ -999,7 +1200,9 @@ private wd: WorldDataService ){
         {
             next: (gcs) => {
               this.wd.setLoading(false)
-              this.wd.updateConnection(gcs)},
+              this.wd.updateConnection(gcs)
+              this.dialogRef.close()
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -1016,17 +1219,17 @@ private wd: WorldDataService ){
     gc:GroupConnection
 
       destroy$ = new Subject<void>();
-errorHandler:any
-Showloading: Observable<boolean> = this.wd.loading$
-    
+    Showloading: Observable<boolean> = this.wd.loading$
+    description:description
+
 constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
-      
+      private dialogRef: MatDialogRef<createGroupConnectionDialogComponent>, private errorHandler:ErrorService
       ){
         
         this.worldForm = this.fb.group({
           name: ['', [Validators.required, Validators.minLength(3)]],
-          description: ['', [Validators.required, Validators.minLength(3)]],
+          description: [''],
       });
 
      }
@@ -1035,12 +1238,17 @@ constructor(
     this.destroy$.next();
     this.destroy$.complete();
   }
+  onDescriptionChange(value: string): void {
+    this.description.description_data = value;
+  }
+
+
      onSubmit(){
       this.wd.setLoading(true)
       
       const body:GroupConnection = this.worldForm.value
       body.world_id = this.wd.worldId
-      body.color = 'red'
+      body.color = ''
       // this.cnn.group_id = 
 
 
@@ -1049,9 +1257,10 @@ constructor(
       .subscribe(
         {
             next: (gc) => {
+              console.log(gc)
               this.wd.addGroupConnection(gc)
               this.wd.setLoading(false)
-
+              this.dialogRef.close()
             },
             error: (err) =>this.errorHandler.errHandler(err)
           }
@@ -1067,30 +1276,35 @@ constructor(
   export class updateGroupConnectionDialogComponent {
     worldForm: FormGroup;
 
-      destroy$ = new Subject<void>();
-errorHandler:any
-Showloading: Observable<boolean> = this.wd.loading$
-    
+    destroy$ = new Subject<void>();
+    Showloading: Observable<boolean> = this.wd.loading$
+
 constructor(
       private fb: FormBuilder,private api:ApiService, private wd: WorldDataService, private utils:UtilsService,
-      @Inject(MAT_DIALOG_DATA) public data: GroupConnection
+      private dialogRef: MatDialogRef<updateGroupConnectionDialogComponent>,private errorHandler:ErrorService,
+      @Inject(MAT_DIALOG_DATA) public data: GroupConnection, private dialog: DialogService
   
     ){
         
         this.worldForm = this.fb.group({
           name: ['', [Validators.required, Validators.minLength(3)]],
-          description: ['', [Validators.required, Validators.minLength(3)]],
-          color: ['', [Validators.required, Validators.minLength(3)]],
+          color: [''],
       });
 
-      console.log(data.color)
+
+
       this.worldForm.patchValue({
         name: data.name,
-        description: data.description,
         color: data.color, // Define um valor inicial para o input de cor
       });
 
      }
+
+
+     deleteGroupConnection(){
+      this.dialog.openDeleteGroupConnection(this.data, '150ms', '150ms')
+     }
+
 
      chapterBackgroundColor(color:string) {    
       return {
@@ -1116,7 +1330,8 @@ constructor(
         {
             next: (gc) => {
               this.wd.setLoading(false)
-              this.wd.updateGroupConnection(gc)},
+              this.wd.updateGroupConnection(gc)
+              this.dialogRef.close()},
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -1137,8 +1352,9 @@ constructor(
   destroy$ = new Subject<void>();
 
   Showloading: Observable<boolean> = this.wd.loading$
-  
-  constructor(private fb: FormBuilder,private api:ApiService,
+  description:description
+
+  constructor(private fb: FormBuilder,private api:ApiService,private dialogRef: MatDialogRef<strEditDialogComponent>,
       @Inject(MAT_DIALOG_DATA) public data: StoryLine,private errorHandler:ErrorService,private wd: WorldDataService
     ){
 
@@ -1147,6 +1363,23 @@ constructor(
         name: ['', [Validators.required, Validators.minLength(3)]],
         description: ['', [Validators.required]],
       });
+
+      const d = {
+        id: '',
+        resource_type: 'chapter',
+        resource_id: data.id
+      }
+
+      this.api.getDescription(d)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (desc) => {
+          this.wd.setLoading(false)
+
+          this.description = desc
+        },
+        error: (err) => this.errorHandler.errHandler(err)
+      })
 
         this.worldForm.patchValue({
           name: data.name,
@@ -1158,7 +1391,9 @@ constructor(
     }
 
     
-
+    onDescriptionChange(value: string): void {
+      this.description.description_data = value;
+    }
       ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -1168,6 +1403,7 @@ constructor(
     
       const body = {...this.data, ...this.worldForm.value, }
       body.world_id = this.wd.worldId
+      body.description = this.description.description_data
       this.api.updateStoryLine(body)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
@@ -1175,7 +1411,9 @@ constructor(
         {
             next: (str) => {
               this.wd.setLoading(false)
-              this.wd.updateStoryline(str)},
+              this.wd.updateStoryline(str)
+              this.dialogRef.close()
+            },
             error: (err) =>this.errorHandler.errHandler(err)
           }
       )
@@ -1201,7 +1439,8 @@ constructor(
 color:string
 Showloading: Observable<boolean> = this.wd.loading$
     
-constructor( @Inject(MAT_DIALOG_DATA) public data: infoDialog,private wd: WorldDataService
+constructor( @Inject(MAT_DIALOG_DATA) public data: infoDialog,private wd: WorldDataService,
+private dialogRef: MatDialogRef<InfoDialogComponent>,
     ){
 
       console.log(data)

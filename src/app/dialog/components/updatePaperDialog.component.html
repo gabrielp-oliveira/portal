@@ -15,27 +15,21 @@
   <div class="body">
 
     <form [formGroup]="worldForm" (ngSubmit)="onSubmit()">
-      <div class="group">      
-        <mat-form-field style="width: 100%;" >
-          <mat-label for="name">name</mat-label>
-          <input matInput type="text" required id="name" type="Name" formControlName="name" >
-        </mat-form-field>
-
-      </div>
-
-      <div class="group">      
-
-        <mat-form-field style="width: 100%;" >
-          <mat-label for="description">Textarea</mat-label>
-          <textarea matInput id="description" type="description" formControlName="description" ></textarea>
-        </mat-form-field>
-
-      </div>
-      <div class="group" style="width: 100%;">      
-        <mat-form-field class="example-full-width">
-          <mat-label for="order">order</mat-label>
-          <input matInput maxlength="5" id="order" type="number" formControlName="order">
-        </mat-form-field>
+      <div class="inlineGroup">
+        <div class="group" style="width: 48%;">      
+          <mat-form-field  >
+            <mat-label for="name">name</mat-label>
+            <input matInput type="text" required id="name" type="Name" formControlName="name" >
+          </mat-form-field>
+          
+        </div>
+        
+        <div class="group" style="width: 48%;">      
+          <mat-form-field class="example-full-width">
+            <mat-label for="order">order</mat-label>
+            <input matInput maxlength="5" id="order" type="number" formControlName="order" min="1">
+          </mat-form-field>
+        </div>
       </div>
       <mat-expansion-panel>
         <mat-expansion-panel-header>
@@ -69,10 +63,11 @@
       
       
       <mat-dialog-actions>
-        <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+        <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
           
           <div>
-            <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+                          <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
+
           </div>
         </button>
       </mat-dialog-actions>

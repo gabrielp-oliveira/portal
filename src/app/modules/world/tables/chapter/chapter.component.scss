@@ -16,7 +16,10 @@
   .editButton {
     background-color: white;
     transition: ease-in-out 100ms;
+    border-radius: 5px;
+    cursor: pointer;
   }
+
   .editButton:hover {
     background-color: antiquewhite;
   }
@@ -100,14 +103,13 @@
 
   }
   .drop-list {
-    max-width: 1050px;
     max-height: 500px;
     overflow: auto;
     padding: 10px 0px;
   }
   .drop-list button {
     border: 1px solid rgb(210, 210, 210);
-    // width: 110px;
+    width: 110px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -145,3 +147,116 @@
                      var(--sb-track-color);
   }
 }
+
+.table-container {
+  overflow-x: auto;
+}
+
+.chapterTable {
+  max-width: 1000px;
+  min-width: 850px!important; /* A largura mínima da tabela para que o scroll apareça */
+}
+
+.drop-list-container {
+  max-width: 1000px;
+  min-width: 850px!important; /* A largura mínima da tabela para que o scroll apareça */
+}
+
+@media (max-width: 850px) {
+  .table-container {
+    overflow-x: scroll; /* Aparece o scroll horizontal */
+  }
+  
+.chapterTable {
+  width: 100%;
+}
+}
+
+.table-cell {
+  border: 1px solid rgb(0, 0, 0, 0.4);
+  border-radius: 3px;
+  height: 30px;
+  width: 100%;
+  background-color: white;
+  font-family: sans-serif;
+}
+
+.heartbeat {
+	-webkit-animation: heartbeat 1.5s ease-in-out infinite both;
+	        animation: heartbeat 1.5s ease-in-out infinite both;
+          height: auto;
+          width: auto;
+          
+}
+
+
+ @-webkit-keyframes heartbeat {
+  from {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-transform-origin: center center;
+            transform-origin: center center;
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  10% {
+    -webkit-transform: scale(0.91);
+            transform: scale(0.91);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  17% {
+    -webkit-transform: scale(0.98);
+            transform: scale(0.98);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  33% {
+    -webkit-transform: scale(0.87);
+            transform: scale(0.87);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  45% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+}
+@keyframes heartbeat {
+  from {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-transform-origin: center center;
+            transform-origin: center center;
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  10% {
+    -webkit-transform: scale(0.91);
+            transform: scale(0.91);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  17% {
+    -webkit-transform: scale(0.98);
+            transform: scale(0.98);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+  33% {
+    -webkit-transform: scale(0.87);
+            transform: scale(0.87);
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+  }
+  45% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+  }
+}
+
+

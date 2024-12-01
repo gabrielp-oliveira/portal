@@ -88,7 +88,7 @@ export const NODE_BORDER_WIDTH_DEFAULT = 1;
 export const NODE_BORDER_WIDTH_HIGHLIGHTED = 2;
 
 //edge
-export const EDGE_BORDER_WIDTH_DEFAULT = 2;
+export const EDGE_BORDER_WIDTH_DEFAULT = 3;
 export const EDGE_BORDER_COLOR_DEFAULT = "black";
 export const LABEL_FONT_SIZE_DEFAULT = "14px";
 export const LABEL_FONT_SIZE_GROUP = 12;

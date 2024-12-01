@@ -41,6 +41,7 @@ export class GroupConnectionComponent implements OnInit {
   dateSearchValue: string = ""
   startDateSearchValue: string = ""
   endDateSearchValue: string = ""
+  pageWidth:number
 
   constructor(
     private wd: WorldDataService,
@@ -54,7 +55,14 @@ export class GroupConnectionComponent implements OnInit {
   opengroupDescription(pp:GroupConnection){
     this.dialog.openChapterDescription(pp, '150ms','150ms')
   }
+
+  resizeSvg(e:any){
+    this.pageWidth = e.currentTarget.innerWidth
+  }
+
+
   ngOnInit() {
+    this.pageWidth = window.innerWidth
 
     this.wd.groupConnection$.subscribe((p) => {
       this.groups$ = p

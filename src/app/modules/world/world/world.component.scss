@@ -101,6 +101,12 @@
     padding: 16px;
     margin-right: 300px; /* Garante que o conteúdo principal não fique atrás do sidenav */
   }
+
+  .content {
+    overflow: hidden;
+     padding: 10px;
+    max-width: 100%!important;
+  }
   
   @media (max-width: 600px) {
     .sidenav-fixed {

@@ -12,10 +12,10 @@
 }
 .groupTable {
     border-radius: 10px;
+    width: 100%;
     box-shadow: 2px 2px 5px rgb(192, 192, 192);
 }
 .drop-group-list {
-    max-width: 320px;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;

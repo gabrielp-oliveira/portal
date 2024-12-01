@@ -25,6 +25,7 @@ export class ApiService {
   getChapterUrl(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
+  
   getChapteData(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
@@ -79,6 +80,12 @@ export class ApiService {
   createGroupConnection(body: GroupConnection):Observable<GroupConnection>  {
    return this.http.post<GroupConnection>('http://localhost:9090/createGroupConnection', body)
   }
+  deleteGroupConnection(id: string, body:GroupConnection): Observable<Connection[]> {
+    const options = {
+      body: body
+    };
+    return this.http.delete<Connection[]>(`http://localhost:9090/deleteGroupConnection?id=${id}`, options);
+  }
   createPaper(body: any):Observable<paper>  {
    return this.http.post<paper>('http://localhost:9090/createPaper', body)
   }
@@ -94,14 +101,17 @@ export class ApiService {
   removeConnection(body: Connection):Observable<Connection>  {
     return this.http.post<Connection>('http://localhost:9090/removeConnection', body)
   }
-  deleteStoryline(id: string, body: StoryLine): Observable<world> {
+  deleteStoryline(id: string, body: StoryLine): Observable<Chapter[]> {
     const options = {
       body: body
     };
-    return this.http.delete<world>(`http://localhost:9090/deleteStoryline?id=${id}`, options);
+    return this.http.delete<Chapter[]>(`http://localhost:9090/deleteStoryline?id=${id}`, options);
   }
   deleteTimeline(id: string):Observable<Timeline>  {
     return this.http.delete<Timeline>(`http://localhost:9090/deleteTimeline?id=${id}`)
+  }
+  deleteChapter(id: string):Observable<Chapter>  {
+    return this.http.delete<Chapter>(`http://localhost:9090/deleteChapter?id=${id}`)
   }
   deleteEvent(id: string):Observable<Event>  {
     return this.http.delete<Event>(`http://localhost:9090/removeEvent?id=${id}`)

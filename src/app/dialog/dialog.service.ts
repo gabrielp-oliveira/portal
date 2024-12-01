@@ -7,7 +7,9 @@ import { chapteDescriptionDialogComponent, createChapterDialogComponent,
        UpdatePaperDialogComponent, UpdateTimelineDialogComponent, 
        createGroupConnectionDialogComponent,
        updateGroupConnectionDialogComponent,
-       InfoDialogComponent} from './components/dialog.component';
+       InfoDialogComponent,
+       deleteChapterDialogComponent,
+       deleteGroupConnectionDialogComponent} from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Chapter, chapterBasicInfo, ChapterDetails, Connection, Event, GroupConnection, info, infoDialog, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
@@ -55,6 +57,22 @@ export class DialogService {
       data: t
     });
   }
+  openDeleteGroupConnection(gc: GroupConnection, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(deleteGroupConnectionDialogComponent, {
+      width: '450px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: gc
+    });
+  }
+  openDeleteChapter(chp: Chapter, enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(deleteChapterDialogComponent, {
+      width: '450px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: chp
+    });
+  }
   openUpdateEventDialog(t: Event, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(UpdateEventDialogComponent, {
       width: '450px',
@@ -76,6 +94,7 @@ export class DialogService {
       width: '450px',
       enterAnimationDuration,
       exitAnimationDuration,
+      
     });
   }
   openCreateStorylineDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
@@ -169,11 +188,12 @@ export class DialogService {
   }
   openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection , enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(chapteDescriptionDialogComponent, {
-      width: '650px',
+      width: '1050px',
       enterAnimationDuration,
       exitAnimationDuration,
       data:data
     });
+    console.log('....')
   }
   openStorylineEditDialog(data: StoryLine, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(strEditDialogComponent, {

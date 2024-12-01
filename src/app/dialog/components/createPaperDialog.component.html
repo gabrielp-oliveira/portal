@@ -6,7 +6,6 @@
 
       <app-paper-info></app-paper-info>
       <strong mat-dialog-close class="close"
-      
       [matTooltipPosition]="'above'"
       matTooltip="Close Modal"
       aria-label="Button that shows a black tooltip describing a timeline">x</strong>
@@ -19,7 +18,7 @@
 
         <div class="group">      
           <mat-form-field style="width: 100%;" >
-            <mat-label for="name">Input</mat-label>
+            <mat-label for="name">name</mat-label>
             <input matInput type="text" required id="name" type="Name" formControlName="name" >
           </mat-form-field>
   
@@ -41,12 +40,8 @@
   
             </mat-expansion-panel-header>
             <div class="accordion-info">
- 
-              <!-- <mat-form-field style="width: 100%;" >
-                <mat-label for="description">Textarea</mat-label>
-                <textarea matInput id="description" type="description" formControlName="description"></textarea>
-              </mat-form-field> -->
-              <app-txt-editor></app-txt-editor>
+              <app-txt-editor [data]="description" (valueChanged)="onDescriptionChange($event)"></app-txt-editor>
+
             </div>
   
   
@@ -86,10 +81,9 @@
 
 
         <mat-dialog-actions>
-          <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
-            
+          <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
             <div>
-              <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+              <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
             </div>
           </button>
         </mat-dialog-actions>

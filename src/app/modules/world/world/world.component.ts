@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ApiService } from '../../api.service';
@@ -8,6 +8,7 @@ import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
 import { basicWorld, Chapter, infoDialog, paper, world } from '../../../models/paperTrailTypes';
 import { Subject, takeUntil } from 'rxjs';
+import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-world',
@@ -35,7 +36,26 @@ papper: paper;
   panelGroupConnectionOpenState = true;
   destroy$ = new Subject<void>();
   showLoading = this.wd.loading$
-  ngOnInit(): void {
+  pageWidth:number
+  @ViewChild('sidenav') sidenav!: MatSidenav;
+
+  ngAfterViewInit(): void {
+
+    window.addEventListener('resize', (e) => this.resizeSvg(e));
+    if(window.innerWidth <=1400) {
+      setTimeout(() => {
+        this.sidenav.close()
+        
+      }, 10);
+    }else{
+      setTimeout(() => {
+        
+        console.log(this.sidenav)
+        this.sidenav?.open()
+      }, 10);
+    }
+
+
     const id = this.route.snapshot.paramMap.get('id');
       if (id) {
         this.worldId = id
@@ -70,8 +90,16 @@ papper: paper;
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    window.removeEventListener('resize', () => {});
   }
 
+  private resizeSvg(e:any) {
+
+    if(e.currentTarget.innerWidth <=1400) {
+      this.sidenav.close()
+    }
+  }
+  
 
   papperBackgroundColor(pp: paper){
     return {

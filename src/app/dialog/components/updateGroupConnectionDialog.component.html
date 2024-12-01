@@ -25,14 +25,6 @@
 
       </div>
 
-      <div class="group">      
-
-        <mat-form-field style="width: 100%;" >
-          <mat-label for="description">Textarea</mat-label>
-          <textarea matInput id="description" type="description" formControlName="description" required="false"></textarea>
-        </mat-form-field>
-
-      </div>
 
       <mat-expansion-panel>
         <mat-expansion-panel-header>
@@ -50,7 +42,7 @@
         <div class="accordion-info">
           <div id="swatch" style="width: 100%;">
 
-            <label for="color">paper color: </label>
+            <label for="color">group color: </label>
             <input id="color" type="color" formControlName="color" id="color"  name="color" style="width: 100%;"/>
             <div class="val">
               <h2>{{this.worldForm.value.color}}</h2>
@@ -65,10 +57,17 @@
       
       
       <mat-dialog-actions>
-        <button class="submitButton neumorphic-button" mat-button mat-dialog-close cdkFocusInitial type="submit">
+        <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || (Showloading | async)" mat-button  cdkFocusInitial type="submit">
           
           <div>
-            <mat-icon style="color: green; font-weight: 800; font-size: 28px;">task_alt</mat-icon>
+                          <mat-icon [ngStyle]="{'color': (!worldForm.valid || (Showloading | async)) ? 'gray' : 'green'}"> {{(!worldForm.valid || (Showloading | async))? 'block': 'task_alt'}}</mat-icon>
+
+          </div>
+        </button>
+        <button class="submitButton neumorphic-button" [disabled]="!worldForm.valid || Showloading" mat-button (click)="deleteGroupConnection()" >
+  
+          <div>
+            <mat-icon style="color: orangered;  font-size: 28px;">delete</mat-icon>
           </div>
         </button>
       </mat-dialog-actions>
