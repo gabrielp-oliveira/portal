@@ -205,7 +205,7 @@ export class PapperComponent implements OnInit {
       case 'order':
         this.dataSource.data = this.papers$.sort((a: paper, b: paper) => this.sortByOrder(a, b));
         return
-      case 'date':
+        case 'created_at':
         this.dataSource.data = this.papers$.sort((a: paper, b: paper) => this.sortByDate(a, b));
         return
       case 'name':

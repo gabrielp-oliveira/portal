@@ -36,7 +36,7 @@ export class ChapterComponent implements OnInit {
   isDrag: boolean = true;
   sortDirection: boolean = true
 
-  sortCriteria:string = "sort"
+  sortCriteria:string = "paper_name"
   @ViewChild('circle') circle: ElementRef;
 
   filterValues: any = {
@@ -521,7 +521,7 @@ export class ChapterComponent implements OnInit {
       case 'order':
         this.isDrag = true
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByOrder(a, b));
-        case 'date':
+        case 'created_at':
         this.isDrag = false
         return data.sort((a: ExtendedChapter, b: ExtendedChapter) => this.sortByDate(a, b));
         case 'name':

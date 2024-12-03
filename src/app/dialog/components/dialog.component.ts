@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
 import { Chapter, Connection, createWorld, description, Event, GroupConnection, info, infoDialog, paper, StoryLine, Subway_Settings, Timeline, world } from '../../models/paperTrailTypes';
 import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
@@ -1113,6 +1113,11 @@ constructor(private fb: FormBuilder,
   export class DataPickerDialogComponent {
 
     selected: Date | null;  
+    range = new FormGroup({
+      start: new FormControl<Date | null>(null),
+      end: new FormControl<Date | null>(null),
+    });
+    
   }
   @Component({
     selector: 'app-chapterDescriptionDialog',

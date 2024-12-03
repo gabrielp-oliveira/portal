@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, JsonPipe } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { WorldComponent } from './world/world.component';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -22,7 +22,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { GooglePickerComponent } from '../../standAlone/google-picker/google-picker.component';
 import { GroupConnectionComponent } from './tables/group-connection/group-connection.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SidenavComponent } from './sidenav/sidenav.component';
@@ -36,6 +35,9 @@ import { EventInfoComponent } from '../../standAlone/info/event-info/event-info.
 import { PaperInfoComponent } from '../../standAlone/info/paper-info/paper-info.component';
 import { TimelineInfoComponent } from '../../standAlone/info/timeline-info/timeline-info.component';
 import { LoadingComponent } from '../../standAlone/loading/loading.component';
+import { FooterComponent } from '../../standAlone/footer/footer.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 
 
@@ -60,7 +62,8 @@ const routes: Routes = [
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    GooglePickerComponent,
+    FooterComponent,
+    MatDatepickerModule,
     DragDropModule,
     MatTooltipModule,
     FormsModule,
@@ -68,6 +71,8 @@ const routes: Routes = [
     MatExpansionModule,
     MatFormFieldModule,
     MatListModule,
+    MatNativeDateModule,
+    JsonPipe,
     MatSidenavModule,
     MatIconModule, // Adicione o módulo de ícones aqui
     PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,

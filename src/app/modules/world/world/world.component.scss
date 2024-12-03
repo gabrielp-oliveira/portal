@@ -98,14 +98,13 @@
   }
   
   .sidenav-fixed {
-    position: fixed; /* Fixa o sidenav na lateral direita */
     top: 0;
     right: 0;
-    height: 100vh; /* Define a altura máxima como a altura da viewport */
+    // height: 100vh; /* Define a altura máxima como a altura da viewport */
     width: 335px; /* Largura fixa do sidenav */
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
     // overflow-y: auto; /* Adiciona scroll apenas no eixo Y se necessário */
-    z-index: 1000; /* Garante que o sidenav fique acima de outros elementos */
+    z-index: 5; /* Garante que o sidenav fique acima de outros elementos */
   }
   
   .sidenav-content {

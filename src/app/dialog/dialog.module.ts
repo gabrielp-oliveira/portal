@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, JsonPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -20,7 +20,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatIconModule } from '@angular/material/icon';
@@ -44,6 +44,7 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
 
 
 
+
 @NgModule({
   declarations: [createPaperDialogComponent, createChapterDialogComponent, createWorldDialogComponent,
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
@@ -53,7 +54,10 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
     InfoDialogComponent,deleteChapterDialogComponent,deleteGroupConnectionDialogComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
-  providers: [],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'en-US' }, // Ou ajuste para o idioma desejado, ex: 'pt-BR'
+
+  ],
   imports: [
     CommonModule,
     MatDialogModule,
@@ -63,8 +67,8 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
     PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,
     MatIconModule,
     MatTabsModule,
+    JsonPipe,
     MatTooltipModule,
-    MatNativeDateModule,
     MatExpansionModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatDialogModule,
