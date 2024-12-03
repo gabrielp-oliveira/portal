@@ -4,7 +4,7 @@ import { SubwayService } from '../subway.service';
 import { EDGE_BORDER_COLOR_DEFAULT, EDGE_BORDER_WIDTH_DEFAULT, LABEL_FONT_FAMILY_DEFAULT, LABEL_FONT_SIZE_DEFAULT, LABEL_FONT_SIZE_GROUP, LOADING_DELAY, NODE_BORDER_WIDTH_DEFAULT, MARGIN, PATH_ROOT_MARGIN_RIGHT, PATH_ROOT_MARGIN_TOP, TopoAddregatedNode, TopoEdge, TopoLegend, TopoNode, TopologyControlType, TopologyGeometryType, TopologyNodeType, groupColorMap, RANGE_GAP } from '../../../models/graphsTypes';
 import {  combineLatest, finalize, Observable, Subject, takeUntil, tap } from 'rxjs';
 import { WorldDataService } from '../../dashboard/world-data.service';
-import { Chapter, Connection, Event, GroupConnection, infoDialog, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
+import { Chapter, Connection, description, Event, GroupConnection, infoDialog, paper, StoryLine, Subway_Settings, Timeline } from '../../../models/paperTrailTypes';
 import { ApiService } from '../../api.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from '../../../dialog/dialog.service';
@@ -238,6 +238,7 @@ export class SubwayComponent implements OnDestroy  {
     
     complete: () => {
       console.log(',,,')
+      
 
     }})
     // Subscribe events for graph
@@ -753,10 +754,10 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
     this.createEventBody(el, gridHeight);
 
     // Criação do header da timeline
-    this.createEventHeader(el, gridHeight);
+    // this.createEventHeader(el, gridHeight);
 
     // Criação dos controles de movimento
-    this.createEventControls(el, svg);
+    this.createEventControls(el, svg, gridHeight);
 }
 
 private createEventBody(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, gridHeight: number) {
@@ -875,8 +876,8 @@ eventResizeDragged(nativeEvent: MouseEvent, e: Event) {
       e.range = newRange;
     }
   }
-  // console.log(e.range)
 
+  
   this.selectedEvent = e
   this.updateEventDisplay(e);
 
@@ -899,37 +900,27 @@ eventResizeDragEnd(svg:any){
   }
 }
 
-private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
+private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Event>, svg: d3.Selection<SVGGElement, unknown, HTMLElement, any>,gridHeight:number) {
   const bottomEvent = el.append<SVGGElement>("g");
-
-  // Botão de "grab" (movimentação)
-  bottomEvent.append("text")
-    .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-drag`)
-    .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + (ev.range * (RANGE_GAP / 2)) + 100) // Posição proporcional
-    .attr("y", this.totalGridHeight + 85) // Posiciona no topo
-    .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
-    .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
-    .attr("cursor", "pointer")
-    .text("↹")
-    .call(
-      d3.drag<SVGTextElement, Event>()
-        .on("start", (_, e) => this.eventDragStart(e))
-        .on("drag", (event, e) => this.eventDragged(event, e))
-        .on("end", (_, e) => this.eventDragEnd(svg, e))
-    );
-
 
   bottomEvent.append("text")
     .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-txt`)
     .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + (ev.range * (RANGE_GAP / 2)) + 100) // Posição proporcional
-    .attr("y", this.totalGridHeight + 65) // Posiciona no topo
+    .attr("y", this.totalGridHeight + 75) // Posiciona no topo
     .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
     .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
     .attr("text-anchor", "middle")
     .text((ev: Event) => ev.name)
+    .attr("cursor", "pointer")
+    .call(
+      d3.drag<SVGTextElement, Event>()
+        .on("start", (event, e) => this.eventDragStart(event, e))
+        .on("drag", (event, e) => this.eventDragged(event, e))
+        .on("end", (_, e) => this.eventDragEnd(svg, e))
+    )
     .on("contextmenu", (e, event:Event) => {
       e.preventDefault();
-
+      console.log(e)
       this.evtMenuTrigger.openMenu();
       const menuElement = document.querySelector("#" + this.evtMenuTrigger.menu?.panelId) as HTMLElement;
       if (menuElement) {
@@ -940,6 +931,100 @@ private createEventControls(el: d3.Selection<SVGGElement, Event, SVGGElement, Ev
       this.selectedEvent = event
     })
     
+
+     // Adiciona o background do header usando 'rect'
+     bottomEvent
+     .append("rect")
+     .attr("class",'event-bottom')
+     .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-bottom`)
+     .attr("cursor", "pointer")
+     .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + 100)
+     .attr("y", gridHeight + this.gridHeight) // Posiciona no topo
+     .attr("width", (ev: Event) => (ev.range * RANGE_GAP) - 5)
+     .attr("height", 45) // Altura do header
+     .style("fill", "rgba(250, 100, 100, 0.25)")  // Define a cor do header
+     .style("stroke", "#000")  // Adiciona uma borda se necessário
+     .style("stroke-width", "1px")
+      .call(
+      d3.drag<SVGRectElement, Event>()
+        .on("start", (event, e) => this.eventDragStart(event, e))
+        .on("drag", (event, e) => this.eventDragged(event, e))
+        .on("end", (_, e) => this.eventDragEnd(svg, e))
+    ).on("contextmenu", (e, event:Event) => {
+      e.preventDefault();
+      console.log(e)
+      this.evtMenuTrigger.openMenu();
+      const menuElement = document.querySelector("#" + this.evtMenuTrigger.menu?.panelId) as HTMLElement;
+      if (menuElement) {
+        menuElement.style.position = "absolute";
+        menuElement.style.left = `${e.x + 5}px`;
+        menuElement.style.top = `${e.y + 5}px`;
+      }
+      this.selectedEvent = event
+    })
+    
+ 
+       bottomEvent
+       .append("text")
+       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-left`)
+       .attr("class", `event-resize-left`)
+       .attr("x", (ev: Event) => (ev.startRange * RANGE_GAP) + 105)
+       .attr("y", gridHeight + 75) // Posiciona no topo
+       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+       .attr("font-weight", '700')
+       .attr("cursor", "pointer")
+       .text("<")
+       .call(
+         d3.drag<SVGTextElement, Event>()
+           .on("start", (event, e) => this.eventDragResizeStart(event, e, "left"))
+           .on("drag", (event, e) => this.eventResizeDragged(event, e))
+           .on("end", () => this.eventResizeDragEnd(el))
+       )
+ 
+       bottomEvent
+       .append("text")
+       .attr("id", (ev: Event) => `${CSS.escape(ev.id)}-event-resize-right`)
+       .attr("class", `event-resize-right`)
+       .attr("font-weight", '700')
+       .attr("x", (ev: Event) => ((ev.startRange + ev.range) * RANGE_GAP) + 80)
+       .attr("y", gridHeight + 75) // Posiciona no topo
+       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
+       .attr("font-size", LABEL_FONT_SIZE_DEFAULT)
+       .attr("cursor", "pointer")
+       .text(">")
+       .call(
+         d3.drag<SVGTextElement, Event>()
+           .on("start", (event, e) => this.eventDragResizeStart(event, e, "right"))
+           .on("drag", (event, e) => this.eventResizeDragged(event, e))
+           .on("end", () => this.eventResizeDragEnd(el))
+       )
+       .on("mousemove", (nativeEvent, event:Event) => {
+         if((((nativeEvent.x - 100) - event.startRange * RANGE_GAP)) <= 15) {
+           d3.select("body").style("cursor", "w-resize"); // seta para a esquerda
+ 
+         }else if(((((event.startRange + event.range) * RANGE_GAP) + 100) -  nativeEvent.x) <= 15) {
+           d3.select("body").style("cursor", "e-resize"); // seta para a direita
+         }  else {
+           d3.select("body").style("cursor", "default");
+         }
+       })
+       .on("mouseleave", () => {
+         d3.select("body").style("cursor", "default");
+       })
+
+}
+
+
+getEventDescription(){
+  if(this.selectedEvent){
+    const params: description= {
+      id: this.selectedEvent.id,
+      resource_type: "event",
+      name: this.selectedEvent.name
+    }
+    this.dialog.openChapterDescription(params, '150ms','150ms')
+  }
 }
 removeEvent(){
   if(this.selectedEvent){
@@ -1022,13 +1107,9 @@ private updateEventDisplay(event: Event) {
 
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-right`))
-  .transition()
-  .duration(100)
     .attr("x", (event.startRange * RANGE_GAP) + (event.range * RANGE_GAP) + 80);
     
   d3.select(document.getElementById(`${CSS.escape(event.id)}-event-resize-left`))
-  .transition()
-  .duration(100)
     .attr("x", (event.startRange * RANGE_GAP) + 105);
 
 }
@@ -1195,7 +1276,6 @@ private updateEventDisplay(event: Event) {
     const relativeX = event.x;
 
 
-    console.log(relativeX, event.x)
     
 
     if (relativeX < 100 || relativeY < this.gridHeight || relativeY > this.graphHeigh) {
@@ -1712,7 +1792,12 @@ private updateEventDisplay(event: Event) {
 
   openStrDetails() {
     if (this.storylineSelected) {
-      this.dialog.openChapterDescription(this.storylineSelected, '150ms', '150ms')
+      const params: description= {
+        id: this.storylineSelected.id,
+        resource_type: "storyline",
+        name: this.storylineSelected.name
+      }
+      this.dialog.openChapterDescription(params, '150ms', '150ms')
     }
   }
   openStrEdit() {
@@ -2202,67 +2287,55 @@ storyLineSwapDragEnded(event: MouseEvent, svg: d3.Selection<SVGGElement, unknown
     d3.select(document.getElementById(elementId)).attr("stroke", "black");
 
   }
-  eventDragStart(e: Event) {
+
+  private dragOffsetX = 0;
+  eventDragStart(nativeEvent: any, e: Event) {
+    
     this.selectedEvent = e
     const elementId = `${CSS.escape(e.id)}-event-group`;
     d3.select(document.getElementById(elementId)).attr("stroke", "black");
-  }
-
-  eventDragged(nativeEvent: any, e: Event) {
-    if (this.selectedEvent) {
-      const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * RANGE_GAP) + (this.timelines.length * RANGE_GAP)
-
-      const eventElementId = `${CSS.escape(e.id)}-event-group`;
-
-      const eventBodyElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-body`));
-      const eventBottomElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-bottom`));
-      const eventDragElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-drag`));
-      const eventTxtElement: any = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-txt`));
-
-
-      const el = d3.select(document.getElementById(D3_ROOT_ELEMENT_ID))
-
-      const boundingBox = el.node()?.getBoundingClientRect(); // Pega o bounding box do elemento
-
-
-      const relativeX = (((nativeEvent.sourceEvent.clientX - (boundingBox?.left || 0)) - this.tiltX) / this.zoom) - (e.range * (RANGE_GAP / 2))
-
-
-      if (relativeX < 100 || relativeX > widthTimelines) {
-        return
-      }
-
-
-
-      const rangeStart = (relativeX - 100) / RANGE_GAP
-
-
-      eventBodyElement.attr("x", relativeX)
-      eventBottomElement.attr("x", relativeX)
-      eventDragElement.attr("x", relativeX + (e.range * (RANGE_GAP / 2)))
-      eventTxtElement.attr("x", relativeX + (e.range * (RANGE_GAP / 2)))
-
-      // d3.select(eventElement)
-      //   .attr("dx", d.width)
-      //   .attr("dy", d.height + 15)
-      //   .attr("cx", d.width )
-      //   .attr("cy", d.height)
-      //   .attr("stroke", d.color)
-
-      this.selectedEvent.startRange = Math.round(rangeStart)
-
-      d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-right`))
-      .attr("x", relativeX - (e.range *5) + (e.range * RANGE_GAP) + 80);
-      
-    d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-left`))
-      .attr("x", relativeX - (e.range *5) + 105);
-
-
-
-    } else {
-      return
+    // Calcula a posição do clique dentro do retângulo no início do drag
+    const eventElement = document.getElementById(`${CSS.escape(e.id)}-event-body`);
+    if (eventElement) {
+      const rect = eventElement.getBoundingClientRect();
+      this.dragOffsetX = nativeEvent.sourceEvent.clientX - rect.x; // Posição do clique relativa ao retângulo
     }
   }
+  
+  eventDragged(nativeEvent: any, e: Event) {
+    if (!this.selectedEvent) return;
+  
+    // Largura total das timelines
+    const widthTimelines = (this.timelines.reduce((a, b) => a + b.range, 5) * RANGE_GAP) + (this.timelines.length * RANGE_GAP);
+  
+    // Posição relativa corrigida com o offset de drag
+    const relativeX = (((nativeEvent.sourceEvent.clientX - this.dragOffsetX) - this.tiltX) / this.zoom);
+  
+    // Impede que o evento seja arrastado para fora dos limites definidos
+    if (relativeX < 100 || relativeX > widthTimelines) return;
+  
+    // Cálculo do range start com ajuste para RANGE_GAP
+    const rangeStart = Math.round((relativeX - 100) / RANGE_GAP);
+  
+    // Atualiza as posições dos elementos
+    const eventBodyElement = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-body`));
+    const eventBottomElement = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-bottom`));
+    const eventTxtElement = d3.select(document.getElementById(`${CSS.escape(e.id)}-event-txt`));
+  
+    eventBodyElement.attr("x", relativeX);
+    eventBottomElement.attr("x", relativeX);
+    eventTxtElement.attr("x", relativeX + (e.range * (RANGE_GAP / 2)));
+  
+    this.selectedEvent.startRange = rangeStart;
+    
+    d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-right`))
+      .attr("x", relativeX + (e.range * RANGE_GAP) - 20);
+  
+    d3.select(document.getElementById(`${CSS.escape(e.id)}-event-resize-left`))
+      .attr("x", relativeX + 5);
+  }
+  
+  
   eventDragEnd(el: any, e: Event) {
     if (this.selectedEvent) {
       this.api.updateEvent(this.selectedEvent)
@@ -2291,7 +2364,6 @@ storyLineSwapDragEnded(event: MouseEvent, svg: d3.Selection<SVGGElement, unknown
         }
       })
       if(chaptersRelated.length > 0){
-        console.log(chaptersRelated)
         this.api.updateChapterList(chaptersRelated)
         .pipe(takeUntil(this.destroy$))
         .subscribe((c) => {

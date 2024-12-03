@@ -11,6 +11,9 @@
     flex-wrap: wrap;
     margin-top: 20px;
     margin-bottom: 20px;
+    app-chapter,app-papper {
+      margin: 5px;
+    }
 }
 
 .creationButtons {
@@ -52,7 +55,7 @@
     background-color: whitesmoke;
 }
 .worldNav {
-    background-color: whitesmoke;
+    background-color: rgb(255, 255, 255, 0.8);
     height: 50px;
     width: 100%;
     display: flex;
@@ -63,6 +66,18 @@
     z-index: 2;
     padding: 0px 10px;
     align-items: center;
+    border-bottom: 1px solid rgb(0, 0, 0, 0.2);
+    a {
+      color: black;
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    a:hover {
+      text-decoration: underline;
+
+    }
     button {
       height: 70%;
       border: 1px solid rgb(184, 184, 184);

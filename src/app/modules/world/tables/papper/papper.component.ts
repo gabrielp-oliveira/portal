@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
 import { WorldDataService } from '../../../dashboard/world-data.service';
-import { Chapter, paper } from '../../../../models/paperTrailTypes';
+import { Chapter, description, paper } from '../../../../models/paperTrailTypes';
 import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
@@ -54,7 +54,12 @@ export class PapperComponent implements OnInit {
   ) { }
 
   openPapperDescription(pp:paper){
-    this.dialog.openChapterDescription(pp, '150ms','150ms')
+    const params: description= {
+      id: pp.id,
+      resource_type: "paper",
+      name: pp.name
+    }
+    this.dialog.openChapterDescription(params, '150ms','150ms')
   }
   ngOnInit() {
     this.pageWidth = window.innerWidth

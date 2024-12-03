@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
 import { WorldDataService } from '../../../dashboard/world-data.service';
-import { Chapter, Connection, GroupConnection, paper, Subway_Settings } from '../../../../models/paperTrailTypes';
+import { Chapter, Connection, description, GroupConnection, paper, Subway_Settings } from '../../../../models/paperTrailTypes';
 import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
@@ -52,8 +52,13 @@ export class GroupConnectionComponent implements OnInit {
     private errorHandler: ErrorService
   ) { }
 
-  opengroupDescription(pp:GroupConnection){
-    this.dialog.openChapterDescription(pp, '150ms','150ms')
+  opengroupDescription(gc:GroupConnection){
+    const params: description= {
+      id: gc.id,
+      resource_type: "group_connection",
+      name: gc.name
+    }
+    this.dialog.openChapterDescription(params, '150ms','150ms')
   }
 
   resizeSvg(e:any){

@@ -11,7 +11,7 @@ import { chapteDescriptionDialogComponent, createChapterDialogComponent,
        deleteChapterDialogComponent,
        deleteGroupConnectionDialogComponent} from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Chapter, chapterBasicInfo, ChapterDetails, Connection, Event, GroupConnection, info, infoDialog, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
+import { Chapter, chapterBasicInfo, ChapterDetails, Connection, description, Event, GroupConnection, info, infoDialog, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
 import { PreviewComponent } from '../modules/docx/preview/preview.component';
 
 @Injectable({
@@ -186,14 +186,13 @@ export class DialogService {
       exitAnimationDuration,
     });
   }
-  openChapterDescription(data:Chapter | paper | StoryLine | GroupConnection , enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openChapterDescription(data:description , enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(chapteDescriptionDialogComponent, {
       width: '1050px',
       enterAnimationDuration,
       exitAnimationDuration,
       data:data
     });
-    console.log('....')
   }
   openStorylineEditDialog(data: StoryLine, enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(strEditDialogComponent, {

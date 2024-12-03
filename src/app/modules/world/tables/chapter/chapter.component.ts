@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
 import { WorldDataService } from '../../../dashboard/world-data.service';
-import { Chapter, paper, StoryLine, Subway_Settings, ExtendedChapter, Timeline } from '../../../../models/paperTrailTypes';
+import { Chapter, paper, StoryLine, Subway_Settings, ExtendedChapter, Timeline, description } from '../../../../models/paperTrailTypes';
 import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
@@ -119,11 +119,21 @@ export class ChapterComponent implements OnInit {
    }
 
    openDescription(c:Chapter){
-    this.dialog.openChapterDescription(c, '150ms','150ms')
+    const params: description= {
+      id: c.id,
+      resource_type: "chapter",
+      name: c.name
+    }
+    this.dialog.openChapterDescription(params, '150ms','150ms')
    }
    openDescriptionMenu(){
     if(this.selectedChapter){ 
-      this.dialog.openChapterDescription(this.selectedChapter, '150ms','150ms')
+      const params: description= {
+        id: this.selectedChapter.id,
+        resource_type: "chapter",
+        name: this.selectedChapter.name
+      }
+      this.dialog.openChapterDescription(params, '150ms','150ms')
     }
    }
 

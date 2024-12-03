@@ -846,14 +846,23 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
-        description: ['', [Validators.required]],
+        description: [''],
       });
+
+      this.description = {
+        id: '',
+        resource_type: 'events',
+        resource_id: ''
+      }
+      
+
 
       this.worldForm.value.range = 20
       this.worldForm.value.startRange = 0
 
     }
     onDescriptionChange(value: string): void {
+      console.log(value)
       this.description.description_data = value;
     }
 
@@ -868,11 +877,11 @@ constructor(private fb: FormBuilder,private api:ApiService,
       body.world_id =  this.data
       body.range = 20
       body.startRange = 0
+      body.description = this.description?.description_data ?? ""
+
       this.api.createEvent(body)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        
-        {
+      .subscribe({
           next: (data) => {
               this.wd.setLoading(false)
               this.addEvent(data)
@@ -1116,12 +1125,12 @@ constructor(private fb: FormBuilder,
 description:description
 Showloading: Observable<boolean> = this.wd.loading$
     
-constructor(@Inject(MAT_DIALOG_DATA) public data: Chapter, private api:ApiService, private errorHandler:ErrorService,
+constructor(@Inject(MAT_DIALOG_DATA) public data: description, private api:ApiService, private errorHandler:ErrorService,
 private dialogRef: MatDialogRef<chapteDescriptionDialogComponent>,
 private wd: WorldDataService ){
       this.description = {
         id: '',
-        resource_type: 'chapter',
+        resource_type: data.resource_type,
         resource_id: data.id
       }
   }

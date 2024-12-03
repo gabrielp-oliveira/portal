@@ -77,6 +77,7 @@ export type description = {
     resource_type: string,
     resource_id?: string,
     description_data?: string
+    name?: string
 }
 export type relatedChapter =  {
     "chapterID": string, 

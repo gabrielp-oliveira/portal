@@ -23,6 +23,31 @@
     cursor: pointer;
 
   }
+
+  .tableTop {
+    display:flex;
+    justify-content: start;
+    box-shadow: 2px 5px 10px rgb(0, 0, 0, 0.3);
+    align-items: center;
+    align-self: center;
+    border-radius: 5px;
+    height: 60px;
+    div {
+      display:flex;
+      justify-content: start;
+      align-items: center;
+      align-self: start;
+      padding: 5px 15px;
+      background-color: white;
+      border-radius: 3px;
+      font-size: 20px;
+      text-decoration: underline;
+      font-weight: 500;
+      margin: 0px 50px 0px 0px;
+      height: 50px;
+
+    }
+  }
   .editButton:hover {
     background-color: antiquewhite;
   }

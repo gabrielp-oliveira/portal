@@ -19,13 +19,20 @@
     delete</button>
 </mat-menu>
 
-<button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')" style="margin-bottom: 20px;">
-  <span>Create new Chapter</span>
+<div >
 
-  <app-chapter-info></app-chapter-info>
+  <div class="tableTop">
 
-  </button>
-<div #circle class="circle"></div>
+    <div >
+      <span>Chapters table</span>
+      <app-chapter-info></app-chapter-info>
+    </div>
+    <button mat-raised-button (click)="callCreteChapterDialog('150ms', '150ms')" >
+      <span>Create new Chapter</span>
+    </button>
+    
+  </div>
+
 
 <div class="drop-list-container">
 <div cdkDropList #tableDropList="cdkDropList" 
@@ -251,3 +258,7 @@
   </table>
 </div>
 </div>
+</div>
+
+<div #circle class="circle"></div>
+
