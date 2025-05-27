@@ -14,13 +14,14 @@ import {
   updateGroupConnectionDialogComponent,
   InfoDialogComponent,
   deleteChapterDialogComponent,
-  deleteGroupConnectionDialogComponent
+  deleteGroupConnectionDialogComponent,
+  MY_DATE_FORMATS
 } from './components/dialog.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule, NativeDateAdapter } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,6 +40,7 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.component";
 import { LoadingComponent } from '../standAlone/loading/loading.component';
 
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 
 
@@ -49,14 +51,14 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
   declarations: [createPaperDialogComponent, createChapterDialogComponent, createWorldDialogComponent,
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
-    createStorylineDialogComponent, deleteTimelineDialogComponent, DataPickerDialogComponent, chapteDescriptionDialogComponent,
+    createStorylineDialogComponent, deleteTimelineDialogComponent, chapteDescriptionDialogComponent,
     strEditDialogComponent, UpdateEventDialogComponent, 
     InfoDialogComponent,deleteChapterDialogComponent,deleteGroupConnectionDialogComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'en-US' }, // Ou ajuste para o idioma desejado, ex: 'pt-BR'
-
+    { provide: DateAdapter, useClass: NativeDateAdapter }, // Fornece o DateAdapter
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }, // Configura o formato de data
   ],
   imports: [
     CommonModule,
@@ -66,6 +68,7 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
     MatCardModule,
     PaperInfoComponent, ChapterInfoComponent, ConnectionGroupInfoComponent, StorylineInfoComponent, EventInfoComponent, TimelineInfoComponent,
     MatIconModule,
+    DataPickerDialogComponent,
     MatTabsModule,
     JsonPipe,
     MatTooltipModule,
@@ -77,7 +80,7 @@ import { LoadingComponent } from '../standAlone/loading/loading.component';
     MatDatepickerModule,
     MatNativeDateModule, // Aqui está o adaptador de data nativo
     MatSliderModule,
-    TxtEditorComponent
+    TxtEditorComponent,
 ]
 })
 export class dialogModule { }

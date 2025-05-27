@@ -78,7 +78,6 @@ editorConfig: AngularEditorConfig = {
 
 
 emitVal(a:string): void {
-  console.log(this.data)
   this.data.description_data = a
   this.valueChanged.emit(a);
 }

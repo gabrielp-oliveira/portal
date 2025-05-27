@@ -28,6 +28,10 @@ export const routes: Routes = [
       canActivate: [AuthGuard]
     },
     {
+      path: 'store',
+      loadChildren: () => import('./modules/store/store.module').then(c => c.StoreModule),
+    },
+    {
       path: 'world/:id/chapter/:chapterId',
       loadChildren: () => import('./modules/docx/docx.module').then(c => c.DocxModule),
       canActivate: [AuthGuard]

@@ -1,7 +1,7 @@
 import { Component, ErrorHandler, Inject, inject, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
@@ -12,6 +12,11 @@ import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.compo
 import { ErrorService } from '../../modules/error.service';
 import { DialogService } from '../dialog.service';
 import { tree } from 'd3';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+// import { DateAdapter, MAT_DATE_FORMATS, MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_FORMATS, DateAdapter, NativeDateAdapter } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 
@@ -1104,21 +1109,50 @@ constructor(private fb: FormBuilder,
     }
   
   }
-
+  export const MY_DATE_FORMATS = {
+    parse: {
+      dateInput: 'MM/DD/YYYY',
+    },
+    display: {
+      dateInput: 'MM/DD/YYYY',
+      monthYearLabel: 'MMM YYYY',
+      dateA11yLabel: 'LL',
+      monthYearA11yLabel: 'MMMM YYYY',
+    },
+  };
+  
   @Component({
     selector: 'app-dataPickerDialog',
     templateUrl: './dataPickerDialog.component.html',
-    styleUrl: './dialog.component.scss'
+    standalone: true,
+    imports: [
+      MatDatepickerModule,
+      MatNativeDateModule, // Provedor de DateAdapter
+      MatDialogModule,
+      MatInputModule,
+      MatTooltipModule
+      
+    ],
+    styleUrls: ['./dialog.component.scss'],
+    providers: [
+      { provide: DateAdapter, useClass: NativeDateAdapter }, // Fornece o DateAdapter
+      { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }, // Configura o formato de data
+    ]
   })
   export class DataPickerDialogComponent {
-
-    selected: Date | null;  
+    selected: Date | null;
     range = new FormGroup({
       start: new FormControl<Date | null>(null),
       end: new FormControl<Date | null>(null),
     });
-    
+  
+    selectedDate: Date;
+  
+    onDateChange(event: any) {
+      this.selectedDate = event.value;
+    }
   }
+
   @Component({
     selector: 'app-chapterDescriptionDialog',
     templateUrl: './chapterDescriptionDialog.component.html',

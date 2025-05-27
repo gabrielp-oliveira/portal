@@ -2946,9 +2946,6 @@ getTimelineAndAdjustedRange(xPosition: number): { timeline: Timeline, adjustedRa
     this.renderUniqueChapters(svg, chapters, storyLines, timelines, connections);
     this.renderGroupChapters(svg, storyLines, timelines, connections);
 
-
-
-
     this.initZoom();
   }
 
