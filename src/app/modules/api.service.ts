@@ -22,6 +22,12 @@ export class ApiService {
   getWorldData(worldId: string): Observable<world> {
     return this.http.get<world>(`http://localhost:9090/world?id=${worldId}`);
   }
+getWorldDataByName(name: string): Observable<world> {
+  return this.http.get<world>(
+    `http://localhost:9090/worldByName?name=${encodeURIComponent(name)}`
+  );
+}
+
   getChapterUrl(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }

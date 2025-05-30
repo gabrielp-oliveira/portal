@@ -35,5 +35,10 @@ export const routes: Routes = [
       path: 'world/:id/chapter/:chapterId',
       loadChildren: () => import('./modules/docx/docx.module').then(c => c.DocxModule),
       canActivate: [AuthGuard]
+    },
+    {
+      path: 'read/:worldName',
+      loadChildren: () => import('./modules/read-world/read-world.module').then(c => c.ReadWorldModule),
+      canActivate: [AuthGuard]
     }
   ];

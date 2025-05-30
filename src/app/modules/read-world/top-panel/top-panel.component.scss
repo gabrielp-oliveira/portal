@@ -1,0 +1,62 @@
+.top-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+  font-family: "Segoe UI", sans-serif;
+  flex-wrap: wrap;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.card .icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.card .label {
+  font-size: 12px;
+  color: #888;
+}
+
+.card .value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-action {
+  background-color: #ededed;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-action:hover {
+  background-color: #dcdcdc;
+}

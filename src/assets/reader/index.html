@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter Reader</title>
+  <script type="module" crossorigin src="./assets/index-DU6QDrxt.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DOElPZmx.css">
+</head>
+<body>
+  <div id="app" class="reader-container">
+
+    <!-- 🔍 Barra de ferramentas superior -->
+    <div class="toolbar top-toolbar">
+      <button id="toggle-theme">🌙/☀️ Modo</button>
+      <div>
+
+        <button onclick="zoomOut()">➖ Zoom</button>
+        <button onclick="zoomIn()">➕ Zoom</button>
+      </div>
+      <!-- <input id="search" type="text" placeholder="Buscar no texto..." /> -->
+    </div>
+
+
+    <!-- 📖 Área do livro -->
+    <div id="viewer" style="height: 80vh;"></div>
+
+    <div class="toolbar bottom-toolbar">
+      <button onclick="prevPage()">⬅️ Anterior</button>
+      <button onclick="nextPage()">Próxima ➡️</button>
+    </div>
+  </div>
+
+</body>
+</html>

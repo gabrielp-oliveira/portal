@@ -1,0 +1,26 @@
+<div class="top-panel">
+    <div class="stats">
+        <div class="card">
+            <div class="icon">📚</div>
+            <div class="label">Livros</div>
+            <div class="value">{{ (papers$ | async)?.length || 0 }}</div>
+
+        </div>
+        <div class="card">
+            <div class="icon">📄</div>
+            <div class="label">Capítulos</div>
+            <div class="value">{{ (chapters$ | async)?.length || 0 }}</div>
+
+        </div>
+        <div class="card">
+            <div class="icon">⏱️</div>
+            <div class="label">Timelines</div>
+            <div class="value">{{ (timelines$ | async)?.length || 0 }}</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-action">🧾 Exportar visão</button>
+        <button class="btn-action">📃 Resumo narrativo</button>
+    </div>
+</div>
