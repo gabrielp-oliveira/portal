@@ -425,7 +425,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
           group.forEach((c) => {
           elGroup
           .append("text")
-          .attr("dx", () => c.width - ((c.name.length * 3) + 15))
+          .attr("dx", () => c.width - ((c.title.length * 3) + 15))
           .attr("dy", ( i) => {
             const pos = ((this.duplucateChaptersPosition[key].findIndex((e) => e.id == c.id)) + 1);
             const cy = c.height - (pos * 15)
@@ -437,7 +437,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
           .attr("fill", "black")  // Cor inicial do texto
           .attr("id", () => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
           .attr("display", this.textDisplay)
-          .text(() => c.name);
+          .text(() => c.title);
         })
         }
         
@@ -480,7 +480,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
      element
       .append("text")
       .raise()
-      .attr("dx", () => chp.width - ((chp.name.length * 3) + 15))
+      .attr("dx", () => chp.width - ((chp.title.length * 3) + 15))
       .attr("dy", () => cy)
       .attr("font-family", LABEL_FONT_FAMILY_DEFAULT)
       .attr("font-size", LABEL_FONT_SIZE_GROUP)
@@ -488,7 +488,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
       .attr("fill", "black")  // Cor inicial do texto
       .attr("display", this.textDisplay)
       .attr("id", () => `${chp.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
-      .text(() => chp.name);
+      .text(() => chp.title);
       this.updateConnectionDrag(svg, this.connections, chpList, chp)
 
         
@@ -573,7 +573,7 @@ private initSvg(): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
       .attr("fill", "black")  // Cor inicial do texto
       .attr("id", (c: Chapter) => `${c.id}-chapter-group-txt`)  // Adiciona um ID único para cada grupo de capítulos
       .attr("display", this.textDisplay)
-      .text((node: Chapter) => node.name);
+      .text((node: Chapter) => node.title);
     }
  
 
@@ -2738,6 +2738,7 @@ storyLineSwapDragEnded(event: MouseEvent, svg: d3.Selection<SVGGElement, unknown
         name: '',
         order: 0,
         range: 0,
+        visible: true
 
       }
       this.prevTimeline = undefined;

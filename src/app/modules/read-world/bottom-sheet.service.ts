@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BottomSheetService {
+  constructor(private bottomSheet: MatBottomSheet) {}
 
-  constructor() { }
+  open(type: 'chapters' | 'books' | 'timelines') {
+    this.bottomSheet.open(BottomSheetComponent, {
+      data: { type },
+      panelClass: 'custom-bottom-sheet',
+    });
+  }
 }

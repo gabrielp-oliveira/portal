@@ -122,7 +122,7 @@ export class ChapterComponent implements OnInit {
     const params: description= {
       id: c.id,
       resource_type: "chapter",
-      name: c.name
+      name: c.title
     }
     this.dialog.openChapterDescription(params, '150ms','150ms')
    }
@@ -131,7 +131,7 @@ export class ChapterComponent implements OnInit {
       const params: description= {
         id: this.selectedChapter.id,
         resource_type: "chapter",
-        name: this.selectedChapter.name
+        name: this.selectedChapter.title
       }
       this.dialog.openChapterDescription(params, '150ms','150ms')
     }
@@ -384,9 +384,9 @@ export class ChapterComponent implements OnInit {
   }
   sortByName(a: Chapter, b: Chapter): number {
     if (this.sortDirection) {
-      return a.name.localeCompare(b.name)
+      return a.title.localeCompare(b.title)
     } else {
-      return b.name.localeCompare(a.name)
+      return b.title.localeCompare(a.title)
     }
   }
   sortByPapperName(a: ExtendedChapter, b: ExtendedChapter): number {
@@ -442,7 +442,7 @@ export class ChapterComponent implements OnInit {
         let nameVal = this.nameSearchValue.toLowerCase(); // Normalizar para minúsculas
         if (nameVal && nameVal != "") {
           const data = this.dataSource.data.filter((c: Chapter) =>
-            c.name.toLowerCase().includes(nameVal)
+            c.title.toLowerCase().includes(nameVal)
           );          
           this.dataSource.data = data
           this.setGlobalData(data, nameVal)

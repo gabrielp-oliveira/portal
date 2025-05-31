@@ -4,6 +4,20 @@ import { ReadWorldComponent } from './read-world.component';
 import { RouterModule, Routes } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { TopPanelComponent } from './top-panel/top-panel.component';
+import { BottomSheetService } from './bottom-sheet.service';
+import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { MatBadgeModule } from '@angular/material/badge';
+
+
 
 
 const routes: Routes = [
@@ -16,10 +30,21 @@ const routes: Routes = [
   declarations: [
     ReadWorldComponent,
     HeaderComponent,
-    TopPanelComponent
+    TopPanelComponent,
+    BottomSheetComponent
   ],
+    providers: [BottomSheetService],
   imports: [
     CommonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatCheckboxModule,
+    FormsModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatInputModule,
+    MatBadgeModule,
+    MatTableModule,
     RouterModule.forChild(routes),
     
   ]

@@ -15,11 +15,11 @@
                                 
                             </mat-expansion-panel-header>
                             <div class="accordion-info">
-                                <span>chapter Name: {{ChapterDetails.chapter.name}}</span>
+                                <span>chapter Name: {{ChapterDetails.chapter.title}}</span>
                                 <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.chapter)">description</button>
                             </div>
                             <div class="accordion-info">
-                                <span>previously Chapter in order: {{ChapterDetails.prev.name}}</span>
+                                <span>previously Chapter in order: {{ChapterDetails.prev.title}}</span>
                                 <div>
 
                                     <button mat-stroked-button (click)="openPreview(ChapterDetails.prev)">preview</button>
@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                             <div class="accordion-info">
-                                <span>next Chapter in order: {{ChapterDetails.next.name}}</span>
+                                <span>next Chapter in order: {{ChapterDetails.next.title}}</span>
                                 <div>
                                     <button mat-stroked-button (click)="openPreview(ChapterDetails.next)">preview</button>
                                     <button mat-stroked-button (click)="openDesctiprion(ChapterDetails.next)">description</button>
@@ -50,7 +50,7 @@
                         <p >chapter Description</p>
                         <div *ngFor="let item of ChapterDetails?.relatedChapters">
                             <div class="accordion-info">
-                                <span>Chapter: {{item?.relatedChapter?.name}}</span>
+                                <span>Chapter: {{item?.relatedChapter?.title}}</span>
                                 <button mat-stroked-button (click)="openPreview(item.relatedChapter)">preview</button>
 
                                 <p [style]="{color: item?.groupColor}">Connection: {{item?.groupName}}</p>

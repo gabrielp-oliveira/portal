@@ -11,6 +11,7 @@ export class ErrorService {
   
   constructor(private auth: AuthService, private dialog:DialogService, private wd: WorldDataService){ }
   errHandler(error: any) {
+    console.error(error)
     this.wd.setLoading(false)
       if (error.status === 401 || error.status === 403) {
         this.auth.logOut();

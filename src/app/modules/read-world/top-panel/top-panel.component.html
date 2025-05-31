@@ -1,18 +1,18 @@
 <div class="top-panel">
     <div class="stats">
-        <div class="card">
+        <div class="card" (click)="openBottomSheet('books')" [matBadge]="hiddenPapersCount" [matBadgeColor]="'warn'">
             <div class="icon">📚</div>
-            <div class="label">Livros</div>
+            <div class="label">Books</div>
             <div class="value">{{ (papers$ | async)?.length || 0 }}</div>
-
         </div>
-        <div class="card">
+
+        <div class="card" (click)="openBottomSheet('chapters')"  [matBadge]="hiddenChaptersCount" [matBadgeColor]="'warn'">
             <div class="icon">📄</div>
-            <div class="label">Capítulos</div>
+            <div class="label">Chapters</div>
             <div class="value">{{ (chapters$ | async)?.length || 0 }}</div>
 
         </div>
-        <div class="card">
+        <div class="card" (click)="openBottomSheet('timelines')"  [matBadge]="hiddenTimelinesCount" [matBadgeColor]="'warn'">
             <div class="icon">⏱️</div>
             <div class="label">Timelines</div>
             <div class="value">{{ (timelines$ | async)?.length || 0 }}</div>

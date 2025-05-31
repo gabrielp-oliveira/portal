@@ -13,7 +13,7 @@ export type world = {
     subway_settings: Subway_Settings
 }
 
-export type info<t> ={
+export type info<t> = {
     message: string,
     status: string,
     data: t
@@ -24,7 +24,7 @@ export interface ExtendedChapter extends Chapter {
     storylineName: string,
     papperOrder: number
     // eventName:string
-  }
+}
 
 export type basicWorld = {
     id: string,
@@ -44,32 +44,33 @@ export type paper = {
     chapter?: Chapter[],
     order: number,
     focus: boolean,
-    color: string
+    color: string,
+    visible: boolean
 }
 export interface createWorld extends infoDialog {
-     "world": world,
+    "world": world,
 }
 
 export type infoDialog = {
-    status: 'warning'|'error'|'success',
+    status: 'warning' | 'error' | 'success',
     header: string,
     message: string,
-    action:String
+    action: String
 }
 export type ChapterDetails = {
-	chapter: Chapter,
-	timeline:Timeline,
-	storyLine: StoryLine,
-    documentUrl:string,
+    chapter: Chapter,
+    timeline: Timeline,
+    storyLine: StoryLine,
+    documentUrl: string,
     events: Event[],
     color: string,
     next: Chapter,
     prev: Chapter,
     relatedChapters: relatedChapter[]
 }
-export type chapterBasicInfo= {
+export type chapterBasicInfo = {
     id: string;
-    name: string;
+    title: string;
 }
 
 export type description = {
@@ -79,20 +80,20 @@ export type description = {
     description_data?: string
     name?: string
 }
-export type relatedChapter =  {
-    "chapterID": string, 
+export type relatedChapter = {
+    "chapterID": string,
     "relatedChapter": chapterBasicInfo,
     "groupName": string,
     "groupColor": string
 }
 
 export type GroupConnection = {
-  focus: any
-	id            :string, 
-	name          :string, 
-	description   :string, 
-	world_id      :string, 
-	color         :string,
+    focus: any
+    id: string,
+    name: string,
+    description: string,
+    world_id: string,
+    color: string,
 }
 
 
@@ -102,7 +103,7 @@ export type Chapter = {
     height: number
     id: string,
     world_id: string,
-    name: string,
+    title: string,
     description: string,
     created_at: string,
     paper_id: string,
@@ -113,14 +114,15 @@ export type Chapter = {
     order: number,
     color: string,
     selected: boolean,
-    focus: boolean
+    focus: boolean,
+    visible: boolean
 }
 
-export type ChapterTimeline =  {
-	id  :       string      ,  
-	chapter_Id :string     ,   
-	timelineID :string,
-	range    :  number  ,          
+export type ChapterTimeline = {
+    id: string,
+    chapter_Id: string,
+    timelineID: string,
+    range: number,
 }
 
 
@@ -129,8 +131,8 @@ export type Connection = {
     sourceChapterID: string,
     targetChapterID: string,
     world_id: string,
-    color:string,
-    group_id:string | null,
+    color: string,
+    group_id: string | null,
     focus?: boolean
 
 }
@@ -169,7 +171,8 @@ export type Timeline = {
     order: number,
     range: number,
     created_at: string,
-    edit?: boolean
+    edit?: boolean,
+    visible:boolean
 
 
 }

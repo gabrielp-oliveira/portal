@@ -194,7 +194,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
       const info :infoDialog= {
         status: 'success',
         action: "CreateChapter",
-        message:"you successfully create chapter " + newChapter.name,
+        message:"you successfully create chapter " + newChapter.title,
         header: "chapter created"
       }
       this.dialog.openInfoDialog(info)
@@ -224,6 +224,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
         description: '',
         order: 1,
         created_at: '',
+        visible: true
       }
       destroy$ = new Subject<void>();
     Showloading: Observable<boolean> = this.wd.loading$
@@ -256,7 +257,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
         this.getTimeLineDetails(e)
         this.worldId = chapter.world_id
         this.worldForm.patchValue({
-          name: chapter.name,
+          name: chapter.title,
           order: chapter.order,
           paper_id: chapter.paper_id,
           timeline_id: chapter?.timeline_id,
@@ -634,7 +635,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
             const info :infoDialog= {
               status: 'success',
               action: "Delete Chapter",
-              message:`you successfully deleted chapter ${chp.name}.`,
+              message:`you successfully deleted chapter ${chp.title}.`,
               header: "chapter removed"
             }
             this.dialog.openInfoDialog(info)

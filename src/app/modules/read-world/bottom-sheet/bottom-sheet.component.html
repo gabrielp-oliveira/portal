@@ -1,0 +1,209 @@
+<ng-container *ngIf="data.type == 'chapters'">
+
+  <h3>📚 Chapters</h3>
+
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>Buscar por nome</mat-label>
+    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+  </mat-form-field>
+
+  <table mat-table [dataSource]="filteredChapters" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
+
+    <!-- Visibilidade -->
+    <ng-container matColumnDef="visible">
+      <th mat-header-cell *matHeaderCellDef>Exibir</th>
+      <td mat-cell *matCellDef="let chapter">
+        <mat-checkbox [(ngModel)]="chapter.visible" (ngModelChange)="onChapterVisibilityToggle(chapter)"></mat-checkbox>
+      </td>
+    </ng-container>
+
+    <!-- Nome -->
+    <ng-container matColumnDef="title">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleSort('title')" style="cursor: pointer;">
+        Capítulo
+        <mat-icon *ngIf="chapterSortBy === 'title'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let chapter">
+        {{ truncateText(chapter.title, 15) }}
+      </td>
+    </ng-container>
+
+    <!-- Ordem -->
+    <ng-container matColumnDef="order">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleSort('order')" style="cursor: pointer;">
+        Ordem
+        <mat-icon *ngIf="chapterSortBy === 'order'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let chapter">
+        <span>
+          {{ chapter.order }}
+        </span>
+        
+        <span style="width: 12px; height: 12px; border-radius: 50%; display: inline-block;"
+          [ngStyle]="{ 'background-color': chapter.color }" matTooltip="Cor do livro"></span>
+      </td>
+    </ng-container>
+
+    <!-- Lido -->
+    <ng-container matColumnDef="read">
+      <th mat-header-cell *matHeaderCellDef>Lido</th>
+      <td mat-cell *matCellDef="let chapter">
+        <mat-icon color="primary">{{ chapter.read ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+      </td>
+    </ng-container>
+
+    <!-- Detalhes -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let chapter">
+        <button mat-icon-button (click)="showDetails(chapter)">
+          <mat-icon>info</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Linhas -->
+    <tr mat-header-row *matHeaderRowDef="displayedChaptersColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedChaptersColumns;"></tr>
+
+  </table>
+
+</ng-container>
+
+
+<ng-container *ngIf="data.type == 'books'">
+
+  <h3>📚 books</h3>
+
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>Buscar por nome</mat-label>
+    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+  </mat-form-field>
+
+  <table mat-table [dataSource]="filteredPapers" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
+
+    <!-- Visibilidade -->
+    <ng-container matColumnDef="visible">
+      <th mat-header-cell *matHeaderCellDef>Exibir</th>
+      <td mat-cell *matCellDef="let paper">
+        {{paper.visible}}
+        <mat-checkbox [(ngModel)]="paper.visible" (ngModelChange)="onPaperVisibilityToggle(paper)"></mat-checkbox>
+
+      </td>
+    </ng-container>
+
+    <!-- Nome -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleSort('title')" style="cursor: pointer;">
+        Capítulo
+        <mat-icon *ngIf="paperSortBy === 'name'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let paper">
+        {{ truncateText(paper.name, 15) }}
+      </td>
+    </ng-container>
+
+    <!-- Ordem -->
+    <ng-container matColumnDef="order">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleSort('order')" style="cursor: pointer;">
+        Ordem
+        <mat-icon *ngIf="paperSortBy === 'order'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let paper">
+        <span>
+          {{ paper.order }}
+        </span>
+        -
+        <span style="width: 12px; height: 12px; border-radius: 50%; display: inline-block;"
+          [ngStyle]="{ 'background-color': paper.color }" matTooltip="Cor do livro"></span>
+      </td>
+    </ng-container>
+
+    <!-- Lido -->
+    <ng-container matColumnDef="read">
+      <th mat-header-cell *matHeaderCellDef>Lido</th>
+      <td mat-cell *matCellDef="let paper">
+        <mat-icon color="primary">{{ paper.read ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+      </td>
+    </ng-container>
+
+    <!-- Detalhes -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let paper">
+        <button mat-icon-button (click)="showDetails(paper)">
+          <mat-icon>info</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Linhas -->
+    <tr mat-header-row *matHeaderRowDef="displayedPaperColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedPaperColumns;"></tr>
+
+  </table>
+
+</ng-container>
+
+
+<ng-container *ngIf="data.type == 'timelines'">
+
+  <h3>⏱️ timelines</h3>
+
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>Buscar por nome</mat-label>
+    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+  </mat-form-field>
+
+  <table mat-table [dataSource]="filteredTimelines" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
+
+    <!-- Visibilidade -->
+    <ng-container matColumnDef="visible">
+      <th mat-header-cell *matHeaderCellDef>Exibir</th>
+      <td mat-cell *matCellDef="let timeline">
+        <mat-checkbox [(ngModel)]="timeline.visible" (ngModelChange)="onTimelinesVisibilityToggle(timeline)"></mat-checkbox>
+
+      </td>
+    </ng-container>
+
+    <!-- Nome -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleTimelinesSort('name')" style="cursor: pointer;">
+        name
+        <mat-icon *ngIf="timelineSortBy === 'name'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let timeline">
+        {{ truncateText(timeline.name, 15) }}
+      </td>
+    </ng-container>
+
+    <!-- Ordem -->
+    <ng-container matColumnDef="order">
+      <th mat-header-cell *matHeaderCellDef (click)="toggleTimelinesSort('order')" style="cursor: pointer;">
+        Ordem
+        <mat-icon *ngIf="timelineSortBy === 'order'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+      </th>
+      <td mat-cell *matCellDef="let timeline">
+          {{ timeline.order }}
+      </td>
+    </ng-container>
+
+
+
+    <!-- Detalhes -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let timeline">
+        <button mat-icon-button (click)="showDetails(timeline)">
+          <mat-icon>info</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Linhas -->
+    <tr mat-header-row *matHeaderRowDef="displayedtimelinesColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedtimelinesColumns;"></tr>
+
+  </table>
+
+</ng-container>

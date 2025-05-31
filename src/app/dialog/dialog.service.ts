@@ -209,7 +209,7 @@ export class DialogService {
       maxWidth: "1200px",
       enterAnimationDuration,
       exitAnimationDuration,
-      data:{id: data.id, name: data.name}
+      data:{id: data.id, name: data.title}
     });
   }
   openInfoDialog(data:infoDialog, top: string = '10px', right: string='80px' ): void {

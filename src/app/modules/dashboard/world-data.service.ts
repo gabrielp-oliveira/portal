@@ -133,12 +133,14 @@ export class WorldDataService {
     );
     this.storylinesSubject.next(storylines);
   }
-  updatePaper(paper: paper): void { 
-    const papers = this.papersSubject.value.map(existingPaper => 
-      existingPaper.id === paper.id ? paper : existingPaper
-    );
-    this.papersSubject.next(papers);
-  }
+
+updatePaper(paper: paper): void {
+  const papers = this.papersSubject.value.map(existingPaper => 
+    existingPaper.id === paper.id ? paper : existingPaper
+  );
+  this.papersSubject.next(papers);
+}
+
   updateEvent(event: Event): void { 
     const events = this.eventsSubject.value.map(existingEvent => 
       existingEvent.id === event.id ? event : existingEvent
@@ -219,7 +221,6 @@ export class WorldDataService {
   this.setSettings(data.subway_settings)
 
   this.setLoading(false)
-  console.log('aqui')
 }
 
 setLoading(status:boolean){
