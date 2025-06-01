@@ -16,6 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatBadgeModule } from '@angular/material/badge';
+import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
 
 
 
@@ -31,7 +32,8 @@ const routes: Routes = [
     ReadWorldComponent,
     HeaderComponent,
     TopPanelComponent,
-    BottomSheetComponent
+    BottomSheetComponent,
+    ChapterDetailsComponent
   ],
     providers: [BottomSheetService],
   imports: [

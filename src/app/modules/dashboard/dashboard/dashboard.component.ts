@@ -57,6 +57,9 @@ export class DashboardComponent {
   }
 
 
+  setreadName(name:String) {
+   return name.split(' ').join('_')
+  }
   ngOnDestroy() {
       this.destroy$.next();
       this.destroy$.complete();

@@ -1,0 +1,41 @@
+<div class="dialog">
+  <button class="close-btn">×</button>
+
+  <img [src]="chapter.cover" alt="Capa do Livro" class="cover">
+
+  <h2>{{ chapter.title }}</h2>
+  <p class="book">{{ chapter.book }}</p>
+
+  <nav class="tabs">
+    <button *ngFor="let tab of tabs"
+            [class.active]="selectedTab === tab"
+            (click)="selectedTab = tab">
+      {{ tab | titlecase }}
+    </button>
+  </nav>
+
+  <div class="tab-content">
+    <div *ngIf="selectedTab === 'resumo'">
+      <p>{{ chapter.summary }}</p>
+    </div>
+
+    <div *ngIf="selectedTab === 'timeline'">
+      <p><strong>Timeline:</strong> {{ chapter.timeline.name }}</p>
+      <p><strong>Ordem:</strong> {{ chapter.timeline.ordem }}</p>
+      <p><strong>Range:</strong> {{ chapter.timeline.range }}</p>
+    </div>
+
+    <div *ngIf="selectedTab === 'anotacoes'">
+      <ul>
+        <li *ngFor="let comment of chapter.comments">{{ comment }}</li>
+      </ul>
+      <input type="text" placeholder="Adicionar comentário..." disabled>
+    </div>
+
+    <div *ngIf="selectedTab === 'conexoes'">
+      <p>Conexões ainda não disponíveis.</p>
+    </div>
+  </div>
+
+  <button class="open-button">Ver capítulo completo</button>
+</div>

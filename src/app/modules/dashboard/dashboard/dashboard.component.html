@@ -14,8 +14,11 @@
 <ul>
     <li *ngFor="let w of worldList">
         <a [routerLink]="['/world', w.id]">{{w.name}}</a>
-
-
+    </li>
+    <hr>
+    <hr>
+    <li *ngFor="let w of worldList">
+        <a [routerLink]="['/read',  setreadName(w.name)]">{{w.name}}</a>
     </li>
 </ul>
 

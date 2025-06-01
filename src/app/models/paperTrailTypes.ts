@@ -1,6 +1,6 @@
 export type world = {
     id: string,
-    name?: string,
+    name: string,
     description?: string,
     created_at?: string,
     chapters: Chapter[],

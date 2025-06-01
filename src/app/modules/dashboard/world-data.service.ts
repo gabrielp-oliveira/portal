@@ -153,7 +153,18 @@ updatePaper(paper: paper): void {
   getChapterPreview(id: string): string{
     return `https://docs.google.com/document/d/${id}/preview?usp=drivesdk`
   }
-  
+  getChapterTitle(id: string){
+    return this.chaptersSubject.value.filter((c) => c.id == id)[0]
+  }
+  getPaperByChapterId(id: string){
+    return this.papersSubject.value.filter((p) => p.id == this.getChapterById(id).paper_id)[0]
+  }
+  getChapterByTitle(title: string){
+    return this.chaptersSubject.value.filter((c) => c.title == title)[0]
+  }
+  getChapterById(id: string){
+    return this.chaptersSubject.value.filter((c) => c.id == id)[0]
+  }
 
   addEvent(event: Event): void { 
     const events = this.eventsSubject.value;

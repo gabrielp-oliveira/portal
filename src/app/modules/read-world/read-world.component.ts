@@ -1,11 +1,13 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
 import { Timeline, Chapter, StoryLine } from '../../models/paperTrailTypes';
 import { ApiService } from '../api.service';
 import { UtilsService } from '../../utils.service';
+import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-read-world',
@@ -21,51 +23,54 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     private wd: WorldDataService,
     private errorHandler: ErrorService,
     private api: ApiService,
-    private utils: UtilsService
-  ) {}
-
+    private utils: UtilsService,
+    private router: Router,
+    private dialog: MatDialog,
+  ) { }
 
   ngAfterViewInit(): void {
-    const worldName = this.route.snapshot.paramMap.get('worldName');    
-  if (!worldName) return;
+    const worldName = this.route.snapshot.paramMap.get('worldName');
+    if (!worldName) return;
 
-  this.iframe = document.getElementById("board-frame") as HTMLIFrameElement;
-  if (!this.iframe) return;
+    this.iframe = document.getElementById("board-frame") as HTMLIFrameElement;
+    if (!this.iframe) return;
 
-  // Aguarda o iframe carregar antes de escutar mudanças
-  this.iframe.addEventListener("load", () => {
-    this.setupDataSyncWithIframe();
-  });
+    // 🛠️ Adiciona listener uma única vez
+    this.iframe.addEventListener("load", () => {
+      this.setupDataSyncWithIframe();
+    }, { once: true });
 
-  // Carrega dados da API e define `visible: true`
-  this.api.getWorldDataByName(encodeURIComponent(worldName))
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((world) => {
-      const coloredPapers = (world.papers || []).map(p => ({ ...p, visible: true }));
-      const paperColorMap = new Map(coloredPapers.map(p => [p.id, p.color]));
+    // 🛠️ Escuta mensagens do iframe apenas uma vez
+    window.addEventListener("message", this.handleIframeMessage);
 
-      const coloredChapters = (world.chapters || []).map(ch => ({
-        ...ch,
-        visible: true,
-        color: paperColorMap.get(ch.paper_id) || '#CCCCCC'
-      }));
+    // 🔁 Carrega os dados e aplica visible: true
+    this.api.getWorldDataByName(encodeURIComponent(worldName))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((world) => {
+        const coloredPapers = (world.papers || []).map(p => ({ ...p, visible: true }));
+        const paperColorMap = new Map(coloredPapers.map(p => [p.id, p.color]));
 
-      const visibleTimelines = (world.timelines || []).map(t => ({
-        ...t,
-        visible: true
-      }));
+        const coloredChapters = (world.chapters || []).map(ch => ({
+          ...ch,
+          visible: true,
+          color: paperColorMap.get(ch.paper_id) || '#CCCCCC'
+        }));
 
-      const updatedWorld = {
-        ...world,
-        papers: coloredPapers,
-        chapters: coloredChapters,
-        timelines: visibleTimelines
-      };
+        const visibleTimelines = (world.timelines || []).map(t => ({
+          ...t,
+          visible: true
+        }));
 
-      this.wd.setWorldData(updatedWorld);
-    });
-}
+        const updatedWorld = {
+          ...world,
+          papers: coloredPapers,
+          chapters: coloredChapters,
+          timelines: visibleTimelines
+        };
 
+        this.wd.setWorldData(updatedWorld);
+      });
+  }
 
   private setupDataSyncWithIframe(): void {
     combineLatest([
@@ -74,43 +79,97 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       this.wd.storylines$,
       this.utils.theme$
     ])
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ([chapters, timelines, storylines, theme]) => {
-        console.log('..')
-        // Filtra os elementos visíveis
-        const visibleChapters: Chapter[] = chapters.filter(c => c.visible);
-        const visibleTimelines: Timeline[] = timelines
-          .filter(t => t.visible)
-          .sort((a, b) => a.order - b.order)
-          .map((t, index) => ({ ...t, order: index + 1 })); // Reordena sequencialmente
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ([chapters, timelines, storylines, theme]) => {
+          const visibleChapters: Chapter[] = chapters.filter(c => c.visible);
+          const visibleTimelines: Timeline[] = timelines
+            .filter(t => t.visible)
+            .sort((a, b) => a.order - b.order)
+            .map((t, index) => ({ ...t, order: index + 1 }));
 
-        const visibleStorylines: StoryLine[] = storylines; // se quiser aplicar filtro, adicione aqui
- 
-        
-        console.log(visibleChapters.length)
-        // Envia dados ao iframe
-        this.iframe.contentWindow?.postMessage({
-          type: "set-data",
-          data: {
-            timelines: visibleTimelines,
-            storylines: visibleStorylines,
-            chapters: visibleChapters
-          }
-        }, "*");
-        this.iframe.contentWindow?.postMessage({
-          type: "set-light",
-          data: {
-            light: theme
-          }
-        }, "*");
-      },
-      error: err => this.errorHandler.errHandler(err)
-    });
+          const visibleStorylines: StoryLine[] = storylines;
+
+          this.iframe.contentWindow?.postMessage({
+            type: "set-data",
+            data: {
+              timelines: visibleTimelines,
+              storylines: visibleStorylines,
+              chapters: visibleChapters
+            }
+          }, "*");
+
+          this.iframe.contentWindow?.postMessage({
+            type: "set-light",
+            data: {
+              light: theme
+            }
+          }, "*");
+        },
+        error: err => this.errorHandler.errHandler(err)
+      });
   }
 
+  // 🔁 Handler de mensagens externas do iframe
+  handleIframeMessage = (event: MessageEvent) => {
+    const { type, data } = event.data || {};
+    if (type === "chapter-option-selected") {
+      this.ChapterSelect(data)
+    } else if (type === "chapter-focus") {
+      // console.log("🟢 Usuário focou ->:", data);
+    } else if (type === "board-transform-update") {
+      // console.log("🟢 Transformação do board ->:", data);
+      this.boardTransform(data)
+    }
+  };
+
   ngOnDestroy(): void {
+    window.removeEventListener("message", this.handleIframeMessage);
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+
+  ChapterSelect(data: chapterSelected) {
+    const chapter = this.wd.getChapterTitle(data.chapterId);
+    console.log(chapter)
+    if (data.option === 'Read Chapter') {
+
+
+      this.router.navigate(['/read/book', chapter.paper_id, 'chapter', chapter.order]);
+    }
+
+    if (data.option === 'Chapter Details') {
+      this.openChapterDetails(data.chapterId);
+    }
+  }
+
+
+
+  boardTransform(data: chapterSelected) {
+
+  }
+
+
+  openChapterDetails(id: string): void {
+    this.dialog.open(ChapterDetailsComponent, {
+      width: '400px',
+      maxHeight: '90vh',
+      panelClass: 'custom-dialog-container',
+      data: id
+    });
+  }
+
+}
+
+
+type chapterSelected = {
+  chapterId: string,
+  option: "Chapter Details" | "Read Chapter"
+}
+
+type boardTransformation = {
+  x: number,
+  y: number,
+  z: number
 }
