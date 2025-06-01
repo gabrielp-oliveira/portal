@@ -6,11 +6,14 @@
   </div>
 
   <div class="header-title">
-  {{ worldName }}
+    {{ worldName }}
   </div>
 
   <div class="header-right">
+
     <button class="btn-flat">
+      <button id="toggle-theme" (click)="toggleTheme()">🌙/☀️ Modo</button>
+
       <span class="icon">🔖</span> Ir para biblioteca
     </button>
     <div class="user-icon">👤</div>

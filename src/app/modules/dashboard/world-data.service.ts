@@ -227,4 +227,21 @@ setLoading(status:boolean){
   this.loadingSubject.next(status);
 }
   
+// Adicione estes métodos públicos
+updateAllPapersVisible(): void {
+  const updated = this.papersSubject.value.map(p => ({ ...p, visible: true }));
+  this.papersSubject.next(updated);
+}
+
+updateAllChaptersVisible(): void {
+  const updated = this.chaptersSubject.value.map(c => ({ ...c, visible: true }));
+  this.chaptersSubject.next(updated);
+}
+
+updateAllTimelinesVisible(): void {
+  const updated = this.timelinesSubject.value.map(t => ({ ...t, visible: true }));
+  this.timelinesSubject.next(updated);
+}
+
+
 }

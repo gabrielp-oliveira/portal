@@ -73,4 +73,10 @@ export class TopPanelComponent {
     this.bottomSheetService.open(type);
   }
 
+clearFilters() {
+  this.wd.updateAllPapersVisible();
+  this.wd.updateAllChaptersVisible();
+  this.wd.updateAllTimelinesVisible();
+}
+
 }

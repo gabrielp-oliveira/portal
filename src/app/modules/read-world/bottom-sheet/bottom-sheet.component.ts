@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, paper, Timeline } from '../../../models/paperTrailTypes';
 import { Subject, takeUntil, take } from 'rxjs';
+import { BottomSheetService } from '../bottom-sheet.service';
 
 @Component({
   selector: 'app-bottom-sheet',
@@ -12,6 +13,7 @@ import { Subject, takeUntil, take } from 'rxjs';
   styleUrls: ['./bottom-sheet.component.scss']
 })
 export class BottomSheetComponent implements OnDestroy {
+
   search = '';
   displayedChaptersColumns = ['visible', 'title', 'order', 'read', 'actions'];
   displayedPaperColumns = ['visible', 'name', 'order', 'read', 'actions'];
@@ -31,8 +33,14 @@ export class BottomSheetComponent implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     public wd: WorldDataService,
-    private errorHandler: ErrorService
+    private errorHandler: ErrorService,
+    private bottomSheetService: BottomSheetService
   ) { }
+
+
+  close() {
+  this.bottomSheetService.close()
+}
 
   ngOnInit() {
     this.wd.chapters$

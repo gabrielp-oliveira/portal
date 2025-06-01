@@ -17,6 +17,10 @@
             <div class="label">Timelines</div>
             <div class="value">{{ (timelines$ | async)?.length || 0 }}</div>
         </div>
+        <div class="clearCard" (click)="clearFilters()" *ngIf="hiddenChaptersCount < 0 || hiddenChaptersCount < 0 || hiddenPapersCount < 0">
+            <div class="icon">⏱️</div>
+            <div class="label">clear</div>
+        </div>
     </div>
 
     <div class="actions">

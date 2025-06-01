@@ -5,6 +5,7 @@ import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
 import { Timeline, Chapter, StoryLine } from '../../models/paperTrailTypes';
 import { ApiService } from '../api.service';
+import { UtilsService } from '../../utils.service';
 
 @Component({
   selector: 'app-read-world',
@@ -19,12 +20,13 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private wd: WorldDataService,
     private errorHandler: ErrorService,
-    private api: ApiService
+    private api: ApiService,
+    private utils: UtilsService
   ) {}
 
 
   ngAfterViewInit(): void {
-  const worldName = this.route.snapshot.paramMap.get('worldName');
+    const worldName = this.route.snapshot.paramMap.get('worldName');    
   if (!worldName) return;
 
   this.iframe = document.getElementById("board-frame") as HTMLIFrameElement;
@@ -70,10 +72,11 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       this.wd.chapters$,
       this.wd.timelines$,
       this.wd.storylines$,
+      this.utils.theme$
     ])
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: ([chapters, timelines, storylines]) => {
+      next: ([chapters, timelines, storylines, theme]) => {
         console.log('..')
         // Filtra os elementos visíveis
         const visibleChapters: Chapter[] = chapters.filter(c => c.visible);
@@ -98,7 +101,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
         this.iframe.contentWindow?.postMessage({
           type: "set-light",
           data: {
-            light: false // ajuste se tiver modo claro/escuro
+            light: theme
           }
         }, "*");
       },

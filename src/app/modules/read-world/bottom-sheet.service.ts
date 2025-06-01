@@ -12,4 +12,7 @@ export class BottomSheetService {
       panelClass: 'custom-bottom-sheet',
     });
   }
+  close() {
+    this.bottomSheet.dismiss(BottomSheetComponent)
+  }
 }

@@ -26,7 +26,23 @@
   cursor: pointer;
   transition: ease-in-out 200ms;
 }
-.card:hover {
+.clearCard {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 6x 8px;
+  min-width: 70px;
+  text-align: center;
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: ease-in-out 200ms;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+}
+.card:hover, .clearCard:hover {
   
   box-shadow: 0px 3px 6px rgba(0,0,0,0.6);
 }
