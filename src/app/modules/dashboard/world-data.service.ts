@@ -38,11 +38,12 @@ export class WorldDataService {
   constructor(){}
 
   getWorld(){
-
+    return this.worldSubject.value
   }
 
   // Métodos para atualizar o estado
   setWorld(world: basicWorld): void { 
+    console.log('..')
     this.worldId = world.id
     this.worldSubject.next(world);
   }
@@ -156,9 +157,24 @@ updatePaper(paper: paper): void {
   getChapterTitle(id: string){
     return this.chaptersSubject.value.filter((c) => c.id == id)[0]
   }
+  getChapterByPaperId(id: string){
+    console.log(this.chaptersSubject.value, id)
+    return this.chaptersSubject.value.filter((c) => c.paper_id == id)
+  }
   getPaperByChapterId(id: string){
     return this.papersSubject.value.filter((p) => p.id == this.getChapterById(id).paper_id)[0]
   }
+  getNextPaperInOrderById(id: string){
+    const paper = this.papersSubject.value.filter((p) => p.id == id)[0]
+    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order+1)[0]
+    return nextPaper
+  }
+  getPrevPaperInOrderById(id: string){
+    const paper = this.papersSubject.value.filter((p) => p.id == id)[0]
+    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order-1)[0]
+    return nextPaper
+  }
+
   getChapterByTitle(title: string){
     return this.chaptersSubject.value.filter((c) => c.title == title)[0]
   }

@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chapter Reader</title>
-  <script type="module" crossorigin src="./assets/index-IXhgxZPc.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DOElPZmx.css">
+
+  <!-- 🌐 Material Web Components -->
+  <script type="module" src="https://esm.run/@material/web/all"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+
+  <script type="module" crossorigin src="./assets/index-BJpsNG6g.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BfpqZqyz.css">
 </head>
+
 <body>
   <div id="app" class="reader-container">
+    <!-- 🧭 Toolbar superior -->
+    <div class="top-toolbar" id="header-controls"></div>
 
-    <!-- 🔍 Barra de ferramentas superior -->
-    <div class="toolbar top-toolbar">
-      <button id="toggle-theme" onclick="toggleTheme()">🌙/☀️ Modo</button>
-
-      <button onclick="zoomOut()">➖ Zoom</button>
-      <button onclick="zoomIn()">➕ Zoom</button>
-      <input id="search" type="text" placeholder="Buscar no texto..." />
-    </div>
-
-
-    <!-- 📖 Área do livro -->
+    <!-- 📖 Viewer -->
     <div id="viewer" style="height: 80vh;"></div>
 
-    <div class="toolbar bottom-toolbar">
-      <button onclick="prevPage()">⬅️ Anterior</button>
-      <button onclick="nextPage()">Próxima ➡️</button>
-    </div>
   </div>
 
+  <!-- 🧠 Script principal -->
 </body>
+
 </html>

@@ -10,7 +10,7 @@ import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-detail
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-read-world',
+  selector: 'app-read-world', 
   templateUrl: './read-world.component.html',
   styleUrls: ['./read-world.component.scss']
 })
