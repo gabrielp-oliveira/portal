@@ -172,7 +172,7 @@ export type Timeline = {
     range: number,
     created_at: string,
     edit?: boolean,
-    visible:boolean
+    visible: boolean
 
 
 }
@@ -190,3 +190,29 @@ export type StoryLine = {
 
 
 
+export interface ChapterAnnotation {
+    id?: string; // Gerado no backend
+    user_id: string;
+    chapter_id: string;
+    paper_id: string;
+    world_id: string;
+    favorite: boolean;
+    span_id?: string;       // Opcional, para identificação do trecho no HTML
+    span_text?: string;     // Opcional, texto destacado
+    note: string;           // Conteúdo da anotação
+    created_at?: string;    // ISO timestamp
+    last_updated?: string;  // ISO timestamp
+    position?: any;         // JSON com dados de posição (opcional, ex: { x: 10, y: 50 })
+}
+
+export interface ChapterConfiguration {
+    id: string;
+    user_id: string;
+    world_id: string;
+    paper_id: string;
+    chapter_id: string;
+    completed: boolean;
+    favorite: boolean;
+    created_at: string;  // ou Date, se você for converter
+    updated_at: string;  // ou Date, se você for converter
+}
