@@ -165,13 +165,15 @@ export class ApiService {
     paperId: string,
     chapterOrder: string,
     note: string,
-    favorite: boolean
+    favorite: boolean,
+    spanText: string
   ): Observable<any> {
     return this.http.put(`${this.baseUrl}/annotations/${spanId}`, {
       paper_id: paperId,
       chapter_order: chapterOrder,
       note,
-      favorite
+      favorite,
+      spanText
     });
   }
 
@@ -209,6 +211,11 @@ export class ApiService {
   markChapterCompleted(paperId: string, chapterOrder: string, completed: boolean): Observable<any> {
     return this.http.put(`${this.baseUrl}/chapter-configurations/${paperId}/${chapterOrder}/completed`, {
       completed
+    });
+  }
+  markChapterFavorite(paperId: string, chapterOrder: string, favorite: boolean): Observable<any> {
+    return this.http.put(`${this.baseUrl}/chapter-configurations/${paperId}/${chapterOrder}/favorite`, {
+      favorite
     });
   }
 }

@@ -158,7 +158,6 @@ updatePaper(paper: paper): void {
     return this.chaptersSubject.value.filter((c) => c.id == id)[0]
   }
   getChapterByPaperId(id: string){
-    console.log(this.chaptersSubject.value, id)
     return this.chaptersSubject.value.filter((c) => c.paper_id == id)
   }
   getPaperByChapterId(id: string){
@@ -270,5 +269,7 @@ updateAllTimelinesVisible(): void {
   this.timelinesSubject.next(updated);
 }
 
-
+getpaperList(): paper[]{
+  return this.papersSubject.value
+}
 }

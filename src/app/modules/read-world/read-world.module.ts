@@ -17,6 +17,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatBadgeModule } from '@angular/material/badge';
 import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
+import { PaperCardComponent } from './paper-card/paper-card.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import {MatMenuModule} from '@angular/material/menu';
 
 
 
@@ -33,7 +37,8 @@ const routes: Routes = [
     HeaderComponent,
     TopPanelComponent,
     BottomSheetComponent,
-    ChapterDetailsComponent
+    ChapterDetailsComponent,
+    PaperCardComponent,
   ],
     providers: [BottomSheetService],
   imports: [
@@ -41,14 +46,17 @@ const routes: Routes = [
     MatIconModule,
     MatFormFieldModule,
     MatCheckboxModule,
+    MatMenuModule,
     FormsModule,
     MatButtonModule,
     MatTooltipModule,
     MatInputModule,
     MatBadgeModule,
     MatTableModule,
+    MatCardModule,
+    MatDividerModule,
     RouterModule.forChild(routes),
-    
+
   ]
 })
 export class ReadWorldModule { }

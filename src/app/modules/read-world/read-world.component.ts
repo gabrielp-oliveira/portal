@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
-import { Timeline, Chapter, StoryLine } from '../../models/paperTrailTypes';
+import { Timeline, Chapter, StoryLine, paper, paperCard } from '../../models/paperTrailTypes';
 import { ApiService } from '../api.service';
 import { UtilsService } from '../../utils.service';
 import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class ReadWorldComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private iframe!: HTMLIFrameElement;
+  paperCardList: paperCard[]
 
   constructor(
     private route: ActivatedRoute,
@@ -69,6 +70,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
         };
 
         this.wd.setWorldData(updatedWorld);
+        this.parsePaperChapters(coloredPapers)
       });
   }
 
@@ -160,7 +162,18 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  parsePaperChapters(papers: paper[]){
+    this.paperCardList = []
+    papers.forEach((pp) => {
+      this.paperCardList.push({
+        paper: pp,
+        chapterList: this.wd.getChapterByPaperId(pp.id)
+      })
+    })
+  }
 }
+
+
 
 
 type chapterSelected = {

@@ -127,17 +127,23 @@ export class ReadChapterComponent implements OnInit {
         break;
 
       case 'save-annotation':
-        if (!payload?.spanId || !payload.note || !this.paperId || this.chapterOrder == null) {
+        console.log("payload")
+        console.log(payload.spanId)
+        console.log(payload.span)
+        console.log(payload)
+        console.log("payload")
+        if (!payload?.span.id || !payload?.span.text || !payload.note || !this.paperId || this.chapterOrder == null) {
           console.error('❌ spanId, note, paperId ou chapterOrder ausente em save-annotation');
           return;
         }
-
+        
         this.api.updateAnnotation(
-          payload.spanId,
+          payload.span.id,
           this.paperId,
           this.chapterOrder,
           payload.note,
-          false
+          false,
+          payload.span.text
         ).subscribe({
           next: () => console.log('✅ Anotação salva  com sucesso'),
           error: err => console.error('❌ Erro ao salvar anotação:', err)
@@ -145,7 +151,7 @@ export class ReadChapterComponent implements OnInit {
         break;
 
       case 'update-annotation-favorite':
-        if (!payload?.spanId || !this.paperId || this.chapterOrder == null) {
+        if (!payload?.spanId || !this.paperId || this.chapterOrder == null || !payload?.spanText) {
           console.error('❌ spanId, paperId ou chapterOrder ausente em update-annotation-favorite');
           return;
         }
@@ -157,7 +163,8 @@ export class ReadChapterComponent implements OnInit {
           this.paperId,
           this.chapterOrder,
           '',
-          isNowFavorite
+          isNowFavorite,
+          payload?.spanText
         ).subscribe({
           next: () => {
             if (isNowFavorite) {
@@ -190,6 +197,16 @@ export class ReadChapterComponent implements OnInit {
         console.log(`📨 Log do iframe | Fonte: ${payload?.source}`, payload?.message);
         break;
 
+      case "chapter-favorite":
+        if (this.paperId && this.chapterOrder != null) {
+          this.api.markChapterFavorite(this.paperId, this.chapterOrder, true).subscribe({
+            next: () => {
+              console.log('✅ Capítulo marcado como completo')
+            },
+            error: err => console.error('❌ Erro ao marcar capítulo como completo:', err)
+          });
+        }
+        break;
       default:
         console.warn("⚠️ Evento desconhecido do iframe:", data);
         break;

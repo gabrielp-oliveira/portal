@@ -115,7 +115,10 @@ export type Chapter = {
     color: string,
     selected: boolean,
     focus: boolean,
-    visible: boolean
+    visible: boolean,
+    completed?: boolean
+    favorite?: boolean
+    annotations?: ChapterAnnotation[]
 }
 
 export type ChapterTimeline = {
@@ -215,4 +218,10 @@ export interface ChapterConfiguration {
     favorite: boolean;
     created_at: string;  // ou Date, se você for converter
     updated_at: string;  // ou Date, se você for converter
+}
+
+
+export interface paperCard  {
+  paper: paper,
+  chapterList: Chapter[]
 }
