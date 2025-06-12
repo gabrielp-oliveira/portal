@@ -3,6 +3,10 @@ import { Component, Input } from '@angular/core';
 import { Chapter, paper } from '../../../models/paperTrailTypes';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { UtilsService } from '../../../utils.service';
+import { WorldDataService } from '../../dashboard/world-data.service';
+import { ChapterDetailsComponent } from '../dialog/chapter-details/chapter-details.component';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 export type paperCard = {
   paper: paper,
@@ -27,9 +31,9 @@ export class PaperCardComponent {
   expanded = false;
   isDarkMode = false;
   expandLabel = 'chapters'
-  constructor(private util: UtilsService) {
-    this.util.theme$.subscribe(theme => {
-      this.isDarkMode = theme
+  constructor(private wd: WorldDataService, private dialog: MatDialog, private router: Router,) {
+    this.wd.settings$.subscribe(ss => {
+      this.isDarkMode = ss.theme
     });
   }
 
@@ -59,15 +63,31 @@ export class PaperCardComponent {
   }
 
 
-onViewDetails(chapter: any) {
-  console.log('🔍 Detalhes do capítulo:', chapter);
-  // Navegar ou abrir modal com os detalhes
-}
+  onViewDetails(chapter: any) {
+    console.log('🔍 Detalhes do capítulo:', chapter);
+    // Navegar ou abrir modal com os detalhes
+    const data = {
+      chapter,
+      paper: this.wd.getPaperByChapterId(chapter.id),
+      link: this.wd.getChapterLink(chapter.id)
+    }
 
-onReadChapter(chapter: any) {
-  console.log('📖 Lendo capítulo:', chapter);
-  // Navegar para a tela de leitura
-}
+    this.dialog.open(ChapterDetailsComponent, {
+      width: '400px',
+      maxHeight: '90vh',
+      panelClass: 'custom-dialog-container',
+      data: data
+    });
+
+  }
+
+  onReadChapter(chapter: any) {
+    console.log('📖 Lendo capítulo:', chapter);
+    // Navegar para a tela de leitura
+    this.router.navigate(['/read/book', chapter.paper_id, 'chapter', chapter.order]);
+
+  }
+
 
 
 }

@@ -1,41 +1,46 @@
-<div class="dialog">
-  <button class="close-btn">×</button>
+<div class="dialog" [ngClass]="isDarkMode ? 'dark' : 'light'">
+  <button class="close-btn" (click)="close()">×</button>
 
-  <img [src]="chapter.cover" alt="Capa do Livro" class="cover">
+  <!-- <img [src]="chapter.cover" alt="Capa do Livro" class="cover"> -->
 
-  <h2>{{ chapter.title }}</h2>
-  <p class="book">{{ chapter.book }}</p>
+  <h2>{{ chapter.title }} <mat-icon *ngIf="chapter.favorite" matTooltip="favorite" style="color: gold;">star</mat-icon>
+  </h2>
+  <p class="book">{{ paper.name }} </p>
 
   <nav class="tabs">
-    <button *ngFor="let tab of tabs"
-            [class.active]="selectedTab === tab"
-            (click)="selectedTab = tab">
+    <button *ngFor="let tab of tabs" [class.active]="selectedTab === tab" (click)="selectedTab = tab">
       {{ tab | titlecase }}
     </button>
   </nav>
 
   <div class="tab-content">
     <div *ngIf="selectedTab === 'resumo'">
-      <p>{{ chapter.summary }}</p>
+      <p>{{ chapter.description }}</p>
     </div>
 
     <div *ngIf="selectedTab === 'timeline'">
-      <p><strong>Timeline:</strong> {{ chapter.timeline.name }}</p>
-      <p><strong>Ordem:</strong> {{ chapter.timeline.ordem }}</p>
-      <p><strong>Range:</strong> {{ chapter.timeline.range }}</p>
+      <p><strong>Timeline:</strong> {{ timeline.name }}</p>
+      <p>{{ timeline.description }}</p>
     </div>
 
-    <div *ngIf="selectedTab === 'anotacoes'">
+    <div *ngIf="selectedTab === 'notes'">
       <ul>
-        <li *ngFor="let comment of chapter.comments">{{ comment }}</li>
+        <ng-container *ngFor="let ann of chapter.annotations">
+          <li *ngIf="ann.span_text?.trim() && ann.note?.trim()">
+            <p class="spanText">{{ ann.span_text }}</p>
+            <p class="notes">{{ ann.note }}</p>
+          </li>
+        </ng-container>
       </ul>
-      <input type="text" placeholder="Adicionar comentário..." disabled>
+
+
     </div>
 
-    <div *ngIf="selectedTab === 'conexoes'">
-      <p>Conexões ainda não disponíveis.</p>
+    <div *ngIf="selectedTab === 'storyline'">
+      <p><strong>storyline:</strong> {{ storyline.name }}</p>
+      <p>{{ storyline.description }}</p>
     </div>
   </div>
 
-  <button class="open-button">Ver capítulo completo</button>
+  <button mat-button class=" open-button">Read Chapter</button>
 </div>

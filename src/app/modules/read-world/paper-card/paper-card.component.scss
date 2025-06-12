@@ -1,11 +1,12 @@
 .paper-card {
   padding: 16px;
   border-radius: 10px;
-  margin-bottom: 16px;
   max-width: 600px;
-  width: 100%;
   transition: background 0.3s, color 0.3s;
   overflow: hidden;
+  margin: 16px auto;
+  width: 100%;
+  box-sizing: border-box;
 
   &.dark-theme {
     background: #1e1e1e;
@@ -77,8 +78,14 @@
   font-weight: bold;
   flex-wrap: wrap;
   gap: 8px;
+  // width: 550px;
 }
-
+.left h3 {
+  width: 300px;
+  text-align: start;
+  flex-wrap: wrap;
+  justify-content: start;
+}
 .meta {
   font-size: 14px;
 }

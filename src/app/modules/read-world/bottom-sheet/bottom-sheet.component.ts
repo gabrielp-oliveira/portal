@@ -15,9 +15,9 @@ import { BottomSheetService } from '../bottom-sheet.service';
 export class BottomSheetComponent implements OnDestroy {
 
   search = '';
-  displayedChaptersColumns = ['visible', 'title', 'order', 'read', 'actions'];
-  displayedPaperColumns = ['visible', 'name', 'order', 'read', 'actions'];
-  displayedtimelinesColumns = ['visible', 'name', 'order','actions'];
+  displayedChaptersColumns = ['visible', 'title', 'order', 'read'];
+  displayedPaperColumns = ['visible', 'name', 'order', 'read'];
+  displayedtimelinesColumns = ['visible', 'name', 'order', 'actions'];
   chapters: Chapter[] = [];
   timelines: Timeline[] = [];
   papers: paper[] = [];
@@ -26,6 +26,7 @@ export class BottomSheetComponent implements OnDestroy {
   timelineSortBy: 'name' | 'order' = 'order';
   sortAsc: boolean = true;
 
+  isDarkTheme: boolean = false
   destroy$ = new Subject<void>();
 
   constructor(
@@ -39,11 +40,13 @@ export class BottomSheetComponent implements OnDestroy {
 
 
   close() {
-  this.bottomSheetService.close()
-}
+    this.bottomSheetService.close()
+  }
 
   ngOnInit() {
+
     this.wd.chapters$
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (chapters) => {
           this.chapters = chapters;
@@ -51,6 +54,8 @@ export class BottomSheetComponent implements OnDestroy {
         error: (err) => this.errorHandler.errHandler(err)
       });
     this.wd.timelines$
+
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (timeline) => {
           this.timelines = timeline;
@@ -58,12 +63,23 @@ export class BottomSheetComponent implements OnDestroy {
         error: (err) => this.errorHandler.errHandler(err)
       });
     this.wd.papers$
+
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (papers) => {
           this.papers = papers;
         },
         error: (err) => this.errorHandler.errHandler(err)
       });
+    this.wd.settings$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ss) => {
+        this.isDarkTheme = ss.theme
+        this.applyThemeToMaterialClasses();
+      })
+
+        this.observeBottomSheetChanges(); // observa novas instâncias
+
   }
 
   ngOnDestroy(): void {
@@ -88,7 +104,7 @@ export class BottomSheetComponent implements OnDestroy {
   onTimelinesVisibilityToggle(timeline: Timeline) {
     this.chapters.forEach((chp) => {
       if (chp.timeline_id == timeline.id) {
-        chp.visible = timeline.visible 
+        chp.visible = timeline.visible
         this.wd.updateChapter(chp)
       }
     })
@@ -169,6 +185,37 @@ export class BottomSheetComponent implements OnDestroy {
       this.sortAsc = true;
     }
   }
+
+  private applyThemeToMaterialClasses() {
+    const background = this.isDarkTheme ? '#1e1e1e' : '#ffffff';
+    const color = this.isDarkTheme ? '#f4f4f4' : '#1a1a1a';
+
+    const elements = document.querySelectorAll<HTMLElement>(
+      '.mat-bottom-sheet-container, .mat-elevation-z2, .mat-elevation-z2 tr'
+    );
+
+    elements.forEach((el) => {
+      el.style.backgroundColor = background;
+      el.style.color = color;
+      el.style.fontFamily = "'Segoe UI', sans-serif";
+      el.style.fontSize = '14px';
+    });
+  }
+
+  private observeBottomSheetChanges() {
+  const observer = new MutationObserver(() => {
+    this.applyThemeToMaterialClasses(); // aplica o estilo sempre que algo novo for adicionado
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+
+  // Opcional: guarda para desconectar depois, se quiser limpar
+  this.destroy$.subscribe(() => observer.disconnect());
+}
+
 
 
 

@@ -1,30 +1,53 @@
-<div class="top-panel">
+<div class="top-panel" [class.dark]="isDarkMode">
+    
+        <div class="world-card" [class.dark]="isDarkMode">
+        <div class="world-header">
+            <h2>{{ basicWorld?.name }}</h2>
+            <p class="author" *ngFor="let pp of papers">Autor: {{ pp.author_name }}</p>
+        </div>
+
+        <p class="description">{{ basicWorld?.description }}</p>
+
+        <div class="progress-section">
+            <span>📘 Capítulos prontos: {{ completedChapters }}/{{ totalChapters }}</span>
+            <progress max="{{ totalChapters }}" [value]="completedChapters"></progress>
+        </div>
+    </div>
+
     <div class="stats">
-        <div class="card" (click)="openBottomSheet('books')" [matBadge]="hiddenPapersCount" [matBadgeColor]="'warn'">
+        <div class="card" (click)="openBottomSheet('books')" [matBadge]="hiddenPapersCount" matBadgeColor="warn">
             <div class="icon">📚</div>
             <div class="label">Books</div>
             <div class="value">{{ (papers$ | async)?.length || 0 }}</div>
         </div>
 
-        <div class="card" (click)="openBottomSheet('chapters')"  [matBadge]="hiddenChaptersCount" [matBadgeColor]="'warn'">
+        <div class="card" (click)="openBottomSheet('chapters')" [matBadge]="hiddenChaptersCount" matBadgeColor="warn">
             <div class="icon">📄</div>
             <div class="label">Chapters</div>
             <div class="value">{{ (chapters$ | async)?.length || 0 }}</div>
-
         </div>
-        <div class="card" (click)="openBottomSheet('timelines')"  [matBadge]="hiddenTimelinesCount" [matBadgeColor]="'warn'">
+
+        <div class="card" (click)="openBottomSheet('timelines')" [matBadge]="hiddenTimelinesCount" matBadgeColor="warn">
             <div class="icon">⏱️</div>
             <div class="label">Timelines</div>
             <div class="value">{{ (timelines$ | async)?.length || 0 }}</div>
         </div>
-        <div class="clearCard" (click)="clearFilters()" *ngIf="hiddenChaptersCount < 0 || hiddenChaptersCount < 0 || hiddenPapersCount < 0">
-            <div class="icon">⏱️</div>
-            <div class="label">clear</div>
+
+        <div class="clearCard" (click)="clearFilters()"
+            *ngIf="hiddenChaptersCount < 0 || hiddenTimelinesCount < 0 || hiddenPapersCount < 0">
+            <div class="icon">♻️</div>
+            <div class="label">Limpar</div>
         </div>
+
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center;"
+            matBadgeColor="warn">
+            <button class="btn-action">🧾 Exportar visão</button>
+            <button class="btn-action">📃 Resumo narrativo</button>
+        </div>
+
     </div>
 
-    <div class="actions">
-        <button class="btn-action">🧾 Exportar visão</button>
-        <button class="btn-action">📃 Resumo narrativo</button>
-    </div>
+
+
+
 </div>

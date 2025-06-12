@@ -1,10 +1,93 @@
 .dialog {
-  background: white;
   border-radius: 12px;
   padding: 20px;
   position: relative;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+  &.light {
+    background: white;
+    color: #222;
+
+    .book {
+      color: #666;
+    }
+
+    .tabs button {
+      color: #555;
+
+      &.active {
+        color: #007bff;
+        border-color: #007bff;
+      }
+    }
+
+    .open-button {
+      background: #007bff;
+      color: white;
+    }
+
+    input {
+      background: white;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+
+    .tab-content ul li {
+      .spanText {
+        background: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+      }
+
+      .notes {
+        background: #f1f1f1;
+        color: #333;
+        border-top: 1px solid #ccc;
+      }
+    }
+  }
+
+  &.dark {
+    background: #1e1e1e;
+    color: #f4f4f4;
+
+    .book {
+      color: #aaa;
+    }
+
+    .tabs button {
+      color: #ccc;
+
+      &.active {
+        color: #4dabf7;
+        border-color: #4dabf7;
+      }
+    }
+
+    .open-button {
+      background: #4dabf7;
+      color: #111;
+    }
+
+    input {
+      background: #2e2e2e;
+      color: #f4f4f4;
+      border: 1px solid #555;
+    }
+
+    .tab-content ul li {
+      .spanText {
+        background: rgba(77, 181, 255, 0.1);
+        color: #4dabf7;
+      }
+
+      .notes {
+        background: #2e2e2e;
+        color: #ccc;
+        border-top: 1px solid #444;
+      }
+    }
+  }
 }
 
 .close-btn {
@@ -24,12 +107,6 @@
   border-radius: 6px;
 }
 
-.book {
-  text-align: center;
-  color: #666;
-  margin-bottom: 20px;
-}
-
 .tabs {
   display: flex;
   justify-content: space-around;
@@ -41,13 +118,8 @@
     font-weight: bold;
     padding: 8px;
     cursor: pointer;
-    color: #555;
     border-bottom: 2px solid transparent;
-
-    &.active {
-      color: #007bff;
-      border-color: #007bff;
-    }
+    transition: all 0.2s ease-in-out;
   }
 }
 
@@ -56,7 +128,27 @@
   margin-bottom: 20px;
 
   ul {
-    padding-left: 20px;
+    padding-left: 0;
+    list-style: none;
+
+    li {
+      border-radius: 10px;
+      margin: 10px 0;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s;
+
+      .spanText {
+        padding: 10px 14px;
+        font-weight: 600;
+        font-style: italic;
+      }
+
+      .notes {
+        padding: 10px 14px;
+      }
+    }
   }
 
   input {
@@ -64,7 +156,11 @@
     padding: 6px;
     width: 100%;
     border-radius: 6px;
-    border: 1px solid #ccc;
+  }
+
+  div {
+    max-height: 300px;
+    overflow-y: auto;
   }
 }
 

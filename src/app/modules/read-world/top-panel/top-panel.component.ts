@@ -1,37 +1,34 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
-import { Chapter, paper, StoryLine, Timeline, world } from '../../../models/paperTrailTypes';
+import { basicWorld, Chapter, paper, StoryLine, Timeline, world } from '../../../models/paperTrailTypes';
 import { Subject, takeUntil } from 'rxjs';
 import { BottomSheetService } from '../bottom-sheet.service';
+import { UtilsService } from '../../../utils.service';
 
 @Component({
   selector: 'app-top-panel',
   templateUrl: './top-panel.component.html',
   styleUrls: ['./top-panel.component.scss']
 })
-export class TopPanelComponent {
-
+export class TopPanelComponent implements OnInit, OnDestroy {
   @Input() world!: world;
 
-  chapters: Chapter[]
-  timelines: Timeline[]
-  storyline: StoryLine[]
-  papers: paper[]
+  basicWorld: basicWorld | null
+  chapters: Chapter[] = [];
+  timelines: Timeline[] = [];
+  storyline: StoryLine[] = [];
+  papers: paper[] = [];
   hiddenPapersCount = 0;
   hiddenChaptersCount = 0;
   hiddenTimelinesCount = 0;
+  isDarkMode = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private api: ApiService,
-    private wd: WorldDataService,
-    private errorHandler: ErrorService,
-    private bottomSheetService: BottomSheetService
-  ) {
-  }
+  completedChapters = 0;
+  totalChapters = 0;
+
 
   destroy$ = new Subject<void>();
 
@@ -40,29 +37,38 @@ export class TopPanelComponent {
   storylines$ = this.wd.storylines$;
   chapters$ = this.wd.chapters$;
   world$ = this.wd.world$;
-  range: number = 1
+
+  constructor(
+    private route: ActivatedRoute,
+    private api: ApiService,
+    private wd: WorldDataService,
+    private errorHandler: ErrorService,
+    private bottomSheetService: BottomSheetService,
+    private util: UtilsService
+  ) { }
 
   ngOnInit(): void {
-    this.wd.papers$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(papers => {
-        const notVisible = papers.filter(p => !p.visible).length;
-        this.hiddenPapersCount = -notVisible;
-      });
-    this.wd.chapters$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(chapter => {
-        const notVisible = chapter.filter(p => !p.visible).length;
-        this.hiddenChaptersCount = -notVisible;
-      });
-    this.wd.timelines$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(tl => {
-        const notVisible = tl.filter(p => !p.visible).length;
-        this.hiddenTimelinesCount = -notVisible;
-      });
-  }
+    this.wd.world$.subscribe((a) => {
+      this.basicWorld = a
+    })
+    this.wd.settings$.pipe(takeUntil(this.destroy$)).subscribe((status) => {
+      this.isDarkMode = status.theme;
+    });
 
+    this.papers$.pipe(takeUntil(this.destroy$)).subscribe(papers => {
+      this.hiddenPapersCount = -papers.filter(p => !p.visible).length;
+    });
+    this.chapters$.pipe(takeUntil(this.destroy$)).subscribe(chapters => {
+      this.hiddenChaptersCount = -chapters.filter(p => !p.visible).length;
+
+      this.totalChapters = chapters.length;
+      this.completedChapters = chapters.filter(c => c.completed).length;
+    });
+
+    this.timelines$.pipe(takeUntil(this.destroy$)).subscribe(timelines => {
+      this.hiddenTimelinesCount = -timelines.filter(p => !p.visible).length;
+    });
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -73,10 +79,9 @@ export class TopPanelComponent {
     this.bottomSheetService.open(type);
   }
 
-clearFilters() {
-  this.wd.updateAllPapersVisible();
-  this.wd.updateAllChaptersVisible();
-  this.wd.updateAllTimelinesVisible();
-}
-
+  clearFilters() {
+    this.wd.updateAllPapersVisible();
+    this.wd.updateAllChaptersVisible();
+    this.wd.updateAllTimelinesVisible();
+  }
 }

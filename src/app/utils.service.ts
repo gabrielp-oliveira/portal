@@ -37,12 +37,7 @@ export class UtilsService {
 
 
 
-  toggleThme() {
-    this.themeSubject.next(!this.themeSubject.value)
-  }
 
-  getTheme():boolean{
-    return this.themeSubject.value
-  }
+
 
 }

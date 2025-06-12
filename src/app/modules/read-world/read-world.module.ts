@@ -21,6 +21,7 @@ import { PaperCardComponent } from './paper-card/paper-card.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import {MatMenuModule} from '@angular/material/menu';
+import { FooterComponent } from './footer/footer.component';
 
 
 
@@ -39,6 +40,7 @@ const routes: Routes = [
     BottomSheetComponent,
     ChapterDetailsComponent,
     PaperCardComponent,
+    FooterComponent
   ],
     providers: [BottomSheetService],
   imports: [

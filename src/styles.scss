@@ -135,3 +135,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-size: 20px!important;
 }
 
+/* 🌗 Suporte para tema claro e escuro no Bottom Sheet */
+.mat-bottom-sheet-container, .mat-elevation-z2, .mat-elevation-z2 tr {
+  // background-color: #1e1e1e!important;
+  // color: #f4f4f4!important;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+}
+
+

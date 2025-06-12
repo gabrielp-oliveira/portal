@@ -1,3 +1,6 @@
+
+<div [ngClass]="isDarkTheme ? 'dark-theme' : 'light-theme'">
+
 <ng-container *ngIf="data.type == 'chapters'">
 
   <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
@@ -11,19 +14,18 @@
         top: 0;
         z-index: 1;
         position: sticky;
-        background: #ffffff;
         padding-top: 4px;
         padding-bottom: 4px;
       ">
-    <mat-label>Buscar por nome</mat-label>
-    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+    <mat-label [ngClass]="isDarkTheme ? 'dark-label' : 'light-label'">chapter Title</mat-label>
+    <input matInput [(ngModel)]="search" placeholder="Search by Title"  [style.color]="isDarkTheme ? '#f4f4f4' : '#1a1a1a'"/>
   </mat-form-field>
 
   <table mat-table [dataSource]="filteredChapters" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
 
     <!-- Visibilidade -->
     <ng-container matColumnDef="visible">
-      <th mat-header-cell *matHeaderCellDef>Exibir</th>
+      <th mat-header-cell *matHeaderCellDef>show</th>
       <td mat-cell *matCellDef="let chapter">
         <mat-checkbox [(ngModel)]="chapter.visible" (ngModelChange)="onChapterVisibilityToggle(chapter)"></mat-checkbox>
       </td>
@@ -32,7 +34,7 @@
     <!-- Nome -->
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef (click)="toggleSort('title')" style="cursor: pointer;">
-        Capítulo
+        Title
         <mat-icon *ngIf="chapterSortBy === 'title'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
       </th>
       <td mat-cell *matCellDef="let chapter">
@@ -43,7 +45,7 @@
     <!-- Ordem -->
     <ng-container matColumnDef="order">
       <th mat-header-cell *matHeaderCellDef (click)="toggleSort('order')" style="cursor: pointer;">
-        Ordem
+        Order
         <mat-icon *ngIf="chapterSortBy === 'order'">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
       </th>
       <td mat-cell *matCellDef="let chapter">
@@ -58,21 +60,13 @@
 
     <!-- Lido -->
     <ng-container matColumnDef="read">
-      <th mat-header-cell *matHeaderCellDef>Lido</th>
+      <th mat-header-cell *matHeaderCellDef>completed</th>
       <td mat-cell *matCellDef="let chapter">
-        <mat-icon color="primary">{{ chapter.read ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        <mat-icon color="primary">{{ chapter.completed ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
       </td>
     </ng-container>
 
-    <!-- Detalhes -->
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let chapter">
-        <button mat-icon-button (click)="showDetails(chapter)">
-          <mat-icon>info</mat-icon>
-        </button>
-      </td>
-    </ng-container>
+
 
     <!-- Linhas -->
     <tr mat-header-row *matHeaderRowDef="displayedChaptersColumns"></tr>
@@ -91,8 +85,8 @@
 
   </div>
   <mat-form-field appearance="outline" style="width: 100%;">
-    <mat-label>Buscar por nome</mat-label>
-    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+    <mat-label [ngClass]="isDarkTheme ? 'dark-label' : 'light-label'">books Title</mat-label>
+    <input matInput  [style.color]="isDarkTheme ? '#f4f4f4' : '#1a1a1a'" [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
   </mat-form-field>
 
   <table mat-table [dataSource]="filteredPapers" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
@@ -136,21 +130,13 @@
 
     <!-- Lido -->
     <ng-container matColumnDef="read">
-      <th mat-header-cell *matHeaderCellDef>Lido</th>
+      <th mat-header-cell *matHeaderCellDef>completed</th>
       <td mat-cell *matCellDef="let paper">
         <mat-icon color="primary">{{ paper.read ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
       </td>
     </ng-container>
 
-    <!-- Detalhes -->
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let paper">
-        <button mat-icon-button (click)="showDetails(paper)">
-          <mat-icon>info</mat-icon>
-        </button>
-      </td>
-    </ng-container>
+
 
     <!-- Linhas -->
     <tr mat-header-row *matHeaderRowDef="displayedPaperColumns"></tr>
@@ -174,12 +160,11 @@
         top: 0;
         z-index: 1;
         position: sticky;
-        background: #ffffff;
         padding-top: 4px;
         padding-bottom: 4px;
       ">
-    <mat-label>Buscar por nome</mat-label>
-    <input matInput [(ngModel)]="search" placeholder="Digite o nome do capítulo" />
+    <mat-label [ngClass]="isDarkTheme ? 'dark-label' : 'light-label'">timeline name</mat-label>
+    <input matInput [(ngModel)]="search" placeholder="search by timeline name"  [style.color]="isDarkTheme ? '#f4f4f4' : '#1a1a1a'"/>
   </mat-form-field>
 
   <table mat-table [dataSource]="filteredTimelines" class="mat-elevation-z2" style="width: 100%; margin-top: 10px;">
@@ -235,3 +220,5 @@
   </table>
 
 </ng-container>
+
+</div>

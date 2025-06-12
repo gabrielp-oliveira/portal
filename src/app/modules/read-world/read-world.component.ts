@@ -5,12 +5,12 @@ import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
 import { Timeline, Chapter, StoryLine, paper, paperCard } from '../../models/paperTrailTypes';
 import { ApiService } from '../api.service';
-import { UtilsService } from '../../utils.service';
+// import { UtilsService } from '../../utils.service';
 import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-read-world', 
+  selector: 'app-read-world',
   templateUrl: './read-world.component.html',
   styleUrls: ['./read-world.component.scss']
 })
@@ -18,13 +18,14 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private iframe!: HTMLIFrameElement;
   paperCardList: paperCard[]
+  private lastSentSettings: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private wd: WorldDataService,
+    public wd: WorldDataService,
     private errorHandler: ErrorService,
     private api: ApiService,
-    private utils: UtilsService,
+    // private utils: UtilsService,
     private router: Router,
     private dialog: MatDialog,
   ) { }
@@ -79,38 +80,52 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       this.wd.chapters$,
       this.wd.timelines$,
       this.wd.storylines$,
-      this.utils.theme$
+      this.wd.settings$
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ([chapters, timelines, storylines, theme]) => {
-          const visibleChapters: Chapter[] = chapters.filter(c => c.visible);
-          const visibleTimelines: Timeline[] = timelines
-            .filter(t => t.visible)
-            .sort((a, b) => a.order - b.order)
-            .map((t, index) => ({ ...t, order: index + 1 }));
+      .subscribe(([chapters, timelines, storylines, settings]) => {
+        if (!settings) return;
 
-          const visibleStorylines: StoryLine[] = storylines;
+        const visibleChapters = chapters.filter(c => c.visible);
+
+        const visibleTimelines = timelines
+          .filter(t => t.visible)
+          .sort((a, b) => a.order - b.order)
+          .map((t, index) => ({ ...t, order: index + 1 }));
+
+        const visibleStorylines = storylines;
+
+        // 🔒 Serializa só as propriedades relevantes
+        const serialized = JSON.stringify({
+          x: settings.x,
+          y: settings.y,
+          k: settings.k,
+          theme: settings.theme
+        });
+
+        // ✅ Evita reenviar dados se não houve alteração relevante
+        if (this.lastSentSettings !== serialized) {
+          this.lastSentSettings = serialized;
 
           this.iframe.contentWindow?.postMessage({
             type: "set-data",
             data: {
               timelines: visibleTimelines,
               storylines: visibleStorylines,
-              chapters: visibleChapters
+              chapters: visibleChapters,
+              settings
             }
           }, "*");
+        }
 
-          this.iframe.contentWindow?.postMessage({
-            type: "set-light",
-            data: {
-              light: theme
-            }
-          }, "*");
-        },
-        error: err => this.errorHandler.errHandler(err)
+        // 💡 Mesmo se settings não mudou, podemos reenviar apenas o tema se quiser reforçar
+        this.iframe.contentWindow?.postMessage({
+          type: "set-light",
+          data: { light: settings.theme }
+        }, "*");
       });
   }
+
 
   // 🔁 Handler de mensagens externas do iframe
   handleIframeMessage = (event: MessageEvent) => {
@@ -121,7 +136,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       // console.log("🟢 Usuário focou ->:", data);
     } else if (type === "board-transform-update") {
       // console.log("🟢 Transformação do board ->:", data);
-      this.boardTransform(data)
+      this.boardTransform(data.transform)
     }
   };
 
@@ -148,21 +163,47 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
 
 
 
-  boardTransform(data: chapterSelected) {
+  boardTransform(data: boardTransformation) {
+    const current = this.wd.getSettings();
 
+    if (current) {
+      const changed =
+        current.x !== data.x || current.y !== data.y || current.k !== data.k;
+
+      if (!changed) return; // não faz nada se nada mudou
+
+      const updated = {
+        ...current,
+        x: data.x,
+        y: data.y,
+        k: data.k,
+      };
+
+      this.api.updateSettings(updated.id, updated)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((ss) => {
+          this.wd.setSettings(ss);
+        });
+    }
   }
 
 
   openChapterDetails(id: string): void {
+
+    const data = {
+      chapter: this.wd.getChapterById(id),
+      paper: this.wd.getPaperByChapterId(id),
+      link: this.wd.getChapterLink(id)
+    }
     this.dialog.open(ChapterDetailsComponent, {
       width: '400px',
       maxHeight: '90vh',
       panelClass: 'custom-dialog-container',
-      data: id
+      data: data
     });
   }
 
-  parsePaperChapters(papers: paper[]){
+  parsePaperChapters(papers: paper[]) {
     this.paperCardList = []
     papers.forEach((pp) => {
       this.paperCardList.push({
@@ -184,5 +225,5 @@ type chapterSelected = {
 type boardTransformation = {
   x: number,
   y: number,
-  z: number
+  k: number
 }

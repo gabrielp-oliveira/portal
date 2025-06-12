@@ -1,0 +1,25 @@
+<footer [ngClass]="{ 'footer-dark': isDarkMode, 'footer-light': !isDarkMode }">
+    <div class="footer-divider"></div>
+  <div class="footer-container">
+    <div class="footer-logo">
+      <img src="assets/mainIcon.svg" alt="Narratus Logo" />
+      <div class="footer-title">
+        <h2>Narratus</h2>
+        <p>Onde histórias ganham forma.</p>
+      </div>
+    </div>
+
+    <ul class="footer-links">
+      <li><a routerLink="/">Home</a></li>
+      <li><a routerLink="/about">About</a></li>
+      <li><a routerLink="/store">Store</a></li>
+      <li><a routerLink="/contact">Contact</a></li>
+      <li><a routerLink="/terms">Use terms</a></li>
+    </ul>
+    <div class="footer-divider2"></div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 Narratus. Todos os direitos reservados.</p>
+    </div>
+  </div>
+</footer>

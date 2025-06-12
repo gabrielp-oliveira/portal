@@ -2,9 +2,8 @@
   width: 100%;
   height: min-content;
   overflow: hidden;
-  border-top: 1px solid #ddd;
-  background-color: #fff;
-  padding: 5px;
+  background-color: white;
+  padding-bottom: 10px;
   
   iframe {
     width: 100%;
@@ -43,10 +42,30 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  min-height: 450px;
   justify-content: flex-start;
   align-items: flex-start;
   justify-content: space-around;
 }
+
+.paper-cards-wrapper {
+  background-color: #f7f7f7; // Light
+  padding: 16px;
+  &.dark {
+    background-color: #1c1c1c; // Dark
+  }
+}
+
+// OU, se quiser aplicar com base no container pai:
+
+.dark .paper-cards-wrapper {
+  background-color: #1c1c1c;
+}
+
+.dark .iframe-container {
+  background-color: #111;
+}
+
 
 
 

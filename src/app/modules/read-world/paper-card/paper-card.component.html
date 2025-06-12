@@ -1,7 +1,7 @@
 <mat-card class="paper-card" [ngClass]="{ 'dark-theme': isDarkMode, 'light-theme': !isDarkMode }" appearance="outlined">
   <div class="header">
     <div class="left">
-      <h3 matLine>📘 {{ paperCard.paper.name }}</h3>
+      <h3 matLine>{{ paperCard.paper.name }}</h3>
       <div class="meta">
         💛 {{ favoritesCount }} favoritos &nbsp; 📝 {{ annotationsCount }} anotações
       </div>

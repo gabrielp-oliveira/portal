@@ -1,5 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { WorldDataService } from '../../../dashboard/world-data.service';
+import { Chapter, paper, StoryLine, Timeline } from '../../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-chapter-details',
@@ -7,11 +9,34 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
   styleUrl: './chapter-details.component.scss'
 })
 export class ChapterDetailsComponent {
+  isDarkMode:boolean = false
+
+  chapter: Chapter
+  paper: paper
+  link: string
+
+  timeline: Timeline
+  storyline: StoryLine
+
   constructor(
     public dialogRef: MatDialogRef<ChapterDetailsComponent>,
+    private wd:WorldDataService,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
-  tabs = ['resumo', 'timeline', 'anotacoes', 'conexoes'];
+  ) {
+    this.chapter = data.chapter
+    this.paper = data.paper
+    this.link = data.link
+    this.wd.settings$.subscribe((ss) => {
+      this.isDarkMode = ss.theme
+    })
+    this.wd.timelines$.subscribe((tl) => {
+      this.timeline = tl.filter((t) => t.id == this.chapter.timeline_id)[0]
+    })
+    this.wd.storylines$.subscribe((st) => {
+      this.storyline = st.filter((s) => s.id == this.chapter.storyline_id)[0]
+    })
+  }
+  tabs = ['resumo', 'timeline', 'notes', 'storyline'];
 
   close() {
     this.dialogRef.close();
@@ -20,20 +45,5 @@ export class ChapterDetailsComponent {
     selectedTab: string = 'resumo';
 
 
-  chapter = {
-    title: 'Capítulo 4: O Segredo de Beth',
-    book: 'Little Women',
-    summary: `Beth enfrenta um desafio pessoal quando, após cuidar de um bebê doente da vizinhança, ela contrai escarlatina. A doença de Beth preocupa profundamente sua família, enquanto um intenso cuidado de todos se faz necessário.`,
-    cover: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Little_Women_1868.djvu/page1-800px-Little_Women_1868.djvu.jpg',
-    timeline: {
-      name: 'Infância das March',
-      range: 2,
-      ordem: 4,
-    },
-    comments: [
-      'Muito emocionante.',
-      'Podia ter mais detalhes sobre a mãe.'
-    ]
-  };
 
 }

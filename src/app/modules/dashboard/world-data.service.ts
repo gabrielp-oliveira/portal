@@ -18,7 +18,20 @@ export class WorldDataService {
   private timelinesSubject = new BehaviorSubject<Timeline[]>([]);
   private storylinesSubject = new BehaviorSubject<StoryLine[]>([]);
   private connectionsSubject = new BehaviorSubject<Connection[]>([]);
-  private settingsSubject = new BehaviorSubject<Subway_Settings | null>(null);
+  private settingsSubject = new BehaviorSubject<Subway_Settings>({
+    id: '',
+    chapter_names: false,
+    display_table_chapters: false,
+    timeline_update_chapter: false,
+    storyline_update_chapter: false,
+    theme: true,
+    group_connection_update_chapter: false,
+    user_id: '',
+    k: 0.7,
+    x: 0,
+    y: 0,
+    world_id: ''
+  });
 
   // Observables para os componentes se inscreverem
   world$ = this.worldSubject.asObservable();
@@ -35,241 +48,244 @@ export class WorldDataService {
   loading$ = this.loadingSubject.asObservable();
 
   worldId: string = ""
-  constructor(){}
+  constructor() { }
 
-  getWorld(){
+  getWorld() {
     return this.worldSubject.value
   }
 
   // Métodos para atualizar o estado
-  setWorld(world: basicWorld): void { 
+  setWorld(world: basicWorld): void {
     console.log('..')
     this.worldId = world.id
     this.worldSubject.next(world);
   }
 
-  setPapers(papers: paper[]): void { 
+  setPapers(papers: paper[]): void {
     this.papersSubject.next(papers);
   }
-  setSettings(ss: Subway_Settings): void { 
+  setSettings(ss: Subway_Settings): void {
     this.settingsSubject.next(ss);
   }
+  getSettings() {
+    return this.settingsSubject.value;
+  }
 
-  setChapters(chapters: Chapter[]): void { 
+  setChapters(chapters: Chapter[]): void {
     this.chaptersSubject.next(chapters);
   }
-  setTableChapter(chapters: Chapter[] | undefined): void { 
+  setTableChapter(chapters: Chapter[] | undefined): void {
     this.tableChapterSubject.next(chapters);
   }
-  setGlobalConnectionGroup(cnn: GroupConnection[] | undefined): void { 
+  setGlobalConnectionGroup(cnn: GroupConnection[] | undefined): void {
     this.ssGroupConnectionSubject.next(cnn);
   }
 
-  setEvents(events: Event[]): void { 
+  setEvents(events: Event[]): void {
     this.eventsSubject.next(events);
   }
-  setGroupConnection(gcs: GroupConnection[]): void { 
+  setGroupConnection(gcs: GroupConnection[]): void {
     this.groupConnectionSubject.next(gcs);
   }
 
-  setTimelines(timelines: Timeline[]): void { 
+  setTimelines(timelines: Timeline[]): void {
     this.timelinesSubject.next(timelines);
   }
-  setStorylines(storyLine: StoryLine[]): void { 
+  setStorylines(storyLine: StoryLine[]): void {
     this.storylinesSubject.next(storyLine);
   }
 
-  setConnections(connections: Connection[]): void { 
+  setConnections(connections: Connection[]): void {
     this.connectionsSubject.next(connections);
   }
 
   // Métodos para manipular dados locais
-  addPaper(paper: paper): void { 
+  addPaper(paper: paper): void {
     const papers = this.papersSubject.value;
     this.papersSubject.next([...papers, paper]);
   }
 
-  addGroupConnection(gc: GroupConnection): void { 
+  addGroupConnection(gc: GroupConnection): void {
     const gcs = this.groupConnectionSubject.value;
     this.groupConnectionSubject.next([...gcs, gc]);
   }
 
-  updateGroupConnection(gc: GroupConnection): void { 
-    const gcs = this.groupConnectionSubject.value.map(oldGc => 
+  updateGroupConnection(gc: GroupConnection): void {
+    const gcs = this.groupConnectionSubject.value.map(oldGc =>
       oldGc.id === gc.id ? gc : oldGc
     );
     this.groupConnectionSubject.next(gcs);
   }
 
-  addStoryline(storyline: StoryLine): void { 
+  addStoryline(storyline: StoryLine): void {
     const storylines = this.storylinesSubject.value;
     this.storylinesSubject.next([...storylines, storyline]);
   }
 
-  addChapter(chapter: Chapter): void { 
+  addChapter(chapter: Chapter): void {
     const chapters = this.chaptersSubject.value;
     this.chaptersSubject.next([...chapters, chapter]);
   }
-  updateChapter(chapter: Chapter): void { 
-    const chapters = this.chaptersSubject.value.map(existingChapter => 
+  updateChapter(chapter: Chapter): void {
+    const chapters = this.chaptersSubject.value.map(existingChapter =>
       existingChapter.id === chapter.id ? chapter : existingChapter
     );
     this.chaptersSubject.next(chapters);
   }
-  updateConnection(cnn: Connection): void { 
-    const cnns = this.connectionsSubject.value.map(existingCnn => 
+  updateConnection(cnn: Connection): void {
+    const cnns = this.connectionsSubject.value.map(existingCnn =>
       existingCnn.id === cnn.id ? cnn : existingCnn
     );
     this.connectionsSubject.next(cnns);
   }
-  updateTimeline(timeline: Timeline): void { 
-    const timelines = this.timelinesSubject.value.map(existingTimeline => 
+  updateTimeline(timeline: Timeline): void {
+    const timelines = this.timelinesSubject.value.map(existingTimeline =>
       existingTimeline.id === timeline.id ? timeline : existingTimeline
     );
     this.timelinesSubject.next(timelines);
   }
-  updateStoryline(storyline: StoryLine): void { 
-    const storylines = this.storylinesSubject.value.map(existingStoryline => 
+  updateStoryline(storyline: StoryLine): void {
+    const storylines = this.storylinesSubject.value.map(existingStoryline =>
       existingStoryline.id === storyline.id ? storyline : existingStoryline
     );
     this.storylinesSubject.next(storylines);
   }
 
-updatePaper(paper: paper): void {
-  const papers = this.papersSubject.value.map(existingPaper => 
-    existingPaper.id === paper.id ? paper : existingPaper
-  );
-  this.papersSubject.next(papers);
-}
+  updatePaper(paper: paper): void {
+    const papers = this.papersSubject.value.map(existingPaper =>
+      existingPaper.id === paper.id ? paper : existingPaper
+    );
+    this.papersSubject.next(papers);
+  }
 
-  updateEvent(event: Event): void { 
-    const events = this.eventsSubject.value.map(existingEvent => 
+  updateEvent(event: Event): void {
+    const events = this.eventsSubject.value.map(existingEvent =>
       existingEvent.id === event.id ? event : existingEvent
     );
     this.eventsSubject.next(events);
   }
-  getChapterLink(id: string): string{
+  getChapterLink(id: string): string {
     return `https://docs.google.com/document/d/${id}/edit?usp=drivesdk`
   }
-  getChapterPreview(id: string): string{
+  getChapterPreview(id: string): string {
     return `https://docs.google.com/document/d/${id}/preview?usp=drivesdk`
   }
-  getChapterTitle(id: string){
+  getChapterTitle(id: string) {
     return this.chaptersSubject.value.filter((c) => c.id == id)[0]
   }
-  getChapterByPaperId(id: string){
+  getChapterByPaperId(id: string) {
     return this.chaptersSubject.value.filter((c) => c.paper_id == id)
   }
-  getPaperByChapterId(id: string){
+  getPaperByChapterId(id: string) {
     return this.papersSubject.value.filter((p) => p.id == this.getChapterById(id).paper_id)[0]
   }
-  getNextPaperInOrderById(id: string){
+  getNextPaperInOrderById(id: string) {
     const paper = this.papersSubject.value.filter((p) => p.id == id)[0]
-    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order+1)[0]
+    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order + 1)[0]
     return nextPaper
   }
-  getPrevPaperInOrderById(id: string){
+  getPrevPaperInOrderById(id: string) {
     const paper = this.papersSubject.value.filter((p) => p.id == id)[0]
-    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order-1)[0]
+    const nextPaper = this.papersSubject.value.filter((p) => p.order == paper.order - 1)[0]
     return nextPaper
   }
 
-  getChapterByTitle(title: string){
+  getChapterByTitle(title: string) {
     return this.chaptersSubject.value.filter((c) => c.title == title)[0]
   }
-  getChapterById(id: string){
+  getChapterById(id: string) {
     return this.chaptersSubject.value.filter((c) => c.id == id)[0]
   }
 
-  addEvent(event: Event): void { 
+  addEvent(event: Event): void {
     const events = this.eventsSubject.value;
     this.eventsSubject.next([...events, event]);
   }
 
-  addTimeline(timeline: Timeline): void { 
+  addTimeline(timeline: Timeline): void {
     const timelines = this.timelinesSubject.value;
     this.timelinesSubject.next([...timelines, timeline]);
   }
 
-  addConnection(connection: Connection): void { 
+  addConnection(connection: Connection): void {
     const connections = this.connectionsSubject.value;
     this.connectionsSubject.next([...connections, connection]);
   }
 
-  removePaper(papperId: string): void { 
+  removePaper(papperId: string): void {
     const papers = this.papersSubject.value.filter(p => p.id !== papperId);
     this.papersSubject.next(papers);
   }
-  removeGroupConnection(gcId: string): void { 
+  removeGroupConnection(gcId: string): void {
     const gc = this.groupConnectionSubject.value.filter(p => p.id !== gcId);
     this.groupConnectionSubject.next(gc);
   }
 
-  removeChapter(chapterId: string): void { 
+  removeChapter(chapterId: string): void {
     const chapters = this.chaptersSubject.value.filter(c => c.id !== chapterId);
     this.chaptersSubject.next(chapters);
   }
-  removeStoryLine(strId: string): void { 
+  removeStoryLine(strId: string): void {
     const storylines = this.storylinesSubject.value.filter(c => c.id !== strId);
     this.storylinesSubject.next(storylines);
   }
 
-  removeEvent(eventId: string): void { 
+  removeEvent(eventId: string): void {
     const events = this.eventsSubject.value.filter((e: Event) => e.id !== eventId);
     this.eventsSubject.next(events);
   }
 
-  removeTimeline(timelineId: string): void { 
+  removeTimeline(timelineId: string): void {
     const timelines = this.timelinesSubject.value.filter(t => t.id !== timelineId);
     this.timelinesSubject.next(timelines);
   }
 
-  removeConnection(connectionId: string): void { 
+  removeConnection(connectionId: string): void {
     const connections = this.connectionsSubject.value.filter(c => c.id !== connectionId);
     this.connectionsSubject.next(connections);
   }
 
-  setWorldData(data: world): void{
-    const basicworldInfo :basicWorld = {
+  setWorldData(data: world): void {
+    const basicworldInfo: basicWorld = {
       created_at: data.created_at,
       id: data.id,
       name: data.name,
       description: data.description
+    }
+    this.setWorld(basicworldInfo)
+    this.setPapers(data.papers)
+    this.setGroupConnection(data.groupConnections)
+    this.setChapters(data.chapters)
+    this.setConnections(data.connections)
+    this.setEvents(data.events)
+    this.setTimelines(data.timelines)
+    this.setStorylines(data.storyLines)
+    this.setSettings(data.subway_settings)
+
+    this.setLoading(false)
   }
-  this.setWorld(basicworldInfo)
-  this.setPapers(data.papers)
-  this.setGroupConnection(data.groupConnections)
-  this.setChapters(data.chapters)
-  this.setConnections(data.connections)
-  this.setEvents(data.events)
-  this.setTimelines(data.timelines)
-  this.setStorylines(data.storyLines)
-  this.setSettings(data.subway_settings)
 
-  this.setLoading(false)
-}
+  setLoading(status: boolean) {
+    this.loadingSubject.next(status);
+  }
 
-setLoading(status:boolean){
-  this.loadingSubject.next(status);
-}
-  
-// Adicione estes métodos públicos
-updateAllPapersVisible(): void {
-  const updated = this.papersSubject.value.map(p => ({ ...p, visible: true }));
-  this.papersSubject.next(updated);
-}
+  // Adicione estes métodos públicos
+  updateAllPapersVisible(): void {
+    const updated = this.papersSubject.value.map(p => ({ ...p, visible: true }));
+    this.papersSubject.next(updated);
+  }
 
-updateAllChaptersVisible(): void {
-  const updated = this.chaptersSubject.value.map(c => ({ ...c, visible: true }));
-  this.chaptersSubject.next(updated);
-}
+  updateAllChaptersVisible(): void {
+    const updated = this.chaptersSubject.value.map(c => ({ ...c, visible: true }));
+    this.chaptersSubject.next(updated);
+  }
 
-updateAllTimelinesVisible(): void {
-  const updated = this.timelinesSubject.value.map(t => ({ ...t, visible: true }));
-  this.timelinesSubject.next(updated);
-}
+  updateAllTimelinesVisible(): void {
+    const updated = this.timelinesSubject.value.map(t => ({ ...t, visible: true }));
+    this.timelinesSubject.next(updated);
+  }
 
-getpaperList(): paper[]{
-  return this.papersSubject.value
-}
+  getpaperList(): paper[] {
+    return this.papersSubject.value
+  }
 }
