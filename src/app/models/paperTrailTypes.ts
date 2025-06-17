@@ -46,7 +46,8 @@ export type paper = {
     focus: boolean,
     color: string,
     visible: boolean,
-    author_name: string
+    author_name: string,
+    cover_url:string
 }
 export interface createWorld extends infoDialog {
     "world": world,
@@ -112,6 +113,7 @@ export type Chapter = {
     timeline_id: string | null,
     storyline_id: string,
     range: number,
+    pageCount: number,
     order: number,
     color: string,
     selected: boolean,
@@ -146,6 +148,7 @@ export type Subway_Settings = {
   display_table_chapters: boolean,
   timeline_update_chapter: boolean,
   storyline_update_chapter: boolean,
+  show_span_favorite : boolean,
   theme: boolean,
   group_connection_update_chapter: boolean,
   user_id: string,

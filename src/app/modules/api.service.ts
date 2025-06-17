@@ -39,6 +39,9 @@ export class ApiService {
   GetWorldChapters(worldId: string): Observable<Chapter[]> {
     return this.http.get<Chapter[]>(`http://localhost:9090/getWorldChapters?id=${worldId}`);
   }
+  chaptersBook(paperId: string): Observable<Chapter[]> {
+    return this.http.get<Chapter[]>(`http://localhost:9090/chaptersBook?paperId=${paperId}`);
+  }
   getPaperData(papperId: string): Observable<paper> {
     return this.http.get<paper>(`http://localhost:9090/paper?id=${papperId}`);
   }
@@ -50,6 +53,9 @@ export class ApiService {
   }
   updateSettings(ssId: string, body: Subway_Settings): Observable<Subway_Settings> {
     return this.http.put<Subway_Settings>(`http://localhost:9090/updateSettings?id=${ssId}`, body);
+  }
+  getSettingsByWorldId(ssId: string): Observable<Subway_Settings> {
+    return this.http.get<Subway_Settings>(`http://localhost:9090/getSettingsByWorldId?worldId=${ssId}`);
   }
   updateEvent(body: Event): Observable<Event> {
     return this.http.put<Event>(`http://localhost:9090/updateEvent?id=${body.id}`, body);
@@ -148,6 +154,14 @@ export class ApiService {
       files: { name: string; mimeType: string; link: string }[];
       world: any;
     }>(`http://localhost:9090/getChapterFilesByOrderAndPaperId?chapterOrder=${chapterOrder}&paperId=${paperId}`);
+  }
+  getchaptersContent(
+    chapterOrder: string,
+    paperId: string
+  ): Observable<{
+    settings: Subway_Settings;chapter:Chapter,totalPage:number 
+}> {
+    return this.http.get<{chapter:Chapter,totalPage:number, settings: Subway_Settings}>(`http://localhost:9090/chaptersContent?chapterOrder=${chapterOrder}&paperId=${paperId}`);
   }
 
     createAnnotation(annotation: ChapterAnnotation): Observable<ChapterAnnotation> {

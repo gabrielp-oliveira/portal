@@ -6,23 +6,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chapter Reader</title>
 
-  <!-- 🌐 Material Web Components -->
+  <!-- 🌐 Estilos principais -->
+
+  <!-- 🌐 Material Web Components e Ícones -->
   <script type="module" src="https://esm.run/@material/web/all"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-
-
-  <script type="module" crossorigin src="./assets/index-BTm-F1Yo.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CmEUKuZ_.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <script type="module" crossorigin src="./assets/index-DBEMPJ9H.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D1BARZ4R.css">
 </head>
 
 <body>
-  <div id="app" class="reader-container">
-    <!-- 🧭 Toolbar superior -->
-    <div class="top-toolbar" id="header-controls"></div>
+  <div id="app-reader" class="reader-container">
+
+    <!-- 🧭 Toolbar superior (Material Header) -->
+    <header id="header-controls">
+      <div class="toolbar">
+        <button class="icon-btn" id="back-btn" title="Voltar">
+          <span class="material-icons">arrow_back</span>
+        </button>
+
+        <div class="search-wrapper">
+          <span class="material-icons search-icon">search</span>
+          <input type="text" placeholder="Buscar no capítulo..." />
+        </div>
+
+        <div class="icon-group">
+          <button class="icon-btn" id="favorite-btn" title="Favoritar">
+            <span class="material-icons">star_border</span>
+          </button>
+          <button class="icon-btn" id="theme-toggle-btn" title="Tema claro/escuro">
+            <span class="material-icons">dark_mode</span>
+          </button>
+
+
+        </div>
+      </div>
+    </header>
 
     <!-- 📖 Viewer -->
-    <div id="viewer" style="height: 80vh;"></div>
+    <div id="viewer" style="height: 80vh;" tabindex="0"></div>
 
+    <!-- 📄 Indicador de página -->
+    <div id="page-number" class="page-indicator"></div>
+
+    <!-- ⬇️ Bottom Sheet de Ações de Span -->
+    <div id="span-actions">
+      <button id="btn-Favoritar"><span class="material-icons">star</span></button>
+      <button id="btn-Anotar"><span class="material-icons">edit</span></button>
+      <button id="btn-Copiar"><span class="material-icons">content_copy</span></button>
+      <button id="btn-Limpar"><span class="material-icons">delete</span></button>
+    </div>
+    <div id="copy-toast" class="copy-toast">✔ Trecho copiado!</div>
+    <div id="note-box" class="note-box hidden">
+      <textarea id="note-textarea" placeholder="Escreva sua anotação aqui..."></textarea>
+      <button id="btn-SalvarNota">Salvar anotação</button>
+
+    </div>
+
+
+
+
+
+
+
+  </div>
+
+
+
+  <div id="confirm-modal" class="confirm-modal">
+    <div class="confirm-box">
+      <p id="confirm-message">Deseja continuar?</p>
+      <div class="confirm-actions">
+        <button id="confirm-yes">Sim</button>
+        <button id="confirm-no">Cancelar</button>
+      </div>
+    </div>
   </div>
 
   <!-- 🧠 Script principal -->

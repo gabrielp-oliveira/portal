@@ -24,6 +24,7 @@ export class WorldDataService {
     display_table_chapters: false,
     timeline_update_chapter: false,
     storyline_update_chapter: false,
+    show_span_favorite : false,
     theme: true,
     group_connection_update_chapter: false,
     user_id: '',
