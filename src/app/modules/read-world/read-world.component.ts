@@ -18,7 +18,6 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private iframe!: HTMLIFrameElement;
   paperCardList: paperCard[]
-  private lastSentSettings: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -85,7 +84,6 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(([chapters, timelines, storylines, settings]) => {
         if (!settings) return;
-
         const visibleChapters = chapters.filter(c => c.visible);
 
         const visibleTimelines = timelines
@@ -104,8 +102,6 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
         });
 
         // ✅ Evita reenviar dados se não houve alteração relevante
-        if (this.lastSentSettings !== serialized) {
-          this.lastSentSettings = serialized;
 
           this.iframe.contentWindow?.postMessage({
             type: "set-data",
@@ -116,7 +112,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
               settings
             }
           }, "*");
-        }
+        
 
         // 💡 Mesmo se settings não mudou, podemos reenviar apenas o tema se quiser reforçar
         this.iframe.contentWindow?.postMessage({

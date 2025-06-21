@@ -10,6 +10,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { UniverseCardComponent } from './universe-card/universe-card.component';
+import { PaperCardComponent } from './paper-card/paper-card.component';
 
 const routes: Routes = [
   {
@@ -19,7 +24,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [StoreComponent, HeaderStoreComponent, BodyStoreComponent],
+  declarations: [StoreComponent, HeaderStoreComponent, BodyStoreComponent, UniverseCardComponent,PaperCardComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -28,7 +33,10 @@ const routes: Routes = [
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatCardModule,
+    MatPaginatorModule,
+    MatTooltipModule
   ]
 })
 export class StoreModule { }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { StoreFilter } from '../types';
+import { StoreFilter } from '../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-store',
@@ -14,7 +14,8 @@ export class StoreComponent {
     author: '',
     universe: '',
     sort: 'name',
-    order: 'asc'
+    order: 'asc',
+    quantity: 0
   };
 
   onFilterChange(filters: StoreFilter) {

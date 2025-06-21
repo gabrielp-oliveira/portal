@@ -1,7 +1,6 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { StoreFilter } from '../../types';
+import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../store.service';
-import { paper, world } from '../../../../models/paperTrailTypes';
+import { paper, StoreFilter, world } from '../../../../models/paperTrailTypes';
 
 @Component({
   selector: 'app-header-store',
@@ -9,95 +8,88 @@ import { paper, world } from '../../../../models/paperTrailTypes';
   styleUrls: ['./header-store.component.scss']
 })
 export class HeaderStoreComponent implements OnInit {
-
-  @Output() filterChanged = new EventEmitter<StoreFilter>();
-
   // filtros
   query = '';
   searchType: 'books' | 'universes' = 'books';
   genre = '';
   author = '';
   universe = '';
-  sort = 'name';
+  sort = 'title';
   order: 'asc' | 'desc' = 'asc';
 
   // metadados
   genres: string[] = [];
   authors: string[] = [];
-  @Output() results = new EventEmitter<paper[] | world[]>();
 
-
-  papers: paper[]
   genreSearch = '';
   authorSearch = '';
 
+  constructor(private storeService: StoreService) {}
+
+  ngOnInit(): void {
+    this.storeService.getMetadata().subscribe((data) => {
+      this.genres = data.genres;
+      this.authors = data.authors;
+    });
+  }
+
   get filteredGenres() {
-    return this.genres.filter(g => g.toLowerCase().includes(this.genreSearch.toLowerCase()));
+    return this.genres.filter(g =>
+      g.toLowerCase().includes(this.genreSearch.toLowerCase())
+    );
   }
 
   get filteredAuthors() {
-    return this.authors.filter(a => a.toLowerCase().includes(this.authorSearch.toLowerCase()));
+    return this.authors.filter(a =>
+      a.toLowerCase().includes(this.authorSearch.toLowerCase())
+    );
   }
 
-  shareStore() {
-    throw new Error('Method not implemented.');
-  }
-
-  resetFilters() {
+  resetFilters(): void {
     this.searchType = 'books';
     this.query = '';
     this.genre = '';
     this.author = '';
     this.universe = '';
-    this.sort = 'name';
+    this.sort = 'title';
     this.order = 'asc';
     this.genreSearch = '';
     this.authorSearch = '';
+
     this.emitFilters();
   }
 
-  applyFilters() {
-    this.emitFilters(); // garante que StoreComponent saiba do estado
-
-    if (this.searchType === 'books') {
-      this.storeService.getBooks({
-        query: this.query,
-        genre: this.genre,
-        author: this.author,
-        universe: this.universe,
-        sort: this.sort,
-        order: this.order
-      }).subscribe(data => this.results.emit(data));
-    } else {
-      this.storeService.getUniverses(true, this.sort, this.order)
-        .subscribe(data => this.results.emit(data));
-    }
+  applyFilters(): void {
+    this.emitFilters();
   }
-
-
-
-  ngOnInit(): void {
-    this.storeService.getMetadata().subscribe((data) => {
-      console.log(data)
-      this.genres = data.genres;
-      this.authors = data.authors;
-    });
-    this.storeService.getBooks().subscribe((data) => {
-      this.storeService.setStorePapers(data)
-    });
-
-  }
-  constructor(private storeService: StoreService) { }
 
   emitFilters(): void {
-    this.filterChanged.emit({
+    const filter: StoreFilter = {
       searchType: this.searchType,
       query: this.query,
       genre: this.genre,
       author: this.author,
       universe: this.universe,
       sort: this.sort,
-      order: this.order
-    });
+      order: this.order,
+      quantity: 15,
+      startIndex: 0
+    };
+
+    this.storeService.setFilter(filter); // ✅ agora emite globalmente
+  }
+
+  shareStore(): void {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Minha Loja de Livros',
+        url
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('📋 Link copiado!');
+      });
+    }
   }
 }

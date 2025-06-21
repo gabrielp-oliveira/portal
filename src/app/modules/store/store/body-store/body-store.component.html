@@ -1,10 +1,34 @@
-<p>body-store works!</p>
+<div class="store-container">
+  <!-- Grid -->
+  <div class="book-grid">
 
-<img *ngIf="papers?.length" [src]="papers[0].cover_url" alt="Capa do livro">
+    <!-- 🟦 Livros -->
+<ng-container *ngIf="filter.searchType === 'books'">
+  <app-paper-card
+    *ngFor="let book of pagedPapers"
+     [book]="book"    
+  >
+  </app-paper-card>
+</ng-container>
 
 
 
+    <!-- 🌌 Universos -->
+    <ng-container *ngIf="filter.searchType === 'universes'">
+      <ng-container *ngIf="filter.searchType === 'universes'">
+        <app-universe-card *ngFor="let world of pagedWorlds"
+         [paperCount]="world.PaperCount || 0"
+          [world]="world"
+          >
+        </app-universe-card>
+      </ng-container>
 
+    </ng-container>
 
+  </div>
 
-
+  <!-- Paginação -->
+  <mat-paginator [length]="totalElements" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[15, 30, 45]"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</div>

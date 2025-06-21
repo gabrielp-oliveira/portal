@@ -1,0 +1,66 @@
+<mat-card class="universe-card">
+  <!-- Capas agrupadas -->
+<div class="covers-container">
+  <!-- Quando há 3 ou mais capas -->
+  <ng-container *ngIf="world.CoverURLs.length >= 3; else twoCovers">
+    <img
+      [src]="optimizeImage(world.CoverURLs[0] || DEFAULT_COVER)"
+      class="cover cover-0"
+    />
+    <img
+      [src]="optimizeImage(world.CoverURLs[1] || DEFAULT_COVER)"
+      class="cover cover-1"
+    />
+    <img
+      [src]="optimizeImage(world.CoverURLs[2] || DEFAULT_COVER)"
+      class="cover cover-2"
+    />
+  </ng-container>
+
+  <!-- Quando há apenas 2 capas -->
+  <ng-template #twoCovers>
+    <img
+      [src]="optimizeImage(world.CoverURLs[0] || DEFAULT_COVER)"
+      class="cover cover-1-center"
+    />
+    <img
+      [src]="optimizeImage(world.CoverURLs[1] || DEFAULT_COVER)"
+      class="cover cover-2-center"
+    />
+  </ng-template>
+
+  <!-- Logo central -->
+  <div class="logo-overlay">
+    <img src="assets/homeLightIcon.png" alt="logo" />
+  </div>
+</div>
+
+
+
+  <!-- Nome do universo -->
+  <h2 class="title">{{ world.name }}</h2>
+  <p class="count">{{ paperCount }} book{{ paperCount > 1 ? 's' : '' }}</p>
+
+  <!-- Descrição curta -->
+
+  <!-- Autores -->
+  <div *ngIf="world.Authors?.length" class="meta-line">
+    <strong>Authors:</strong>
+    <span class="meta-list" matTooltip="{{ world.Authors.join(', ') }}">
+      {{ world.Authors.slice(0, 2).join(', ') }}<span *ngIf="world.Authors.length > 2"> and other(s).</span>
+    </span>
+  </div>
+
+  <!-- Gêneros -->
+  <div *ngIf="world.Genres?.length" class="meta-line">
+    <strong>Genres:</strong>
+    <span class="meta-list" matTooltip="{{ world.Genres.join(', ') }}">
+      {{ world.Genres.slice(0, 2).join(', ') }}<span *ngIf="world.Genres.length > 2"> and more.</span>
+    </span>
+  </div>
+
+  <!-- Botão de ação -->
+  <button mat-raised-button color="accent" class="universe-button">
+    Universe Details
+  </button>
+</mat-card>

@@ -10,7 +10,11 @@ export type world = {
     papers: paper[]
     storyLines: StoryLine[]
     groupConnections: GroupConnection[],
-    subway_settings: Subway_Settings
+    subway_settings: Subway_Settings,
+    CoverURLs: string[], // ✅ NOVO
+    PaperCount?: number      // ✅ NOVO
+    Genres: string[],
+    Authors: string[]
 }
 
 export type info<t> = {
@@ -47,8 +51,26 @@ export type paper = {
     color: string,
     visible: boolean,
     author_name: string,
-    cover_url:string
+    cover_url: string,
+    genres?: string[],
+
 }
+
+
+export interface StoreFilter {
+    searchType: 'books' | 'universes';
+    query?: string; // agora pode ser omitido
+    genre?: string;
+    author?: string;
+    universe?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    quantity: number;
+    startIndex?: number;
+}
+
+
+
 export interface createWorld extends infoDialog {
     "world": world,
 }
@@ -143,19 +165,19 @@ export type Connection = {
 
 }
 export type Subway_Settings = {
-  id: string,
-  chapter_names: boolean,
-  display_table_chapters: boolean,
-  timeline_update_chapter: boolean,
-  storyline_update_chapter: boolean,
-  show_span_favorite : boolean,
-  theme: boolean,
-  group_connection_update_chapter: boolean,
-  user_id: string,
-  k: number,
-  x: number,
-  y: number,
-  world_id: string
+    id: string,
+    chapter_names: boolean,
+    display_table_chapters: boolean,
+    timeline_update_chapter: boolean,
+    storyline_update_chapter: boolean,
+    show_span_favorite: boolean,
+    theme: boolean,
+    group_connection_update_chapter: boolean,
+    user_id: string,
+    k: number,
+    x: number,
+    y: number,
+    world_id: string
 };
 
 
@@ -228,7 +250,7 @@ export interface ChapterConfiguration {
 }
 
 
-export interface paperCard  {
-  paper: paper,
-  chapterList: Chapter[]
+export interface paperCard {
+    paper: paper,
+    chapterList: Chapter[]
 }

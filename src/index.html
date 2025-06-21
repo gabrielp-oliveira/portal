@@ -13,7 +13,7 @@
   <script src="https://apis.google.com/js/picker.js"></script>
 
 </head>
-<body class="mat-typography">
-  <app-root></app-root>
+<body >
+  <app-root [class.dark]="(wd.settings$ | async)?.theme"></app-root>
 </body>
 </html>

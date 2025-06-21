@@ -1,0 +1,23 @@
+<mat-card class="book-card">
+  <div class="cover-wrapper">
+    <img
+      [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)"
+      alt="{{ book.name }}"
+      class="paper-img"
+    />
+  </div>
+
+  <div class="book-info">
+    <h3 class="book-title">{{ book.name }}</h3>
+    <p class="book-author">{{ book.author_name }}</p>
+    <p class="book-genres" [matTooltip]="book.genres?.join(', ') || ''">
+      {{ book.genres?.slice(0, 2)?.join(', ') }}
+      <span *ngIf="book.genres != undefined && book.genres.length > 2">... </span>
+    </p>
+    <p class="book-price">$4.99</p>
+  </div>
+
+  <button mat-raised-button color="primary" class="buy-button">
+    Comprar
+  </button>
+</mat-card>
