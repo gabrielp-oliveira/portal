@@ -1,0 +1,48 @@
+<!-- 📚 Informações Adicionais -->
+<div class="additional-info" *ngIf="book.genre?.length || book.maturity || book.isbn_10 || book.isbn_13">
+  <div class="metadataWrapper">
+
+    <div class="meta-section">
+      <!-- 🎯 Gênero -->
+      <div *ngIf="book.genre?.length">
+        <strong>Gênero(s):</strong>
+        <span *ngFor="let g of book.genre; let last = last">
+          {{ g }}<span *ngIf="!last">, </span>
+        </span>
+      </div>
+
+      <!-- 🔞 Classificação -->
+      <div>
+        <strong>Classificação:</strong>
+        <span [ngClass]="
+          book.maturity === 'MATURE' ? 'mature-badge' :
+          book.maturity === 'NOT_MATURE' ? 'not-mature-badge' :
+          'unrated-badge'
+        ">
+          {{
+            book.maturity === 'MATURE'
+              ? 'Para maiores de 18'
+              : book.maturity === 'NOT_MATURE'
+              ? 'Livre para todos'
+              : 'Não classificado'
+          }}
+        </span>
+      </div>
+
+      <!-- 📕 ISBNs -->
+      <div *ngIf="book.isbn_10 || book.isbn_13">
+        <strong>ISBN:</strong>
+        <span *ngIf="book.isbn_10">ISBN-10: {{ book.isbn_10 }}</span><br />
+        <span *ngIf="book.isbn_13" class="isbn-indent">ISBN-13: {{ book.isbn_13 }}</span>
+      </div>
+    </div>
+
+    <div class="meta-section">
+      <div *ngIf="book.total_pages"><strong>Páginas:</strong> {{ book.total_pages }}</div>
+      <div *ngIf="book.author_name"><strong>Autor:</strong> {{ book.author_name }}</div>
+      <div *ngIf="book.language"><strong>Idioma:</strong> {{ book.language }}</div>
+      <div *ngIf="book.year"><strong>Ano de publicação:</strong> {{ book.year }}</div>
+    </div>
+
+  </div>
+</div>

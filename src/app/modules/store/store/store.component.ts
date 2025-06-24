@@ -15,7 +15,8 @@ export class StoreComponent {
     universe: '',
     sort: 'name',
     order: 'asc',
-    quantity: 0
+    quantity: 0,
+    startIndex: 0
   };
 
   onFilterChange(filters: StoreFilter) {

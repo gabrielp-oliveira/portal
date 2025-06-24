@@ -1,0 +1,20 @@
+<div
+  class="books-carousel"
+  *ngIf="recommendedBooks && recommendedBooks.length && !(recommendedBooks.length === 1 && recommendedBooks[0].id === book.id)"
+>
+  <h3 class="section-title">others</h3>
+  
+  <div class="carousel-container">
+    <div class="book-card" *ngFor="let book of recommendedBooks">
+      <img
+        [src]="optimizeImage(book.cover_url)"
+        alt="{{ book.name }}"
+        class="book-cover"
+      />
+      <p class="book-title">{{ book.name }}</p>
+      <div class="genre-list">
+        <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>
+      </div>
+    </div>
+  </div>
+</div>

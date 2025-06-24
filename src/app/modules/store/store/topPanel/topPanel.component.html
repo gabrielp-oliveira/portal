@@ -1,36 +1,5 @@
 <ng-container style="display: flex; flex-direction: column; align-items: center; border: 2px solid red;">
-    <header class="header light">
 
-        <!-- Grupo 1: Ícone home -->
-        <div class="header-group">
-            <button class="btn-flat" routerLink="/">
-                <img [src]="'assets/homeLightIcon.png'" alt="Home" class="home-icon" />
-            </button>
-        </div>
-        <div class="header-group">
-
-            <!-- Grupo 2: Navegação central -->
-            <div class="header-group middle-group">
-                <button class="btn-flat" routerLink="/store">
-                    <mat-icon>shopping_cart</mat-icon>
-                    <span>Store</span>
-                </button>
-
-                <button class="btn-flat" routerLink="/library">
-                    <mat-icon>library_books</mat-icon>
-                    <span>Biblioteca</span>
-                </button>
-            </div>
-
-            <button class="btn-flat" (click)="shareStore()">
-                <mat-icon>share</mat-icon>
-                <span>Compartilhar</span>
-            </button>
-
-            <div class="user-icon">👤</div>
-        </div>
-
-    </header>
 
     <div class="header-container">
 

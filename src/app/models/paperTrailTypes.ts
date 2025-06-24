@@ -1,7 +1,7 @@
 export type world = {
     id: string,
     name: string,
-    description?: string,
+    description: string,
     created_at?: string,
     chapters: Chapter[],
     events: Event[],
@@ -12,7 +12,7 @@ export type world = {
     groupConnections: GroupConnection[],
     subway_settings: Subway_Settings,
     CoverURLs: string[], // ✅ NOVO
-    PaperCount?: number      // ✅ NOVO
+    PaperCount: number      // ✅ NOVO
     Genres: string[],
     Authors: string[]
 }
@@ -39,22 +39,40 @@ export type basicWorld = {
 
 
 export type paper = {
-    id: string,
-    name: string,
-    description: string,
-    Path: string,
-    created_at: string,
-    world_id: string,
-    chapter?: Chapter[],
-    order: number,
-    focus: boolean,
-    color: string,
-    visible: boolean,
-    author_name: string,
-    cover_url: string,
-    genres?: string[],
+    id: string;
+    name: string;
+    description: string;
+    path: string;
+    created_at: string;
+    publisher: string;
+    world_id: string;
+    world_name: string;
 
-}
+    order: number;
+    color: string;
+
+    author_id: string;
+    author_name: string;
+
+    language: string;
+    year: number;
+
+    cover_url: string;
+    genre: string[];
+    maturity: string;
+
+    isbn_10: string;
+    isbn_13: string;
+    categories: string[];
+
+    total_pages: number;
+
+    // Campos extras opcionais usados no front
+    chapter?: Chapter[];
+    focus?: boolean;
+    visible?: boolean;
+};
+
 
 
 export interface StoreFilter {
@@ -140,7 +158,7 @@ export type Chapter = {
     color: string,
     selected: boolean,
     focus: boolean,
-    visible: boolean,
+    visible?: boolean,
     completed?: boolean
     favorite?: boolean
     annotations?: ChapterAnnotation[]

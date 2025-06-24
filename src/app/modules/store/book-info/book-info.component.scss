@@ -1,0 +1,129 @@
+/* 📘 Container principal */
+.book-info-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+/* 📕 Capa */
+.book-cover,
+.paper-img {
+  max-width: 240px;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 📚 Detalhes + Card do universo */
+.book-details-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 300px;
+}
+
+/* 📝 Detalhes do livro */
+.book-details {
+  flex: 1 1 360px;
+  min-width: 320px;
+  max-width: 700px;
+}
+
+.genre-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.genre-chip {
+  background-color: #e0e0e0;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* 📖 Descrição do livro */
+.description {
+  margin: 16px 0 8px;
+  font-size: 15px;
+  color: #444;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+/* 🔘 Botões Show more/less */
+.description + button,
+.universe-description + button {
+  margin: 0 0 16px;
+  padding-left: 0;
+  font-size: 0.85rem;
+}
+
+/* 💡 Botão angular material adaptado */
+button[mat-button] {
+  min-width: auto;
+  padding: 0 8px;
+}
+
+/* 🌌 Card do universo */
+.universe-card {
+  flex: 1 1 260px;
+  min-width: 260px;
+  max-width: 340px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-left: 6px solid #2196f3;
+  transition: box-shadow 0.2s ease;
+}
+
+.universe-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.universe-title {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #1976d2;
+}
+
+.universe-description {
+  margin: 0 0 8px;
+  font-style: italic;
+  color: #555;
+  line-height: 1.4;
+}
+
+.universe-count {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: #444;
+}
+
+/* 📱 Responsivo */
+@media (max-width: 768px) {
+  .book-info-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .book-details-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .universe-card {
+    width: 100%;
+    max-width: none;
+  }
+}

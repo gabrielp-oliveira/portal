@@ -3,13 +3,39 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { paper, world, StoreFilter } from '../../models/paperTrailTypes'; // ajuste caminho se necessário
 
+
+export type FullPaper = paper & {
+  world_name: string;
+  author_id: string;
+  genres: string[];     // torna obrigatório se o backend sempre retorna
+  total_pages: number;
+};
+
+export type paperResponse = {
+  "paper": FullPaper;
+  "worldDescription": string;
+  "worldName": string;
+  "PaperCount": number;
+}
+
+export interface SimplePaper {
+  id: string;
+  name: string;
+  genre: string[];
+  cover_url: string;
+}
+
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
   baseUrl = 'http://localhost:4040/api/store';
+  DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
 
   // Armazena o filtro central
+  private paperSubject = new BehaviorSubject<FullPaper | null>(null)
   private filterSubject = new BehaviorSubject<StoreFilter>({
     searchType: 'books',
     query: '',
@@ -20,12 +46,13 @@ export class StoreService {
   });
 
   filter$ = this.filterSubject.asObservable();
+  storePaper$ = this.paperSubject.asObservable();
 
   // Armazena papers (opcional, legado)
   private storePapersSubject = new BehaviorSubject<paper[] | null>(null);
   papersSubject$ = this.storePapersSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Atualiza o filtro central
   setFilter(filter: StoreFilter): void {
@@ -57,33 +84,33 @@ export class StoreService {
     );
   }
 
-  // 📖 Detalhes de um único livro
-  getBookById(id: string): Observable<paper> {
-    return this.http.get<paper>(`${this.baseUrl}/books/${id}`);
+
+  getPaperById(id: string): Observable<paperResponse> {
+    return this.http.get<paperResponse>(`${this.baseUrl}/books/${id}`);
   }
 
   // 🌌 Lista de universos
-// 🌌 Lista de universos
-getUniverses(filter: StoreFilter = {
-  searchType: 'universes',
-  quantity: 0
-}): Observable<{ worlds: world[]; total: number }> {
-  let params = new HttpParams();
+  // 🌌 Lista de universos
+  getUniverses(filter: StoreFilter = {
+    searchType: 'universes',
+    quantity: 0
+  }): Observable<{ worlds: world[]; total: number }> {
+    let params = new HttpParams();
 
-  // filtros principais
-  if (filter.query) params = params.set('query', filter.query);
+    // filtros principais
+    if (filter.query) params = params.set('query', filter.query);
 
-  // ordenação e paginação
-  params = params.set('sort', filter.sort || 'name');
-  params = params.set('order', filter.order || 'asc');
-  params = params.set('quantity', (filter.quantity ?? 15).toString());
-  params = params.set('startIndex', (filter.startIndex ?? 0).toString());
+    // ordenação e paginação
+    params = params.set('sort', filter.sort || 'name');
+    params = params.set('order', filter.order || 'asc');
+    params = params.set('quantity', (filter.quantity ?? 15).toString());
+    params = params.set('startIndex', (filter.startIndex ?? 0).toString());
 
-  return this.http.get<{ worlds: world[]; total: number }>(
-    `${this.baseUrl}/universes`,
-    { params }
-  );
-}
+    return this.http.get<{ worlds: world[]; total: number }>(
+      `${this.baseUrl}/universes`,
+      { params }
+    );
+  }
 
 
   // 🌍 Detalhes de um universo
@@ -100,8 +127,25 @@ getUniverses(filter: StoreFilter = {
   setStorePapers(papers: paper[]): void {
     this.storePapersSubject.next(papers);
   }
+  setStorePaper(pp: FullPaper): void {
+    this.paperSubject.next(pp);
+  }
 
+  getBooksByAuthor(authorId:string): Observable<SimplePaper[]> {
+    return this.http.get<SimplePaper[]>(`${this.baseUrl}/books/author/${authorId}`);
+  }
   getStorePapers(): paper[] {
     return this.storePapersSubject.value ?? [];
   }
+  getBooksByGenreExcludingUniverse(body: {
+  currentBookId: string;
+  worldId: string;
+  genres: string[];
+}): Observable<SimplePaper[]> {
+  return this.http.post<SimplePaper[]>(
+    `${this.baseUrl}/books/recommendations/by-genre`,
+    body
+  );
+}
+
 }

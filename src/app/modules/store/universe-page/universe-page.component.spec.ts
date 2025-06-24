@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HeaderStoreComponent } from './header-store.component';
+import { UniversePageComponent } from './universe-page.component';
 
-describe('HeaderStoreComponent', () => {
-  let component: HeaderStoreComponent;
-  let fixture: ComponentFixture<HeaderStoreComponent>;
+describe('UniversePageComponent', () => {
+  let component: UniversePageComponent;
+  let fixture: ComponentFixture<UniversePageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderStoreComponent]
+      imports: [UniversePageComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(HeaderStoreComponent);
+    fixture = TestBed.createComponent(UniversePageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,0 +1,73 @@
+<!-- Quando default = false → usa settings$ -->
+<ng-container *ngIf="!default; else defaultHeader">
+  <ng-container *ngIf="settings$ | async as settings">
+    <header class="header" [class.dark]="settings.theme">
+      <div class="header-group">
+        <button class="btn-flat" (click)="goHome()">
+          <img [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'" alt="Home"
+            class="home-icon" />
+        </button>
+
+      </div>
+
+      <div class="header-group middle-group">
+        <button class="btn-flat" (click)="goToStore()">
+          <mat-icon>shopping_cart</mat-icon>
+          <span>Store</span>
+        </button>
+        <button class="btn-flat" routerLink="/library">
+          <mat-icon>library_books</mat-icon>
+          <span>Biblioteca</span>
+        </button>
+      </div>
+
+      <div class="header-group">
+        <button class="btn-flat" (click)="toggleTheme(settings)">
+          <mat-icon>
+            {{ settings.theme ? 'contrast' : 'brightness_6' }}
+          </mat-icon>
+          <span>Modo</span>
+        </button>
+
+        <button class="btn-flat" (click)="shareStore()">
+          <mat-icon>share</mat-icon>
+          <span>Compartilhar</span>
+        </button>
+
+        <div class="user-icon">👤</div>
+      </div>
+    </header>
+  </ng-container>
+</ng-container>
+
+<!-- Quando default = true → tema claro fixo, sem settings nem toggle -->
+<ng-template #defaultHeader>
+  <header class="header">
+    <div class="header-group">
+      <button class="btn-flat" (click)="goHome()">
+        <img src="assets/homeLightIcon.png" alt="Home" class="home-icon" />
+      </button>
+    </div>
+
+    <div class="header-group middle-group">
+      <button class="btn-flat" (click)="goToStore()">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Store</span>
+      </button>
+      <button class="btn-flat" routerLink="/library">
+        <mat-icon>library_books</mat-icon>
+        <span>Biblioteca</span>
+      </button>
+    </div>
+
+    <div class="header-group">
+      <!-- ❌ Sem botão de modo -->
+      <button class="btn-flat" (click)="shareStore()">
+        <mat-icon>share</mat-icon>
+        <span>Compartilhar</span>
+      </button>
+
+      <div class="user-icon">👤</div>
+    </div>
+  </header>
+</ng-template>

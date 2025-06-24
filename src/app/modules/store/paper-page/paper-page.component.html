@@ -1,0 +1,16 @@
+<app-ads></app-ads>
+<div *ngIf="paper$ | async as paper" class="book-detail-page">
+
+  <app-book-info [book]="paper" [PaperCount]="PaperCount" [worldDescription]="worldDescription"></app-book-info>
+
+
+
+  <app-book-metadata [book]="paper"></app-book-metadata>
+  <div class="recommendations-wrapper">
+    <app-books-by-author [authorId]="paper.author_id" [excludeBookId]="paper.id"></app-books-by-author>
+
+    <app-recommended-books [book]="paper"></app-recommended-books>
+  </div>
+
+
+</div>

@@ -1,0 +1,44 @@
+<div class="universe-container">
+  <div class="universe-header">
+    <div class="left-info">
+      <div class="header-row">
+        <h1>{{ universeData.name }}</h1>
+        <button *ngIf="universeData.papers.length > 0" class="buy-button" (click)="buyUniverse()">
+
+
+          <span class="icon">💳</span> Buy collection ({{ universeData.papers.length }} book) for {{ (universeData.papers.length * 3.99)   | currency:'USD':'symbol-narrow':'1.2-2'}}
+        </button>
+
+      </div>
+      <p class="description">{{ universeData.description }}</p>
+      <div class="meta">
+        <span *ngIf="universeData.papers[0].language">🌍 language: {{ universeData.papers[0].language| uppercase }}</span>
+        <span *ngIf="universeData.Genres?.length">🎭 Gênero: {{ universeData.Genres.join(', ') }}</span>
+        <span>📚 Livros: {{ universeData.papers.length }}</span>
+      </div>
+    </div>
+
+    <div class="cover-wrapper" *ngIf="universeData.CoverURLs?.[0]">
+      <img [src]="universeData.CoverURLs[0]" alt="Capa do universo" class="universe-cover" />
+    </div>
+  </div>
+
+
+  <div class="books-section">
+    <h2>Livros deste universo</h2>
+    <div class="books-grid">
+      <a class="book-card" *ngFor="let book of universeData.papers" [routerLink]="['/store/book', book.id]">
+        <img [src]="book.cover_url" alt="Capa do livro" class="cover" />
+        <h3>{{ book.name }}</h3>
+        <div class="author">{{ book.author_name }}</div>
+
+        <div class="book-meta">
+          <span *ngIf="book.year">📅 Ano: {{ book.year }}</span>
+          <span *ngIf="book.language">🌍 {{ book.language.toUpperCase() }}</span>
+          <br>
+          <span *ngIf="book.maturity">🔞 {{ book.maturity === 'NOT_MATURE' ? 'not mature' : 'mature' }}</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

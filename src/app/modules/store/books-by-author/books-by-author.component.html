@@ -1,0 +1,23 @@
+<div
+  class="books-carousel"
+  *ngIf="books.length > 1 || (books?.length === 1 && books[0].id !== excludeBookId)"
+>
+  <h3 class="section-title">Livros do mesmo autor</h3>
+  <div class="carousel-container">
+    <div
+      class="book-card"
+      *ngFor="let book of books" (click)="goToBookPage(book.id)"
+      >
+      <!-- (click)="navigateToBook(book.id)" -->
+      <img
+        [src]="optimizeImage(book.cover_url)"
+        alt="{{ book.name }}"
+        class="book-cover"
+      />
+      <p class="book-title">{{ book.name }}</p>
+      <div class="genre-list">
+        <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>
+      </div>
+    </div>
+  </div>
+</div>

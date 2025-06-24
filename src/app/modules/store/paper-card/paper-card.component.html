@@ -10,14 +10,28 @@
   <div class="book-info">
     <h3 class="book-title">{{ book.name }}</h3>
     <p class="book-author">{{ book.author_name }}</p>
-    <p class="book-genres" [matTooltip]="book.genres?.join(', ') || ''">
-      {{ book.genres?.slice(0, 2)?.join(', ') }}
-      <span *ngIf="book.genres != undefined && book.genres.length > 2">... </span>
+
+    <p
+      class="book-genre"
+      *ngIf="book.genre?.length; else emptyGenre"
+    >
+      {{ book.genre }}
     </p>
-    <p class="book-price">$4.99</p>
+    <ng-template #emptyGenre>
+      <p class="book-genre">&nbsp;</p>
+    </ng-template>
+
+    <p
+      class="book-maturity"
+      [ngClass]="{ mature: book.maturity === 'MATURE' }"
+    >
+      {{ book.maturity || ' ' }}
+    </p>
   </div>
 
-  <button mat-raised-button color="primary" class="buy-button">
-    Comprar
+  <p class="book-price">$4.99</p>
+
+  <button mat-raised-button color="primary" class="buy-button" (click)="goToBookPage()">
+    Details
   </button>
 </mat-card>

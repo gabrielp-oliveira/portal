@@ -1,0 +1,37 @@
+.mature-badge {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.not-mature-badge {
+  color: #388e3c;
+  font-weight: bold;
+}
+
+.unrated-badge {
+  color: #999;
+  font-style: italic;
+}
+
+.metadataWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+  padding: 20px 10px;
+  background-color: rgb(248, 248, 248);
+  border-radius: 5px;
+
+}
+
+.meta-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.isbn-indent {
+  margin-left: 16px;
+}

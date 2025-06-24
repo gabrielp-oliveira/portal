@@ -1,0 +1,88 @@
+<div class="book-info-container">
+  <!-- 📘 Capa -->
+  <img [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ book.name }}"
+    class="paper-img" />
+
+  <!-- 📚 Detalhes + Card do universo -->
+  <div class="book-details-wrapper">
+    <!-- 📝 Detalhes -->
+    <div class="book-details">
+      <h1>{{ book.name }}</h1>
+      <h3>{{ book.author_name }}</h3>
+
+      <!-- 🌌 Universo e ordem -->
+      <p *ngIf="book.world_id && PaperCount > 1">
+        Universe:
+        <a [routerLink]="['/store/universe/', book.world_id]">{{ book.world_name }}</a>
+        <span *ngIf="book.order > 0"> – book {{ book.order }}</span>
+      </p>
+
+      <!-- 📅 Publicação e idioma -->
+      <p *ngIf="book.year || book.language">
+        <span *ngIf="book.year">publish: <strong>{{ book.year }} {{ book.publisher }}</strong></span>
+        <span *ngIf="book.language" style="margin-left: 16px;">
+          Idioma: <strong>{{ book.language }}</strong>
+        </span>
+      </p>
+
+      <!-- 🏷️ Gêneros -->
+      <div *ngIf="book.genre?.length" class="genre-list">
+        <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>
+      </div>
+
+      <!-- 📄 Total de páginas -->
+      <p *ngIf="book.total_pages">
+        pages: <strong>{{ book.total_pages }}</strong>
+      </p>
+
+      <!-- 📖 Descrição do Livro -->
+      <div *ngIf="book.description" class="description-block">
+        <ng-container *ngIf="book.description.length > 250; else fullBookDesc">
+          <p class="description"
+            [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
+          </p>
+          <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
+            {{ showFullBookDesc ? 'Show less' : 'Show more' }}
+          </button>
+        </ng-container>
+
+        <ng-template #fullBookDesc>
+          <p class="description">{{ book.description }}</p>
+        </ng-template>
+      </div>
+
+      <!-- 💵 Botão de compra -->
+      <button mat-raised-button color="primary" class="buy-button">
+        price {{ 4.99 | currency:'USD':'symbol-narrow':'1.2-2' }}
+      </button>
+    </div>
+
+    <!-- 🌌 Card do Universo -->
+    <div *ngIf="book.world_id && PaperCount > 1" class="universe-card">
+      <h2 class="universe-title">{{ book.world_name }}</h2>
+
+      <div *ngIf="worldDescription" class="universe-description-block">
+        <ng-container *ngIf="worldDescription.length > 200; else fullUniverseDesc">
+          <p class="universe-description"
+            [innerText]="showFullUniverseDesc ? worldDescription : (worldDescription | slice:0:200) + '...'">
+          </p>
+          <button mat-button (click)="showFullUniverseDesc = !showFullUniverseDesc">
+            {{ showFullUniverseDesc ? 'Show less' : 'Show more' }}
+          </button>
+        </ng-container>
+
+        <ng-template #fullUniverseDesc>
+          <p class="universe-description">{{ worldDescription }}</p>
+        </ng-template>
+      </div>
+
+      <p class="universe-count">
+        Total de livros: <strong>{{ PaperCount }}</strong>
+      </p>
+
+      <button mat-button color="accent" [routerLink]="['/store/universe', book.world_id]">
+        Ver universo
+      </button>
+    </div>
+
+  </div>
