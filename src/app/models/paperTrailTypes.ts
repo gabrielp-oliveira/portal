@@ -47,7 +47,10 @@ export type paper = {
     publisher: string;
     world_id: string;
     world_name: string;
-
+    status: "not_available" | "in_progress" | "available";
+    priceAmount: number;
+    priceCurrency: string;
+    priceCountry: string;
     order: number;
     color: string;
 
@@ -85,6 +88,7 @@ export interface StoreFilter {
     order?: 'asc' | 'desc';
     quantity: number;
     startIndex?: number;
+    status?: 'available' | 'not_available' | 'in_progress'
 }
 
 

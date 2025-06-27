@@ -24,7 +24,8 @@ export class BodyStoreComponent implements OnInit {
     startIndex: 0,
     sort: 'title',
     order: 'asc',
-    query: ''
+    query: '',
+    status: undefined,
   };
 
   constructor(
@@ -58,7 +59,8 @@ export class BodyStoreComponent implements OnInit {
         sort: filter.sort ?? 'title',
         order: filter.order ?? 'asc',
         quantity: filter.quantity ?? 15,
-        startIndex: filter.startIndex ?? 0
+        startIndex: filter.startIndex ?? 0,
+        status: filter.status ?? undefined
       };
 
       this.pageSize = this.filter.quantity;
@@ -93,6 +95,7 @@ export class BodyStoreComponent implements OnInit {
   }
 
   fetchBooks(): void {
+    console.log(this.filter)
     this.storeService.getBooks(this.filter).subscribe((res) => {
       this.pagedPapers = res.papers;
       this.totalElements = res.total;

@@ -38,7 +38,7 @@
 
 
   <!-- Nome do universo -->
-  <h2 class="title">{{ world.name }}</h2>
+  <h2 class="title">{{ world.name || "" }}</h2>
   <p class="count">{{ paperCount }} book{{ paperCount > 1 ? 's' : '' }}</p>
 
   <!-- Descrição curta -->

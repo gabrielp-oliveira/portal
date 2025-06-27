@@ -1,7 +1,12 @@
 <div class="book-info-container">
   <!-- 📘 Capa -->
-  <img [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ book.name }}"
-    class="paper-img" />
+
+  <div class="cover-wrapper">
+          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
+
+    <img [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ book.name }}"
+      class="paper-img" />
+  </div>
 
   <!-- 📚 Detalhes + Card do universo -->
   <div class="book-details-wrapper">
@@ -52,8 +57,8 @@
       </div>
 
       <!-- 💵 Botão de compra -->
-      <button mat-raised-button color="primary" class="buy-button">
-        price {{ 4.99 | currency:'USD':'symbol-narrow':'1.2-2' }}
+      <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' ">
+        price {{ book.priceAmount| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
       </button>
     </div>
 

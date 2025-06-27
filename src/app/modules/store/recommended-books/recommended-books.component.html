@@ -6,11 +6,17 @@
   
   <div class="carousel-container">
     <div class="book-card" *ngFor="let book of recommendedBooks">
-      <img
-        [src]="optimizeImage(book.cover_url)"
-        alt="{{ book.name }}"
-        class="book-cover"
-      />
+
+
+  <div class="cover-wrapper">
+          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
+
+    <img
+    [src]="optimizeImage(book.cover_url)"
+    alt="{{ book.name }}"
+    class="book-cover"
+    />
+  </div>
       <p class="book-title">{{ book.name }}</p>
       <div class="genre-list">
         <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>

@@ -1,5 +1,6 @@
 <mat-card class="book-card">
   <div class="cover-wrapper">
+          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
     <img
       [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)"
       alt="{{ book.name }}"
@@ -26,10 +27,11 @@
       [ngClass]="{ mature: book.maturity === 'MATURE' }"
     >
       {{ book.maturity || ' ' }}
+      
     </p>
   </div>
 
-  <p class="book-price">$4.99</p>
+  <p class="book-price" *ngIf="book.status == 'available'">{{book.priceAmount}}</p>
 
   <button mat-raised-button color="primary" class="buy-button" (click)="goToBookPage()">
     Details

@@ -1,72 +1,83 @@
 <ng-container style="display: flex; flex-direction: column; align-items: center; border: 2px solid red;">
 
+  <div class="header-container">
 
-    <div class="header-container">
+    <!-- 🔍 Tipo + busca principal -->
+    <div class="search-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Search Type</mat-label>
+        <mat-select [(ngModel)]="searchType" (selectionChange)="emitFilters()">
+          <mat-option value="books">Books</mat-option>
+          <mat-option value="universes">Universes</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-        <!-- 🔍 Tipo + busca principal -->
-        <div class="search-row">
-            <mat-form-field appearance="outline">
-                <mat-label>Search Type</mat-label>
-                <mat-select [(ngModel)]="searchType" (selectionChange)="emitFilters()">
-                    <mat-option value="books">Books</mat-option>
-                    <mat-option value="universes">Universes</mat-option>
-                </mat-select>
-            </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ searchType === 'books' ? 'Search books...' : 'Search universes...' }}</mat-label>
+        <input matInput [(ngModel)]="query" (keyup.enter)="emitFilters()" />
+      </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>{{ searchType === 'books' ? 'Search books...' : 'Search universes...' }}</mat-label>
-                <input matInput [(ngModel)]="query" (keyup.enter)="emitFilters()" />
-            </mat-form-field>
+      <button mat-flat-button color="primary" (click)="applyFilters()">Filter</button>
+      <button mat-stroked-button color="warn" (click)="resetFilters()">Clear</button>
+    </div>
 
-            <button mat-flat-button color="primary" (click)="applyFilters()">Filter</button>
-            <button mat-stroked-button color="warn" (click)="resetFilters()">Clear</button>
-        </div>
+    <!-- 📚 Filtros adicionais -->
+    <div class="filter-row">
 
-        <!-- 📚 Filtros adicionais -->
-        <div class="filter-row">
-            <!-- 🎭 Genre -->
-            <mat-form-field appearance="outline">
-                <mat-label>Genre</mat-label>
-                <mat-select [(ngModel)]="genre">
-                    <mat-option>
-                        <input matInput placeholder="Search genres..." [(ngModel)]="genreSearch" />
-                    </mat-option>
-                    <mat-option *ngFor="let g of filteredGenres" [value]="g">{{ g }}</mat-option>
-                </mat-select>
-            </mat-form-field>
+      <!-- 🎭 Genre -->
+      <mat-form-field appearance="outline">
+        <mat-label>Genre</mat-label>
+        <mat-select [(ngModel)]="genre">
+          <mat-option>
+            <input matInput placeholder="Search genres..." [(ngModel)]="genreSearch" />
+          </mat-option>
+          <mat-option *ngFor="let g of filteredGenres" [value]="g">{{ g }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-            <!-- 🧠 Author -->
-            <mat-form-field appearance="outline">
-                <mat-label>Author</mat-label>
-                <mat-select [(ngModel)]="author">
-                    <mat-option>
-                        <input matInput placeholder="Search authors..." [(ngModel)]="authorSearch" />
-                    </mat-option>
-                    <mat-option *ngFor="let a of filteredAuthors" [value]="a">{{ a }}</mat-option>
-                </mat-select>
-            </mat-form-field>
+      <!-- 🧠 Author -->
+      <mat-form-field appearance="outline">
+        <mat-label>Author</mat-label>
+        <mat-select [(ngModel)]="author">
+          <mat-option>
+            <input matInput placeholder="Search authors..." [(ngModel)]="authorSearch" />
+          </mat-option>
+          <mat-option *ngFor="let a of filteredAuthors" [value]="a">{{ a }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-            <!-- 🔃 Sort -->
-            <mat-form-field appearance="outline">
-                <mat-label>Sort By</mat-label>
-                <mat-select [(ngModel)]="sort">
-                    <mat-option value="name">Name</mat-option>
-                    <mat-option value="created_at">Created Date</mat-option>
-                </mat-select>
-            </mat-form-field>
+      <!-- 📦 Status -->
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="status">
+          <mat-option value="">All</mat-option>
+          <mat-option value="available">Available</mat-option>
+          <mat-option value="not_available">Not Available</mat-option>
+          <mat-option value="in_progress">In Progress</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-            <!-- ↕ Order -->
-            <mat-form-field appearance="outline">
-                <mat-label>Order</mat-label>
-                <mat-select [(ngModel)]="order">
-                    <mat-option value="asc">ASC</mat-option>
-                    <mat-option value="desc">DESC</mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
+      <!-- 🔃 Sort -->
+      <mat-form-field appearance="outline">
+        <mat-label>Sort By</mat-label>
+        <mat-select [(ngModel)]="sort">
+          <mat-option value="name">Name</mat-option>
+          <mat-option value="created_at">Created Date</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- ↕ Order -->
+      <mat-form-field appearance="outline">
+        <mat-label>Order</mat-label>
+        <mat-select [(ngModel)]="order">
+          <mat-option value="asc">ASC</mat-option>
+          <mat-option value="desc">DESC</mat-option>
+        </mat-select>
+      </mat-form-field>
 
     </div>
-    <div class="header-divider"></div>
 
+  </div>
+  <div class="header-divider"></div>
 
 </ng-container>

@@ -3,6 +3,7 @@
   height: 430px;
   margin: 16px;
   display: flex;
+  position: relative;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
@@ -23,6 +24,7 @@
   display: flex;
   justify-content: center;
   padding: 8px;
+  position: relative;
 }
 
 .paper-img {
@@ -100,4 +102,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.isAvailable {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  span {
+    padding: 10px;
+    color: white;
+    font-weight: 600;
+    font-size: large;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
 }

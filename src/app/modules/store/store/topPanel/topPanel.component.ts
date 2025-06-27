@@ -16,6 +16,7 @@ export class TopPanelComponent implements OnInit {
   universe = '';
   sort = 'title';
   order: 'asc' | 'desc' = 'asc';
+  status: 'available' | 'not_available' | 'in_progress' | '' = '';
 
   genres: string[] = [];
   authors: string[] = [];
@@ -23,11 +24,13 @@ export class TopPanelComponent implements OnInit {
   genreSearch = '';
   authorSearch = '';
 
+  private firstLoad = true;
+
   constructor(
     private storeService: StoreService,
     private router: Router,
     private route: ActivatedRoute
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     // Carrega metadados
@@ -36,17 +39,21 @@ export class TopPanelComponent implements OnInit {
       this.authors = data.authors || [];
     });
 
-    // Aplica filtros da URL
+    // Aplica filtros da URL somente na primeira vez
     this.route.queryParams.subscribe(params => {
-      this.searchType = params['searchType'] || 'books';
-      this.query = params['query'] || '';
-      this.genre = params['genre'] || '';
-      this.author = params['author'] || '';
-      this.universe = params['universe'] || '';
-      this.sort = params['sort'] || 'title';
-      this.order = params['order'] || 'asc';
+      if (this.firstLoad) {
+        this.searchType = params['searchType'] || 'books';
+        this.query = params['query'] || '';
+        this.genre = params['genre'] || '';
+        this.author = params['author'] || '';
+        this.universe = params['universe'] || '';
+        this.sort = params['sort'] || 'title';
+        this.order = params['order'] || 'asc';
+        this.status = params['status'] || '';
+        this.firstLoad = false;
+      }
 
-      this.emitFilters(false); // ⚠️ não atualiza URL nesse momento
+      this.emitFilters(false); // ⚠️ não atualiza a URL neste ponto
     });
   }
 
@@ -72,6 +79,7 @@ export class TopPanelComponent implements OnInit {
     this.order = 'asc';
     this.genreSearch = '';
     this.authorSearch = '';
+    this.status = '';
 
     this.emitFilters();
   }
@@ -92,7 +100,8 @@ export class TopPanelComponent implements OnInit {
       sort: this.sort,
       order: this.order,
       quantity: finalQuantity,
-      startIndex: 0
+      startIndex: 0,
+      status: this.status || undefined,
     };
 
     this.storeService.setFilter(filter);
@@ -101,14 +110,15 @@ export class TopPanelComponent implements OnInit {
       const queryParams: any = {};
 
       if (filter.searchType !== 'books') queryParams.searchType = filter.searchType;
-      if (filter.query !== "") queryParams.query = filter.query;
-      if (filter.query == "") queryParams.query = "";
+      if (filter.query !== '') queryParams.query = filter.query;
+      if (filter.query === '') queryParams.query = '';
       if (filter.genre) queryParams.genre = filter.genre;
       if (filter.author) queryParams.author = filter.author;
       if (filter.universe) queryParams.universe = filter.universe;
       if (filter.sort !== 'title') queryParams.sort = filter.sort;
       if (filter.order !== 'asc') queryParams.order = filter.order;
       if (filter.quantity !== 15) queryParams.quantity = filter.quantity;
+      if (filter.status) queryParams.status = filter.status;
 
       queryParams.page = 1;
 
@@ -119,7 +129,6 @@ export class TopPanelComponent implements OnInit {
       });
     }
   }
-
 
   shareStore(): void {
     const url = window.location.href;

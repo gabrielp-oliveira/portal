@@ -16,13 +16,24 @@ export type paperResponse = {
   "worldDescription": string;
   "worldName": string;
   "PaperCount": number;
+  "price": number;
 }
+
+
+  export type checkout= {
+    paymentMethod: string,
+    type: string,
+    country: string,
+    currencyCode: string,
+    id: string,
+  }
 
 export interface SimplePaper {
   id: string;
   name: string;
   genre: string[];
   cover_url: string;
+  status: string
 }
 
 
@@ -42,7 +53,8 @@ export class StoreService {
     sort: 'title',
     order: 'asc',
     quantity: 15,
-    startIndex: 0
+    startIndex: 0,
+    status: undefined
   });
 
   filter$ = this.filterSubject.asObservable();
@@ -60,29 +72,31 @@ export class StoreService {
   }
 
   // Chamada à API para buscar livros
-  getBooks(filter: StoreFilter = {
-    searchType: 'books',
-    quantity: 0
-  }): Observable<{ papers: paper[]; total: number }> {
-    let params = new HttpParams();
+getBooks(filter: StoreFilter = {
+  searchType: 'books',
+  quantity: 0
+}): Observable<{ papers: paper[]; total: number }> {
+  let params = new HttpParams();
 
-    // filtros principais
-    if (filter.query) params = params.set('query', filter.query);
-    if (filter.genre) params = params.set('genre', filter.genre);
-    if (filter.author) params = params.set('author', filter.author);
-    if (filter.universe) params = params.set('universe', filter.universe);
+  // filtros principais
+  if (filter.query) params = params.set('query', filter.query);
+  if (filter.genre) params = params.set('genre', filter.genre);
+  if (filter.author) params = params.set('author', filter.author);
+  if (filter.universe) params = params.set('universe', filter.universe);
+  if (filter.status) params = params.set('status', filter.status); // ✅ novo filtro de status
 
-    // ordenação e paginação
-    params = params.set('sort', filter.sort || 'name');
-    params = params.set('order', filter.order || 'asc');
-    params = params.set('quantity', (filter.quantity ?? 15).toString());
-    params = params.set('startIndex', (filter.startIndex ?? 0).toString());
+  // ordenação e paginação
+  params = params.set('sort', filter.sort || 'name');
+  params = params.set('order', filter.order || 'asc');
+  params = params.set('quantity', (filter.quantity ?? 15).toString());
+  params = params.set('startIndex', (filter.startIndex ?? 0).toString());
 
-    return this.http.get<{ papers: paper[]; total: number }>(
-      `${this.baseUrl}/books`,
-      { params }
-    );
-  }
+  return this.http.get<{ papers: paper[]; total: number }>(
+    `${this.baseUrl}/books`,
+    { params }
+  );
+}
+
 
 
   getPaperById(id: string): Observable<paperResponse> {
@@ -137,6 +151,15 @@ export class StoreService {
   getStorePapers(): paper[] {
     return this.storePapersSubject.value ?? [];
   }
+
+checkoutBook(body: checkout) {
+  return this.http.post(`${this.baseUrl}/checkout/book/${body.id}`, body);
+}
+
+checkoutUniverse(body: checkout) {
+  return this.http.post(`${this.baseUrl}/checkout/universe/${body.id}`, body);
+}
+
   getBooksByGenreExcludingUniverse(body: {
   currentBookId: string;
   worldId: string;

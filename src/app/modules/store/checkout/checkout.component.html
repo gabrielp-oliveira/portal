@@ -1,0 +1,55 @@
+<div class="checkout-container">
+  <h1 class="title">Checkout: {{ collectionName }}</h1>
+
+  <!-- Carregando -->
+  <div *ngIf="!book && !books.length && !total" class="loading">
+    Carregando informações da compra...
+  </div>
+
+  <!-- Livro único -->
+  <div *ngIf="type === 'book' && book" class="book-preview">
+    <img [src]="book.cover_url || DEFAULT_COVER" alt="Capa do livro {{ book.name }}" />
+    <p class="book-title">{{ book.name }}</p>
+  </div>
+
+  <!-- Lista de livros (universo) -->
+  <div *ngIf="type === 'universe' && books.length" class="books-grid">
+    <div *ngFor="let b of books" class="book-card">
+      <img [src]="b.cover_url || DEFAULT_COVER" alt="Capa do livro {{ b.name }}" />
+      <p class="book-title">{{ b.name }}</p>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <p *ngIf="total > 0" class="total">
+    Total: <strong>{{ total | currency: currencyCode }}</strong>
+  </p>
+
+  <h2>Forma de pagamento</h2>
+
+  <!-- Seleção do método de pagamento -->
+  <div class="payment-options" *ngIf="country === 'BR' || country === 'US'">
+    <!-- Brasil -->
+    <ng-container *ngIf="country === 'BR'">
+      <label><input type="radio" name="method" value="pix" [(ngModel)]="paymentMethod" /> Pix</label>
+      <label><input type="radio" name="method" value="boleto" [(ngModel)]="paymentMethod" /> Boleto Bancário</label>
+      <label><input type="radio" name="method" value="card" [(ngModel)]="paymentMethod" /> Cartão de Crédito</label>
+    </ng-container>
+
+    <!-- Estados Unidos -->
+    <ng-container *ngIf="country === 'US'">
+      <label><input type="radio" name="method" value="stripe" [(ngModel)]="paymentMethod" /> Credit Card (via Stripe)</label>
+      <label><input type="radio" name="method" value="paypal" [(ngModel)]="paymentMethod" /> PayPal</label>
+    </ng-container>
+  </div>
+
+  <!-- País não suportado -->
+  <div *ngIf="country !== 'BR' && country !== 'US'" class="alert">
+    Nenhuma forma de pagamento disponível para sua região.
+  </div>
+
+  <!-- Finalizar -->
+  <div class="btn-wrapper" *ngIf="total > 0">
+    <button (click)="finalizePurchase()">Finalizar compra</button>
+  </div>
+</div>

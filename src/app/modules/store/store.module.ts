@@ -27,6 +27,8 @@ import { RecommendedBooksComponent } from './recommended-books/recommended-books
 import { AdsComponent } from '../../standAlone/ads/ads.component';
 import { FooterComponent } from '../../standAlone/footer/footer.component';
 import { StoreWrapperComponent } from './store-wrapper/store-wrapper.component';
+import { CheckoutComponent } from './checkout/checkout.component';
+import { AuthGuard } from '../../guards/auth.guard';
 
 
 const routes: Routes = [
@@ -36,7 +38,9 @@ const routes: Routes = [
     children: [
       { path: '', component: StoreComponent },
       { path: 'book/:paperId', component: PaperPageComponent },
+      { path: 'book/:paperId/checkout', component: CheckoutComponent, canActivate: [AuthGuard]  },
       { path: 'universe/:id', component: UniversePageComponent },
+      { path: 'universe/:id/checkout', component: CheckoutComponent, canActivate: [AuthGuard] },
     ]
   }
 ];
@@ -45,6 +49,7 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     StoreComponent,
+    CheckoutComponent,
     TopPanelComponent,
     BodyStoreComponent,
     UniverseCardComponent,
