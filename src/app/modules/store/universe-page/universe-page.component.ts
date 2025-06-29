@@ -31,7 +31,7 @@ export class UniversePageComponent {
         // this.recommendedBooks = res.recommendedBooks;
         this.universePrice = res.papers
           .filter(p => p.status === 'available')
-          .reduce((sum, p) => sum + (p.priceAmount || 0), 0);
+          .reduce((sum, p) => sum + (p.price || 0), 0);
 
           this.booksAvailable = res.papers
           .filter(p => p.status === 'available').length

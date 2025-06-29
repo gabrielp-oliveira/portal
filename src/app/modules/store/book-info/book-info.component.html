@@ -40,25 +40,11 @@
         pages: <strong>{{ book.total_pages }}</strong>
       </p>
 
-      <!-- 📖 Descrição do Livro -->
-      <div *ngIf="book.description" class="description-block">
-        <ng-container *ngIf="book.description.length > 250; else fullBookDesc">
-          <p class="description"
-            [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
-          </p>
-          <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
-            {{ showFullBookDesc ? 'Show less' : 'Show more' }}
-          </button>
-        </ng-container>
 
-        <ng-template #fullBookDesc>
-          <p class="description">{{ book.description }}</p>
-        </ng-template>
-      </div>
 
       <!-- 💵 Botão de compra -->
-      <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' ">
-        price {{ book.priceAmount| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
+      <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' " [routerLink]="['/store/book', book.id, 'checkout']" >
+        price {{ book.price| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
       </button>
     </div>
 
@@ -91,3 +77,19 @@
     </div>
 
   </div>
+
+        <!-- 📖 Descrição do Livro -->
+      <div *ngIf="book.description" class="description-block">
+        <ng-container *ngIf="book.description.length > 300; else fullBookDesc">
+          <p class="description"
+            [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
+          </p>
+          <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
+            {{ showFullBookDesc ? 'Show less' : 'Show more' }}
+          </button>
+        </ng-container>
+
+        <ng-template #fullBookDesc>
+          <p class="description">{{ book.description }}</p>
+        </ng-template>
+      </div>

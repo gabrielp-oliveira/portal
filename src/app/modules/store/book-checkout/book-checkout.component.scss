@@ -1,0 +1,90 @@
+.checkout-container {
+  max-width: 720px;
+  margin: 32px auto;
+  padding: 24px;
+  border-radius: 12px;
+  background-color: var(--bg-color, #fff);
+  color: var(--text-color, #222);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  &.dark-mode {
+    --bg-color: #1f1f1f;
+    --text-color: #f0f0f0;
+  }
+}
+
+.book-info {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+.book-cover {
+  width: 140px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.book-details {
+  flex: 1;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .author, .pages {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .description {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+}
+
+.payment h3,
+.summary h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary p {
+  margin: 4px 0;
+  font-size: 15px;
+
+  strong {
+    font-weight: 500;
+  }
+}
+
+button {
+  align-self: center;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+mat-divider {
+  margin: 16px 0;
+}

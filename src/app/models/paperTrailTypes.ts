@@ -48,7 +48,7 @@ export type paper = {
     world_id: string;
     world_name: string;
     status: "not_available" | "in_progress" | "available";
-    priceAmount: number;
+    price: number;
     priceCurrency: string;
     priceCountry: string;
     order: number;

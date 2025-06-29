@@ -1,21 +1,20 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { StoreService, FullPaper } from '../store.service';
+import { Component } from '@angular/core';
 import { paper } from '../../../models/paperTrailTypes';
+import { ActivatedRoute } from '@angular/router';
+import { StoreService } from '../store.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-checkout',
-  templateUrl: './checkout.component.html',
-  styleUrls: ['./checkout.component.scss']
+  selector: 'app-book-checkout',
+  templateUrl: './book-checkout.component.html',
+  styleUrl: './book-checkout.component.scss'
 })
-export class CheckoutComponent implements OnInit, OnDestroy {
+export class BookCheckoutComponent {
   type: 'book' | 'universe';
   id: string;
 
   collectionName = '';
-  book: paper | null = null;
-  books: paper[] = [];
+  book: paper;
 
   paymentMethod: string = '';
   total = 0;
@@ -32,7 +31,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const paperId = this.route.snapshot.paramMap.get('paperId');
-    const universeId = this.route.snapshot.paramMap.get('id');
 
     // 🔍 Detecta o país
     fetch('https://ipapi.co/json')
@@ -52,19 +50,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.id = paperId;
 
       const sub = this.store.getPaperById(paperId).subscribe((res) => {
+        console.log(res)
         this.book = res.paper;
         this.collectionName = res.paper.name;
-        this.total = res.paper.priceAmount ;
-      });
-      this.subscriptions.push(sub);
-    } else if (universeId) {
-      this.type = 'universe';
-      this.id = universeId;
-
-      const sub = this.store.getUniverseById(universeId).subscribe(universe => {
-        this.collectionName = universe.name;
-        this.books = universe.papers || [];
-        this.total = this.books.length * 9.99;
+        this.total = res.paper.price;
       });
       this.subscriptions.push(sub);
     }
@@ -86,27 +75,24 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     let sub: Subscription;
 
-    if (this.type === 'book') {
-      sub = this.store.checkoutBook(body).subscribe({
-        next: (res) => {
-          console.log('Livro comprado:', res);
-        },
-        error: (err) => {
-          console.error('Erro ao comprar livro:', err);
+        sub = this.store.checkoutBook(body).subscribe({
+      next: (res: any) => {
+        if (res.price === 0) {
+          // Livro gratuito já foi adicionado
+          alert('Livro gratuito adicionado à sua biblioteca!')
+        } else if (res.checkoutUrl) {
+          // Redireciona para o Stripe
+          window.location.href = res.checkoutUrl;
         }
-      });
-    } else {
-      sub = this.store.checkoutUniverse(body).subscribe({
-        next: (res) => {
-          console.log('Universo comprado:', res);
-        },
-        error: (err) => {
-          console.error('Erro ao comprar universo:', err);
-        }
-      });
-    }
+      },
+      error: (err) => {
+        const msg = err?.error?.error || 'Erro ao iniciar o checkout.';
+        console.error(msg)
+      }
+    });
 
     this.subscriptions.push(sub);
+
   }
 
   ngOnDestroy(): void {

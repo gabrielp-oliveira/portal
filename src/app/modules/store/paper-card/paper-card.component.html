@@ -31,7 +31,7 @@
     </p>
   </div>
 
-  <p class="book-price" *ngIf="book.status == 'available'">{{book.priceAmount}}</p>
+  <p class="book-price" *ngIf="book.status == 'available'">{{book.price}}</p>
 
   <button mat-raised-button color="primary" class="buy-button" (click)="goToBookPage()">
     Details

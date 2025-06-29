@@ -1,0 +1,56 @@
+<div class="checkout-container" *ngIf="book">
+  <div class="book-info">
+    <img
+      [src]="book.cover_url || DEFAULT_COVER"
+      alt="{{ book.name }}"
+      class="book-cover"
+    />
+    <div class="book-details">
+      <h2>{{ book.name }}</h2>
+      <p class="author">by {{ book.author_name }}</p>
+      <p class="pages">📄 {{ book.total_pages }} páginas</p>
+      <p class="description">{{ book.description }}</p>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="payment">
+    <h3>💳 Forma de pagamento</h3>
+
+    <mat-radio-group [(ngModel)]="paymentMethod" class="payment-options">
+      <!-- 🇧🇷 Brasil -->
+      <ng-container *ngIf="currencyCode === 'BRL'">
+        <mat-radio-button value="credit_card">Cartão de crédito</mat-radio-button>
+        <mat-radio-button value="pix">PIX</mat-radio-button>
+        <mat-radio-button value="boleto">Boleto bancário</mat-radio-button>
+      </ng-container>
+
+      <!-- 🇺🇸 EUA -->
+      <ng-container *ngIf="currencyCode === 'USD'">
+        <mat-radio-button value="paypal">PayPal</mat-radio-button>
+        <mat-radio-button value="apple_pay">Apple Pay</mat-radio-button>
+        <mat-radio-button value="stripe">stripe</mat-radio-button>
+      </ng-container>
+    </mat-radio-group>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="summary">
+    <h3>📦 Resumo da compra</h3>
+    <p><strong>Título:</strong> {{ book.name }}</p>
+    <p><strong>Autor:</strong> {{ book.author_name }}</p>
+    <p><strong>Total:</strong>
+      {{ book.price | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
+    </p>
+  </div>
+
+  <button mat-raised-button color="primary" (click)="finalizePurchase()">
+    Finalizar Compra
+  </button>
+</div>
+
+<div *ngIf="!book">
+  <p>🔄 Carregando dados do livro...</p>
+</div>
