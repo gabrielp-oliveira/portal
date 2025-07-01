@@ -39,8 +39,8 @@ export class ApiService {
   GetWorldChapters(worldId: string): Observable<Chapter[]> {
     return this.http.get<Chapter[]>(`http://localhost:9090/getWorldChapters?id=${worldId}`);
   }
-  chaptersBook(paperId: string): Observable<Chapter[]> {
-    return this.http.get<Chapter[]>(`http://localhost:9090/chaptersBook?paperId=${paperId}`);
+  chaptersBook(paperId: string): Observable<{chapters: Chapter[],world: world}> {
+    return this.http.get<{chapters: Chapter[],world: world}>(`http://localhost:9090/chaptersBook?paperId=${paperId}`);
   }
   getPaperData(papperId: string): Observable<paper> {
     return this.http.get<paper>(`http://localhost:9090/paper?id=${papperId}`);

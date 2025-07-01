@@ -6,12 +6,30 @@
       <div class="header-row">
         <h1>{{ universeData.name }}</h1>
 
-        <button *ngIf="booksAvailable > 0" class="buy-button"
-          [routerLink]="['/store/universe', universeData.id, 'checkout']" >
+        <!-- Botão de compra da coleção -->
+        <button *ngIf="booksAvailableToBuy > 0" class="buy-button"
+          [routerLink]="['/store/universe', universeData.id, 'checkout']">
           <span class="icon">💳</span>
-          Buy collection ({{ booksAvailable}} book{{ booksAvailable > 1 ? 's' : '' }}) for
-          {{ (universePrice) | currency: priceCurrencysePrice : 'symbol-narrow' : '1.2-2' }}
+          Buy {{ booksAvailableToBuy }} book{{ booksAvailableToBuy > 1 ? 's' : '' }} for
+
+          <span *ngIf="alreadyPurchasedTotal > 0">
+            &nbsp;<s style="color: red;">
+              {{ fullUniversePrice | currency: priceCurrencysePrice : 'symbol-narrow' : '1.2-2' }}
+            </s>
+          </span>
+
+          &nbsp;<strong>
+            {{ universePrice | currency: priceCurrencysePrice : 'symbol-narrow' : '1.2-2' }}
+          </strong>
         </button>
+
+        <!-- Botão para leitura -->
+        <button *ngIf="alreadyPurchasedTotal > 0" class="read-button" [routerLink]="['/read', universeData.name]">
+          📖 Go to your universe
+        </button>
+
+
+
       </div>
 
       <p class="description">{{ universeData.description }}</p>
@@ -43,7 +61,8 @@
 
 
         <div class="cover-wrapper">
-          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
+          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span>
+          </div>
 
           <img [src]="optimizeImage(book.cover_url || DEFAULT_COVER)" alt="{{ book.name }}" class="book-cover cover" />
         </div>

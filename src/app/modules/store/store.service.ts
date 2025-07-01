@@ -17,6 +17,7 @@ export type paperResponse = {
   "worldName": string;
   "PaperCount": number;
   "price": number;
+  "isPurchased": boolean;
 }
 
 
@@ -99,9 +100,10 @@ getBooks(filter: StoreFilter = {
 
 
 
-  getPaperById(id: string): Observable<paperResponse> {
-    return this.http.get<paperResponse>(`${this.baseUrl}/books/${id}`);
-  }
+getPaperById(id: string, currencyCode: string, country: string): Observable<paperResponse> {
+  return this.http.get<paperResponse>(`${this.baseUrl}/books/${id}?currency=${currencyCode}&country=${country}`);
+}
+
 
   // 🌌 Lista de universos
   // 🌌 Lista de universos
@@ -128,9 +130,12 @@ getBooks(filter: StoreFilter = {
 
 
   // 🌍 Detalhes de um universo
-  getUniverseById(id: string): Observable<world> {
-    return this.http.get<world>(`${this.baseUrl}/universes/${id}`);
-  }
+getUniverseById(id: string, currencyCode: string, country: string): Observable<world> {
+  return this.http.get<world>(
+    `${this.baseUrl}/universes/${id}?currency=${currencyCode}&country=${country}`
+  );
+}
+
 
   // 🔎 Filtros disponíveis
   getMetadata(): Observable<{ genres: string[], authors: string[] }> {

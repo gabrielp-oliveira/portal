@@ -12,45 +12,46 @@ export class AuthGuard implements CanActivate {
 
   canActivate(
     next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-      
-      const token = localStorage.getItem('accessToken');
-      const tokenExpiry = new Date(localStorage.getItem('expiry') || '');
-      if (token && tokenExpiry.getTime() > new Date().getTime()) {
-      delete next.queryParams['accessToken']
-      delete next.queryParams['expiry']
-      this.auth.logged = true
+    state: RouterStateSnapshot
+  ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+    
+    const token = localStorage.getItem('accessToken');
+    const expiryString = localStorage.getItem('expiry');
+    const expiry = expiryString ? new Date(expiryString) : null;
+
+    if (token && expiry && expiry.getTime() > Date.now()) {
+      this.auth.logged = true;
       return true;
-    } else {
-      
-      const urlToken = next.queryParams['accessToken'];
-      const tokenExpiry = next.queryParams['expiry'];
-      if (urlToken) {
-        localStorage.setItem('accessToken', urlToken);
-        localStorage.setItem('expiry', tokenExpiry);
-        this.removeTokenFromUrl(next);
-        this.auth.logged = false
-        return false; // Return false to ensure the route gets reactivated
-      } else {
-        this.router.navigate(['/login']);
-        this.auth.logged = false
-        return false;
-      }
     }
-  }
 
-  private removeTokenFromUrl(next: ActivatedRouteSnapshot) {
-    const queryParams = { ...next.queryParams };
-    delete queryParams['accessToken'];
-    delete queryParams['expiry'];
+    // Check if token is present in URL
+    const urlToken = next.queryParams['accessToken'];
+    const urlExpiry = next.queryParams['expiry'];
 
-    this.router.navigate([], {
-      queryParams,
-      queryParamsHandling: 'merge',
-      replaceUrl: true
-    }).then(() => {
-      // Ensure the route gets reactivated
-      this.router.navigate([next.routeConfig?.path ?? '']);
-    });
+    if (urlToken && urlExpiry) {
+      // Save to localStorage
+      localStorage.setItem('accessToken', urlToken);
+      localStorage.setItem('expiry', urlExpiry);
+      this.auth.logged = true;
+
+      // Remove token from URL without reloading the app
+      const queryParams = { ...next.queryParams };
+      delete queryParams['accessToken'];
+      delete queryParams['expiry'];
+
+      this.router.navigate([], {
+        queryParams,
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+
+      // Return false so that the guard runs again with the updated localStorage
+      return false;
+    }
+
+    // If no valid token, redirect to login
+    this.auth.logged = false;
+    this.router.navigate(['/login']);
+    return false;
   }
 }

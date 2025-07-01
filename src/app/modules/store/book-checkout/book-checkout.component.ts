@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { paper } from '../../../models/paperTrailTypes';
 import { ActivatedRoute } from '@angular/router';
 import { StoreService } from '../store.service';
@@ -7,9 +7,9 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-book-checkout',
   templateUrl: './book-checkout.component.html',
-  styleUrl: './book-checkout.component.scss'
+  styleUrls: ['./book-checkout.component.scss']
 })
-export class BookCheckoutComponent {
+export class BookCheckoutComponent implements OnInit, OnDestroy {
   type: 'book' | 'universe';
   id: string;
 
@@ -32,7 +32,12 @@ export class BookCheckoutComponent {
   ngOnInit(): void {
     const paperId = this.route.snapshot.paramMap.get('paperId');
 
-    // 🔍 Detecta o país
+    if (!paperId) return;
+
+    this.type = 'book';
+    this.id = paperId;
+
+    // 🔍 Detecta o país e só depois carrega o paper
     fetch('https://ipapi.co/json')
       .then(res => res.json())
       .then(data => {
@@ -42,21 +47,15 @@ export class BookCheckoutComponent {
       .catch(() => {
         this.country = 'US';
         this.currencyCode = 'USD';
+      })
+      .finally(() => {
+        const sub = this.store.getPaperById(paperId, this.currencyCode, this.country).subscribe((res) => {
+          this.book = res.paper;
+          this.collectionName = res.paper.name;
+          this.total = res.paper.price;
+        });
+        this.subscriptions.push(sub);
       });
-
-    // 📚 Carrega o conteúdo da compra
-    if (paperId) {
-      this.type = 'book';
-      this.id = paperId;
-
-      const sub = this.store.getPaperById(paperId).subscribe((res) => {
-        console.log(res)
-        this.book = res.paper;
-        this.collectionName = res.paper.name;
-        this.total = res.paper.price;
-      });
-      this.subscriptions.push(sub);
-    }
   }
 
   finalizePurchase() {
@@ -73,26 +72,21 @@ export class BookCheckoutComponent {
       id: this.id,
     };
 
-    let sub: Subscription;
-
-        sub = this.store.checkoutBook(body).subscribe({
+    const sub = this.store.checkoutBook(body).subscribe({
       next: (res: any) => {
         if (res.price === 0) {
-          // Livro gratuito já foi adicionado
-          alert('Livro gratuito adicionado à sua biblioteca!')
+          alert('Livro gratuito adicionado à sua biblioteca!');
         } else if (res.checkoutUrl) {
-          // Redireciona para o Stripe
           window.location.href = res.checkoutUrl;
         }
       },
       error: (err) => {
         const msg = err?.error?.error || 'Erro ao iniciar o checkout.';
-        console.error(msg)
+        console.error(msg);
       }
     });
 
     this.subscriptions.push(sub);
-
   }
 
   ngOnDestroy(): void {

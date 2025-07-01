@@ -44,6 +44,7 @@ export type paper = {
     description: string;
     path: string;
     created_at: string;
+    AlreadyPurchased: boolean;
     publisher: string;
     world_id: string;
     world_name: string;
@@ -74,6 +75,7 @@ export type paper = {
     chapter?: Chapter[];
     focus?: boolean;
     visible?: boolean;
+    isPurchased?: boolean;
 };
 
 

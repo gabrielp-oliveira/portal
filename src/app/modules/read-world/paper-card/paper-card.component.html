@@ -3,12 +3,12 @@
     <div class="left">
       <h3 matLine>{{ paperCard.paper.name }}</h3>
       <div class="meta">
-        💛 {{ favoritesCount }} favoritos &nbsp; 📝 {{ annotationsCount }} anotações
+        💛 {{ favoritesCount }} favorite &nbsp; 📝 {{ annotationsCount }} notes
       </div>
     </div>
 
     <div class="right">
-      <button mat-stroked-button color="primary" (click)="continueReading()">📖 Continuar lendo</button>
+      <button mat-stroked-button color="primary" (click)="continueReading()">📖 continue reading</button>
       <div class="progress">{{ completedCount }} / {{ totalChapters }}</div>
     </div>
   </div>

@@ -42,7 +42,8 @@ export class ReadChapterComponent implements OnInit {
     this.iframe = document.getElementById("read-frame") as HTMLIFrameElement;
 
     this.api.chaptersBook(paperId || "").subscribe((c) => {
-      this.paperchapters = c
+      this.paperchapters = c.chapters
+      this.world = c.world
     })
 
   }
@@ -82,6 +83,13 @@ export class ReadChapterComponent implements OnInit {
         break;
 
 
+      case 'return-to-read-world':
+        if (this.world?.name) {
+          this.router.navigate(['/read', this.world.name]);
+        } else {
+          console.warn('🌐 Nome do mundo não encontrado');
+        }
+        break;
       case 'theme-changed':
         this.currentTheme = payload.theme;
 
@@ -238,6 +246,7 @@ export class ReadChapterComponent implements OnInit {
 
   goToNextPaper() {
     if (!this.paperId || !this.chapterOrder || !this.world?.name) {
+      console.log(this.paperId, this.chapterOrder, this.world?.name)
       console.error("❗ Dados incompletos para navegação");
       return;
     }
@@ -254,8 +263,6 @@ export class ReadChapterComponent implements OnInit {
       c => c.paper_id === currentPaperId && c.order === currentOrder
     );
 
-    console.log(currentPaperId)
-    console.log(sortedChapters)
     if (currentIndex === -1) {
       console.error("❗ Capítulo atual não encontrado");
       return;

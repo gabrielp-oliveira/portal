@@ -2,19 +2,13 @@
   <h1 class="title">Checkout: {{ collectionName }}</h1>
 
   <!-- Carregando -->
-  <div *ngIf="!book && !books.length && !total" class="loading">
+  <div *ngIf="!books.length && !total" class="loading">
     Carregando informações da compra...
   </div>
 
-  <!-- Livro único -->
-  <div *ngIf="type === 'book' && book" class="book-preview">
-    <img [src]="book.cover_url || DEFAULT_COVER" alt="Capa do livro {{ book.name }}" />
-    <p class="book-title">{{ book.name }}</p>
-  </div>
-
-  <!-- Lista de livros (universo) -->
-  <div *ngIf="type === 'universe' && books.length" class="books-grid">
-    <div *ngFor="let b of books" class="book-card">
+  <!-- Lista de livros ainda não comprados (universo) -->
+  <div *ngIf="booksToBuy.length" class="books-grid">
+    <div *ngFor="let b of booksToBuy" class="book-card">
       <img [src]="b.cover_url || DEFAULT_COVER" alt="Capa do livro {{ b.name }}" />
       <p class="book-title">{{ b.name }}</p>
     </div>
@@ -22,7 +16,13 @@
 
   <!-- Total -->
   <p *ngIf="total > 0" class="total">
-    Total: <strong>{{ total | currency: currencyCode }}</strong>
+    Total:
+    <ng-container *ngIf="books.length && totalOriginal > total">
+      <s style="color: red; margin-right: 8px;">
+        {{ totalOriginal | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
+      </s>
+    </ng-container>
+    <strong>{{ total | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}</strong>
   </p>
 
   <h2>Forma de pagamento</h2>
@@ -50,6 +50,6 @@
 
   <!-- Finalizar -->
   <div class="btn-wrapper" *ngIf="total > 0">
-    <button (click)="finalizePurchase()">Finalizar compra</button>
+    <button (click)="finalizePurchase()" [disabled]="!paymentMethod">Finalizar compra</button>
   </div>
 </div>

@@ -68,16 +68,21 @@ export class HeaderComponent implements OnInit {
   }
 
   goToProfile(): void {
-    window.location.href = `/profile`;
+      this.router.navigate(['/profile']);
 
   }
   goToStore() {
-    window.location.href = `/store`;
+      this.router.navigate(['/store']);
 
   }
 
   goHome() {
-    window.location.href = `/`;
+      this.router.navigate(['/']);
+
+  }
+  goLibrary() {
+
+      this.router.navigate(['/library']);
 
   }
 

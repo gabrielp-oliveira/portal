@@ -40,10 +40,10 @@ const routes: Routes = [
     BottomSheetComponent,
     ChapterDetailsComponent,
     PaperCardComponent,
-    FooterComponent
   ],
-    providers: [BottomSheetService],
+  providers: [BottomSheetService],
   imports: [
+    FooterComponent,
     CommonModule,
     MatIconModule,
     MatFormFieldModule,

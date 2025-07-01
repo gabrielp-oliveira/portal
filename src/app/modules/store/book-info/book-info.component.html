@@ -2,7 +2,7 @@
   <!-- 📘 Capa -->
 
   <div class="cover-wrapper">
-          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
+    <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
 
     <img [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ book.name }}"
       class="paper-img" />
@@ -43,9 +43,27 @@
 
 
       <!-- 💵 Botão de compra -->
-      <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' " [routerLink]="['/store/book', book.id, 'checkout']" >
-        price {{ book.price| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
-      </button>
+      <div class="btn-options">
+
+        <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' && !isPurchased"
+          [routerLink]="['/store/book', book.id, 'checkout']">
+          price {{ book.price| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
+        </button>
+        <div *ngIf="isPurchased">
+          <!-- Botão para ler o livro -->
+          <button mat-raised-button color="primary" [routerLink]="['/read/book', book.id, 'chapter', 1]">
+            📖 Read book
+          </button>
+
+          <!-- Botão para ler o universo -->
+           <!-- http://localhost:4200/read/The%20Tarzan%20Saga -->
+          <button mat-raised-button color="primary" [routerLink]="['/read', book.world_name]">
+            🌌 Read universe
+          </button>
+
+        </div>
+      </div>
+
     </div>
 
     <!-- 🌌 Card do Universo -->
@@ -78,18 +96,18 @@
 
   </div>
 
-        <!-- 📖 Descrição do Livro -->
-      <div *ngIf="book.description" class="description-block">
-        <ng-container *ngIf="book.description.length > 300; else fullBookDesc">
-          <p class="description"
-            [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
-          </p>
-          <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
-            {{ showFullBookDesc ? 'Show less' : 'Show more' }}
-          </button>
-        </ng-container>
+  <!-- 📖 Descrição do Livro -->
+  <div *ngIf="book.description" class="description-block">
+    <ng-container *ngIf="book.description.length > 300; else fullBookDesc">
+      <p class="description"
+        [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
+      </p>
+      <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
+        {{ showFullBookDesc ? 'Show less' : 'Show more' }}
+      </button>
+    </ng-container>
 
-        <ng-template #fullBookDesc>
-          <p class="description">{{ book.description }}</p>
-        </ng-template>
-      </div>
+    <ng-template #fullBookDesc>
+      <p class="description">{{ book.description }}</p>
+    </ng-template>
+  </div>

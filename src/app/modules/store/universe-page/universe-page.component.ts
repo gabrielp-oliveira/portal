@@ -6,37 +6,67 @@ import { world } from '../../../models/paperTrailTypes';
 @Component({
   selector: 'app-universe-page',
   templateUrl: './universe-page.component.html',
-  styleUrl: './universe-page.component.scss'
+  styleUrls: ['./universe-page.component.scss']
 })
 export class UniversePageComponent {
   universeId: string | null = null;
   universeData: world | null = null;
   universeDescription: string = '';
   universePrice: number = 0;
+  alreadyPurchasedTotal: number = 0;
+  booksAvailableToBuy: number = 0;
+  fullUniversePrice: number = 0;
+
+
   booksAvailable: number = 0;
   recommendedBooks: any[] = [];
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
   priceCurrencysePrice: string = 'USD';
+  currencyCode = 'USD';
+  country = 'US';
 
   constructor(
     private store: StoreService,
     private route: ActivatedRoute
   ) {
     this.universeId = this.route.snapshot.paramMap.get('id');
-    if (this.universeId) {
-      this.store.getUniverseById(this.universeId).subscribe((res) => {
-        this.priceCurrencysePrice = res.papers[0].priceCurrency
-        this.universeData = res
-        this.universeDescription = res.description;
-        // this.recommendedBooks = res.recommendedBooks;
-        this.universePrice = res.papers
-          .filter(p => p.status === 'available')
-          .reduce((sum, p) => sum + (p.price || 0), 0);
 
-          this.booksAvailable = res.papers
-          .filter(p => p.status === 'available').length
+    // Primeiro detecta a localização
+    fetch('https://ipapi.co/json')
+      .then(res => res.json())
+      .then(data => {
+        this.country = data.country === 'BR' ? 'BR' : 'US';
+        this.currencyCode = this.country === 'BR' ? 'BRL' : 'USD';
+      })
+      .catch(() => {
+        this.country = 'US';
+        this.currencyCode = 'USD';
+      })
+      .finally(() => {
+        if (this.universeId) {
+          this.store.getUniverseById(this.universeId, this.currencyCode, this.country).subscribe((res) => {
+            this.universeData = res;
+            this.universeDescription = res.description;
+            this.priceCurrencysePrice = res.papers?.[0]?.priceCurrency || this.currencyCode;
+
+            this.booksAvailableToBuy = res.papers
+              .filter(p => p.status === 'available' && !p.AlreadyPurchased).length;
+
+            this.fullUniversePrice = res.papers
+              .filter(p => p.status === 'available')
+              .reduce((sum, p) => sum + (p.price || 0), 0);
+
+            this.universePrice = res.papers
+              .filter(p => p.status === 'available' && !p.AlreadyPurchased)
+              .reduce((sum, p) => sum + (p.price || 0), 0);
+
+            this.alreadyPurchasedTotal = res.papers
+              .filter(p => p.status === 'available' && p.AlreadyPurchased)
+              .reduce((sum, p) => sum + (p.price || 0), 0);
+
+          });
+        }
       });
-    }
   }
 
   optimizeImage(url: string): string {
@@ -47,9 +77,6 @@ export class UniversePageComponent {
   }
 
   buyUniverse() {
-    // alert(`🛒 Comprando o universo "${this.universeData?.name}" com ${this.universeData.papers.length} livros!`);
-    // Aqui você pode integrar lógica de checkout futuramente
+    // lógica de compra
   }
-
-
 }

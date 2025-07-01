@@ -11,6 +11,7 @@ export class BookInfoComponent {
   @Input() book: FullPaper;
   @Input() worldDescription:string;
   @Input() PaperCount: number;
+  @Input() isPurchased: boolean;
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
   showFullBookDesc = false;
   showFullUniverseDesc = false;

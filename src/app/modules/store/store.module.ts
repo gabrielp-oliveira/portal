@@ -24,7 +24,6 @@ import { PaperCardComponent } from './paper-card/paper-card.component';
 import { PaperPageComponent } from './paper-page/paper-page.component';
 import { UniversePageComponent } from './universe-page/universe-page.component';
 import { HeaderComponent } from '../../standAlone/header/header.component';
-import { FooterComponent } from '../../standAlone/footer/footer.component';
 import { AdsComponent } from '../../standAlone/ads/ads.component';
 import { BookDetailComponent } from './book-detail/book-detail.component';
 import { BookInfoComponent } from './book-info/book-info.component';
@@ -37,6 +36,7 @@ import { UniverseCheckoutComponent } from './universe-checkout/universe-checkout
 import { BookCheckoutComponent } from './book-checkout/book-checkout.component';
 
 import { AuthGuard } from '../../guards/auth.guard';
+import { FooterComponent } from '../read-world/footer/footer.component';
 
 const routes: Routes = [
   {
@@ -69,9 +69,10 @@ const routes: Routes = [
     BooksByAuthorComponent,
     RecommendedBooksComponent,
     PaperPageComponent,
-    UniversePageComponent
+    UniversePageComponent,
   ],
   imports: [
+    FooterComponent,
     CommonModule,
     RouterModule,
     FormsModule,
@@ -87,8 +88,7 @@ const routes: Routes = [
     MatTooltipModule,
     MatRadioModule, // ✅ Adicionado aqui
     AdsComponent,
-    HeaderComponent,
-    FooterComponent
+    HeaderComponent
   ]
 })
 export class StoreModule {}

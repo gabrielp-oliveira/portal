@@ -53,10 +53,37 @@ export class PaperCardComponent {
     return this.paperCard.chapterList.reduce((acc, ch) => acc + (ch.annotations?.length || 0), 0);
   }
 
-  continueReading() {
-    const lastRead = [...this.paperCard.chapterList].reverse().find(ch => ch.completed);
-    console.log('Continue reading from:', lastRead);
+continueReading() {
+  if (!this.paperCard?.chapterList?.length) return;
+
+  const chapters = [...this.paperCard.chapterList];
+  const sorted = chapters.sort((a, b) => a.order - b.order);
+
+  // 🔍 Encontra o último capítulo lido (completed)
+  const lastRead = [...sorted].reverse().find(ch => ch.completed);
+
+  let nextChapter;
+
+  if (lastRead) {
+    // 📘 Busca o próximo após o último lido
+    nextChapter = sorted.find(ch => ch.order > lastRead.order);
+    // Se não houver próximo (todos lidos), pega o último
+    if (!nextChapter) {
+      nextChapter = sorted[sorted.length - 1];
+    }
+  } else {
+    // 🚀 Nenhum lido? Começa do primeiro (order = 1)
+    nextChapter = sorted.find(ch => ch.order === 1) || sorted[0];
   }
+
+  if (nextChapter) {
+    const bookId = this.paperCard.paper.id;
+    const chapterOrder = nextChapter.order;
+    this.router.navigate(['/read/book', bookId, 'chapter', chapterOrder]);
+  }
+}
+
+
 
   toggleExpand() {
     this.expanded = !this.expanded;

@@ -149,3 +149,11 @@ button[mat-button] {
     justify-content: center;
   }
 }
+
+.btn-options {
+  display: flex;
+  button {
+    margin: 5px;
+  }
+  
+}
