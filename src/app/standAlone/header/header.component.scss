@@ -97,9 +97,10 @@
 
 .middle-group {
   flex: 1;
-  justify-content: center;
+  justify-content: end;
   display: flex;
   flex-wrap: wrap;
+  margin-right: 50px;
 }
 
 .btn-flat {
@@ -161,5 +162,11 @@
   height: 100%;
   button {
     margin: 3px;
+  }
+}
+
+@media(width <= 600px){
+  .middle-group {
+    margin-right: 0px;
   }
 }

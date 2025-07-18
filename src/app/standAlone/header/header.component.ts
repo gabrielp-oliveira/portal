@@ -67,24 +67,12 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  goToProfile(): void {
-      this.router.navigate(['/profile']);
 
+    
+    
+    GoTo(route:string){
+      
+      this.router.navigate([route]);
   }
-  goToStore() {
-      this.router.navigate(['/store']);
-
-  }
-
-  goHome() {
-      this.router.navigate(['/']);
-
-  }
-  goLibrary() {
-
-      this.router.navigate(['/library']);
-
-  }
-
 
 }

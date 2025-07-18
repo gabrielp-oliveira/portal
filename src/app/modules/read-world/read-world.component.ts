@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
-import { Timeline, Chapter, StoryLine, paper, paperCard } from '../../models/paperTrailTypes';
+import { Timeline, Chapter, StoryLine, paper, paperCard, chapterDetailsModal } from '../../models/paperTrailTypes';
 import { ApiService } from '../api.service';
 // import { UtilsService } from '../../utils.service';
 import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-details.component';
@@ -84,13 +84,15 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(([chapters, timelines, storylines, settings]) => {
         if (!settings) return;
+        // console.log('....')
         const visibleChapters = chapters.filter(c => c.visible);
-
+        
         const visibleTimelines = timelines
-          .filter(t => t.visible)
-          .sort((a, b) => a.order - b.order)
-          .map((t, index) => ({ ...t, order: index + 1 }));
-
+        .filter(t => t.visible)
+        .sort((a, b) => a.order - b.order)
+        .map((t, index) => ({ ...t, order: index + 1 }));
+        
+        // console.log('....',visibleTimelines )
         const visibleStorylines = storylines;
 
         // 🔒 Serializa só as propriedades relevantes
@@ -186,7 +188,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
 
   openChapterDetails(id: string): void {
 
-    const data = {
+    const data:chapterDetailsModal = {
       chapter: this.wd.getChapterById(id),
       paper: this.wd.getPaperByChapterId(id),
       link: this.wd.getChapterLink(id)

@@ -78,7 +78,7 @@ export class BottomSheetComponent implements OnDestroy {
         this.applyThemeToMaterialClasses();
       })
 
-        this.observeBottomSheetChanges(); // observa novas instâncias
+    this.observeBottomSheetChanges(); // observa novas instâncias
 
   }
 
@@ -92,15 +92,45 @@ export class BottomSheetComponent implements OnDestroy {
   onChapterVisibilityToggle(chapter: Chapter) {
     this.wd.updateChapter(chapter)
   }
-  onPaperVisibilityToggle(paper: paper) {
-    this.chapters.forEach((chp) => {
-      if (chp.paper_id == paper.id) {
-        chp.visible = paper.visible
-        this.wd.updateChapter(chp)
+onPaperVisibilityToggle(paper: paper) {
+  const affectedTimelineIds = new Set<string>()
+
+  // Atualiza capítulos do paper e coleta timeline_ids afetados
+  this.chapters.forEach((chp) => {
+    if (chp.paper_id === paper.id) {
+      chp.visible = paper.visible
+      this.wd.updateChapter(chp)
+
+      if (chp.timeline_id) {
+        affectedTimelineIds.add(chp.timeline_id)
       }
-    })
-    this.wd.updatePaper(paper)
-  }
+    }
+  })
+
+  this.wd.updatePaper(paper)
+
+  // Atualiza visibilidade das timelines com base nos capítulos visíveis
+  const updatedTimelines = this.timelines.map((timeline) => {
+    if (affectedTimelineIds.has(timeline.id)) {
+      const hasVisibleChapters = this.chapters.some(
+        (chp) => chp.timeline_id === timeline.id && chp.visible === true
+      )
+      return { ...timeline, visible: hasVisibleChapters }
+    }
+    return timeline
+  })
+
+  // Aplica as alterações nas timelines atualizadas
+  updatedTimelines.forEach((timeline) => {
+    this.wd.updateTimeline(timeline)
+  })
+
+  // Se você mantém um estado local com timelines (ex: this.timelines), atualize também:
+  this.timelines = updatedTimelines
+}
+
+
+
   onTimelinesVisibilityToggle(timeline: Timeline) {
     this.chapters.forEach((chp) => {
       if (chp.timeline_id == timeline.id) {
@@ -203,18 +233,18 @@ export class BottomSheetComponent implements OnDestroy {
   }
 
   private observeBottomSheetChanges() {
-  const observer = new MutationObserver(() => {
-    this.applyThemeToMaterialClasses(); // aplica o estilo sempre que algo novo for adicionado
-  });
+    const observer = new MutationObserver(() => {
+      this.applyThemeToMaterialClasses(); // aplica o estilo sempre que algo novo for adicionado
+    });
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
 
-  // Opcional: guarda para desconectar depois, se quiser limpar
-  this.destroy$.subscribe(() => observer.disconnect());
-}
+    // Opcional: guarda para desconectar depois, se quiser limpar
+    this.destroy$.subscribe(() => observer.disconnect());
+  }
 
 
 

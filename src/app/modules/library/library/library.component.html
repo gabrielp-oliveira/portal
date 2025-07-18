@@ -1,1 +1,69 @@
-<p>library works!</p>
+<div class="library-container light">
+  <mat-tab-group [(selectedIndex)]="activeTabIndex" (selectedTabChange)="onTabChange($event.index)">
+
+    <!-- BOOKS TAB -->
+    <mat-tab label="Books">
+      <div *ngIf="loadingBooks" class="spinner-wrapper">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <div *ngIf="!loadingBooks && paperCardList.length > 0" class="paper-cards-wrapper">
+        <app-paper-card *ngFor="let card of paperCardList" [paperCard]="card" [theme]="true"></app-paper-card>
+      </div>
+
+      <div *ngIf="!loadingBooks && paperCardList.length === 0" class="empty-message">
+        Nenhum livro encontrado na sua biblioteca.
+      </div>
+
+      <mat-paginator [length]="totalBooks" [pageSize]="limit" [pageSizeOptions]="[6, 12, 24]"
+        (page)="onPageChange($event.pageIndex)">
+      </mat-paginator>
+    </mat-tab>
+
+    <!-- UNIVERSOS TAB -->
+    <mat-tab label="Universes">
+      <div *ngIf="loadingWorlds" class="spinner-wrapper">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <div *ngIf="!loadingWorlds && worlds.length > 0" class="universe-grid">
+        <div *ngFor="let world of worlds" class="universe-card">
+          <div style="display: flex; flex-direction: column;">
+
+            <a [routerLink]="['/read', world.name]" style="width: 100%;"><button mat-button style="width: 100%;">Go to</button></a>
+
+
+            <app-universe-card [library]="true" [world]="world"></app-universe-card>
+          </div>
+
+          <div class="universe-details">
+            <p class="universe-description">{{ world.description }}</p>
+
+            <div class="book-list">
+              <div class="book-card" *ngFor="let pp of world.papers">
+                <div class="book-icon-wrapper">
+                  <img [src]="optimizeImage(pp.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ pp.name }}"
+                    class="book-cover" />
+                  <div class="icon-badges">
+                    <ng-container *ngIf="pp.completed">
+                      <span class="icon completed-icon" title="Completado">✔️</span>
+                    </ng-container>
+                  </div>
+                </div>
+                <div class="book-meta">
+                  <h3>{{ pp.name | truncate: 16 }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div *ngIf="!loadingWorlds && worlds.length === 0" class="empty-message">
+        Nenhum universo disponível.
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>

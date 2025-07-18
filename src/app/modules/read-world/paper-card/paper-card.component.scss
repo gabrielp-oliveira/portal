@@ -1,11 +1,11 @@
 .paper-card {
   padding: 16px;
   border-radius: 10px;
-  max-width: 600px;
+  width: 100%;
+  max-width: 500px; // opcional
   transition: background 0.3s, color 0.3s;
   overflow: hidden;
-  margin: 16px auto;
-  width: 100%;
+  margin: 10px;
   box-sizing: border-box;
 
   &.dark-theme {
@@ -71,27 +71,68 @@
   }
 }
 
+/* ✅ Capa do livro */
+.cover-container {
+  width: auto;
+  margin-right: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.book-cover {
+  width: 120px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.book-cover:hover {
+  transform: scale(1.03);
+}
+
+/* ✅ Cabeçalho com título e botão */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px;
-  // width: 550px;
 }
+
 .left h3 {
-  width: 300px;
-  text-align: start;
-  flex-wrap: wrap;
-  justify-content: start;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
 }
+
 .meta {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* ✅ Botão Continue */
+.right {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.right button {
+  margin-bottom: 4px;
+}
+
+/* ✅ Progresso */
+.progress {
+  font-weight: bold;
   font-size: 14px;
 }
 
 .progress-bar {
   display: flex;
+  justify-content: start;
   flex-wrap: wrap;
   margin-top: 10px;
   gap: 2px;
@@ -101,6 +142,7 @@
   width: 14px;
   height: 14px;
   border-radius: 3px;
+  background: #888;
 }
 
 .block.read {
@@ -111,17 +153,24 @@
   border: 2px solid gold;
 }
 
+/* ✅ Botão expandir capítulos (agora embaixo) */
 .expand-toggle {
-  margin-top: 10px;
-  cursor: pointer;
-  font-size: 14px;
+  // margin-top: 10px;
+  // cursor: pointer;
+  // font-size: 14px;
+  // display: flex;
+  // justify-content: flex-start;
+  // display: flex;
+  // justify-content: end;
+  align-self: flex-end;
 }
 
+/* ✅ Lista de capítulos */
 .chapter-list {
   margin-top: 8px;
   padding-left: 12px;
-  max-height: 200px;               /* ✅ Limite de altura */
-  overflow-y: auto;                /* ✅ Scroll quando ultrapassa */
+  max-height: 200px;
+  overflow-y: auto;
   padding-right: 8px;
 }
 
@@ -132,23 +181,26 @@
 .chapter-list::-webkit-scrollbar-thumb {
   border-radius: 4px;
 }
-  
+
+/* ✅ Capítulos individuais */
 .chapter-item {
   padding: 4px 0;
   display: flex;
   align-items: center;
   gap: 6px;
   justify-content: space-between;
-  align-items: center;
+
   span {
     display: flex;
-    justify-content: center;
+    align-items: center;
     flex-direction: row;
+
     span {
-      margin: 0px 5px;
+      margin: 0 5px;
     }
+
     mat-icon {
-      margin: 0px 5px;
+      margin: 0 5px;
     }
   }
 }

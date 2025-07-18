@@ -93,7 +93,7 @@
 
     <!-- Visibilidade -->
     <ng-container matColumnDef="visible">
-      <th mat-header-cell *matHeaderCellDef>Exibir</th>
+      <th mat-header-cell *matHeaderCellDef>Show</th>
       <td mat-cell *matCellDef="let paper">
         {{paper.visible}}
         <mat-checkbox [(ngModel)]="paper.visible" (ngModelChange)="onPaperVisibilityToggle(paper)"></mat-checkbox>

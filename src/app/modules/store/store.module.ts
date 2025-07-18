@@ -37,6 +37,7 @@ import { BookCheckoutComponent } from './book-checkout/book-checkout.component';
 
 import { AuthGuard } from '../../guards/auth.guard';
 import { FooterComponent } from '../read-world/footer/footer.component';
+import { TruncatePipe } from "../../truncate.pipe";
 
 const routes: Routes = [
   {
@@ -59,7 +60,6 @@ const routes: Routes = [
     BookCheckoutComponent,
     TopPanelComponent,
     BodyStoreComponent,
-    UniverseCardComponent,
     PaperCardComponent,
     BookDetailComponent,
     StoreWrapperComponent,
@@ -85,10 +85,12 @@ const routes: Routes = [
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
+    UniverseCardComponent,
     MatTooltipModule,
     MatRadioModule, // ✅ Adicionado aqui
     AdsComponent,
-    HeaderComponent
-  ]
+    HeaderComponent,
+    TruncatePipe
+]
 })
 export class StoreModule {}

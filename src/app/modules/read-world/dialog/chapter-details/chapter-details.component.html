@@ -1,4 +1,4 @@
-<div class="dialog" [ngClass]="isDarkMode ? 'dark' : 'light'">
+<div class="dialog" [ngClass]="isDarkMode ? 'dark' : 'light'" *ngIf="chapter && paper && timeline && storyline">
   <button class="close-btn" (click)="close()">×</button>
 
   <!-- <img [src]="chapter.cover" alt="Capa do Livro" class="cover"> -->

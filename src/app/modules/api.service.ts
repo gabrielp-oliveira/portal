@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, ChapterAnnotation, ChapterConfiguration, ChapterDetails, Connection, createWorld, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterAnnotation,UserChapterDetailsResponse, ChapterConfiguration, ChapterDetails, Connection, createWorld, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -29,16 +29,12 @@ export class ApiService {
     );
   }
 
-  getChapterUrl(chapterId: string): Observable<ChapterDetails> {
-    return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
-  }
+
 
   getChapteData(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`http://localhost:9090/chapter?id=${chapterId}`);
   }
-  GetWorldChapters(worldId: string): Observable<Chapter[]> {
-    return this.http.get<Chapter[]>(`http://localhost:9090/getWorldChapters?id=${worldId}`);
-  }
+
   chaptersBook(paperId: string): Observable<{chapters: Chapter[],world: world}> {
     return this.http.get<{chapters: Chapter[],world: world}>(`http://localhost:9090/chaptersBook?paperId=${paperId}`);
   }
@@ -71,6 +67,9 @@ export class ApiService {
   }
   getDescription(description: description): Observable<description> {
     return this.http.get<description>(`http://localhost:9090/description?resource_id=${description.resource_id}`);
+  }
+  getchapterDetails(id: string): Observable<UserChapterDetailsResponse> {
+    return this.http.get<UserChapterDetailsResponse>(`${this.baseUrl}/userChapterDetails?chapterId=${id}`);
   }
   updateChapterList(body: Chapter[]): Observable<Chapter[]> {
     return this.http.put<Chapter[]>(`http://localhost:9090/updateChapterList?id=${body[0].id}`, body);

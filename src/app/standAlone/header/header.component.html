@@ -3,7 +3,7 @@
   <ng-container *ngIf="settings$ | async as settings">
     <header class="header" [class.dark]="settings.theme">
       <div class="header-group">
-        <button class="btn-flat" (click)="goHome()">
+        <button class="btn-flat" (click)="GoTo('/')">
           <img [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'" alt="Home"
             class="home-icon" />
         </button>
@@ -11,13 +11,18 @@
       </div>
 
       <div class="header-group middle-group">
-        <button class="btn-flat" (click)="goToStore()">
+        <button class="btn-flat" (click)="GoTo('/store')">
           <mat-icon>shopping_cart</mat-icon>
           <span>Store</span>
         </button>
-        <button class="btn-flat" (click)="goLibrary()">
+        <button class="btn-flat" (click)="GoTo('/library')">
           <mat-icon>library_books</mat-icon>
           <span>library</span>
+        </button>
+
+        <button class="btn-flat" (click)="shareStore()">
+          <mat-icon>share</mat-icon>
+          <span>share</span>
         </button>
       </div>
 
@@ -29,10 +34,7 @@
           <span>Modo</span>
         </button>
 
-        <button class="btn-flat" (click)="shareStore()">
-          <mat-icon>share</mat-icon>
-          <span>Compartilhar</span>
-        </button>
+
 
         <div class="user-icon">👤</div>
       </div>
@@ -44,28 +46,29 @@
 <ng-template #defaultHeader>
   <header class="header">
     <div class="header-group">
-      <button class="btn-flat" (click)="goHome()">
+      <button class="btn-flat" (click)="GoTo('/')">
         <img src="assets/homeLightIcon.png" alt="Home" class="home-icon" />
       </button>
     </div>
 
     <div class="header-group middle-group">
-      <button class="btn-flat" (click)="goToStore()">
+      <button class="btn-flat" (click)="GoTo('store')">
         <mat-icon>shopping_cart</mat-icon>
         <span>Store</span>
       </button>
-      <button class="btn-flat" (click)="goLibrary()">
+      <button class="btn-flat" (click)="GoTo('library')">
         <mat-icon>library_books</mat-icon>
         <span>library</span>
+      </button>
+      <button class="btn-flat" (click)="shareStore()">
+        <mat-icon>share</mat-icon>
+        <span>share</span>
       </button>
     </div>
 
     <div class="header-group">
       <!-- ❌ Sem botão de modo -->
-      <button class="btn-flat" (click)="shareStore()">
-        <mat-icon>share</mat-icon>
-        <span>Compartilhar</span>
-      </button>
+
 
       <div class="user-icon">👤</div>
     </div>

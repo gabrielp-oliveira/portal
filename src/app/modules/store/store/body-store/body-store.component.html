@@ -17,7 +17,6 @@
     <ng-container *ngIf="filter.searchType === 'universes'">
       <ng-container *ngIf="filter.searchType === 'universes'">
         <app-universe-card *ngFor="let world of pagedWorlds"
-         [paperCount]="world.PaperCount || 0"
           [world]="world"
           >
         </app-universe-card>

@@ -57,7 +57,7 @@ export type paper = {
 
     author_id: string;
     author_name: string;
-
+    author: string;
     language: string;
     year: number;
 
@@ -76,6 +76,9 @@ export type paper = {
     focus?: boolean;
     visible?: boolean;
     isPurchased?: boolean;
+    favorite?: boolean;
+    completed?: boolean;
+    
 };
 
 
@@ -93,6 +96,12 @@ export interface StoreFilter {
     status?: 'available' | 'not_available' | 'in_progress'
 }
 
+export interface chapterDetailsModal {
+      chapter: Chapter;
+      paper: paper;
+      link: string;
+    
+}
 
 
 export interface createWorld extends infoDialog {
@@ -156,7 +165,7 @@ export type Chapter = {
     created_at: string,
     paper_id: string,
     event_Id: string,
-    timeline_id: string | null,
+    timeline_id: string,
     storyline_id: string,
     range: number,
     pageCount: number,
@@ -277,4 +286,29 @@ export interface ChapterConfiguration {
 export interface paperCard {
     paper: paper,
     chapterList: Chapter[]
+}
+export interface UserChapterDetailsResponse {
+  chapters: {
+    ID: string;
+    Title: string;
+    Description: string;
+    CreatedAt: string;
+    Order: number;
+    PaperID: string;
+    PaperName: string;
+    WorldID: string;
+    TimelineID: string;
+    TimelineName: string;
+    TimelineDesc: string;
+    StorylineID: string;
+    StorylineName: string;
+    StorylineDesc: string;
+    Favorite: boolean;
+    Completed: boolean;
+    EventID?: string;
+    Range?: number;
+    PageCount?: number;
+    HasAnnotations?: boolean;
+    AnnotationsCount?: number;
+  };
 }

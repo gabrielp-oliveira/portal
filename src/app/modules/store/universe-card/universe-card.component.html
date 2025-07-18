@@ -2,7 +2,7 @@
   <!-- Capas agrupadas -->
 <div class="covers-container">
   <!-- Quando há 3 ou mais capas -->
-  <ng-container *ngIf="world.CoverURLs.length >= 3; else twoCovers">
+  <ng-container *ngIf="(world?.CoverURLs?.length || 0) >= 3; else twoCovers">
     <img
       [src]="optimizeImage(world.CoverURLs[0] || DEFAULT_COVER)"
       class="cover cover-0"
@@ -39,7 +39,7 @@
 
   <!-- Nome do universo -->
   <h2 class="title">{{ world.name || "" }}</h2>
-  <p class="count">{{ paperCount }} book{{ paperCount > 1 ? 's' : '' }}</p>
+  <p class="count">{{ world.PaperCount }} book{{ world.PaperCount > 1 ? 's' : '' }}</p>
 
   <!-- Descrição curta -->
 
@@ -60,7 +60,7 @@
   </div>
 
   <!-- Botão de ação -->
-  <button mat-raised-button color="accent" class="universe-button" (click)="goToStoreUniverse()">
+  <button mat-raised-button color="accent" class="universe-button" (click)="goToStoreUniverse()" *ngIf="!library">
     Universe Details
   </button>
 </mat-card>

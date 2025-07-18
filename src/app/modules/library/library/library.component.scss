@@ -1,0 +1,244 @@
+.library-container {
+  padding: 24px;
+  background-color: #f9f9f9;
+  min-height: calc(100% - 400px);
+}
+
+.spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.book-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.book-card:hover {
+  transform: translateY(-4px);
+}
+
+.book-cover {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.book-info {
+  margin-top: 12px;
+}
+.book-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+.book-info p {
+  font-size: 14px;
+  color: #666;
+}
+
+.universe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.universe-card {
+  background-color: #ffffff;
+  padding: 28px 20px 20px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  position: relative;
+  overflow: visible;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.universe-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.universe-papers {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inline-paper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f4f4;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+.paper-cover {
+  width: 30px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #777;
+  margin: 40px 0;
+}
+
+.paper-cards-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  justify-content: start; // opcional: centraliza os cards
+  app-paper-card {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+
+.covers-container {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 120px;
+  width: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.cover {
+  width: 80px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 8px;
+  position: absolute;
+  top: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  border: 1px solid #999;
+}
+
+.cover-0 {
+  left: 50%;
+  transform: translateX(-120%) rotate(-10deg);
+  z-index: 1;
+}
+.cover-1 {
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+.cover-2 {
+  left: 50%;
+  transform: translateX(20%) rotate(10deg);
+  z-index: 1;
+}
+
+.logo-overlay {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  background-color: rgb(50, 90, 105);
+  border-radius: 50%;
+  padding: 6px;
+  z-index: 3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* NOVO BLOCO PARA DETALHES DO UNIVERSO */
+.universe-details {
+  flex: 1;
+  min-width: 240px;
+}
+
+.universe-description {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.book-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.book-card {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.book-card img.book-cover {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.book-meta h3 {
+  font-size: 14px;
+  margin: 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-author {
+  font-size: 12px;
+  color: #777;
+}
+
+.book-status {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  background-color: #eee;
+  text-transform: capitalize;
+}
+
+.book-status.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+.book-status.inprogress {
+  background-color: #fff3cd;
+  color: #856404;
+}
+.book-status.pending {
+  background-color: #f8d7da;
+  color: #721c24;
+}

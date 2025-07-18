@@ -240,31 +240,50 @@ export class WorldDataService {
     const timelines = this.timelinesSubject.value.filter(t => t.id !== timelineId);
     this.timelinesSubject.next(timelines);
   }
+  getTimeline(timelineId: string): Timeline {
+    const timeline = this.timelinesSubject.value.filter(t => t.id !== timelineId)[0]
+    return timeline
+  }
 
   removeConnection(connectionId: string): void {
     const connections = this.connectionsSubject.value.filter(c => c.id !== connectionId);
     this.connectionsSubject.next(connections);
   }
 
-  setWorldData(data: world): void {
-    const basicworldInfo: basicWorld = {
-      created_at: data.created_at,
-      id: data.id,
-      name: data.name,
-      description: data.description
-    }
-    this.setWorld(basicworldInfo)
-    this.setPapers(data.papers)
-    this.setGroupConnection(data.groupConnections)
-    this.setChapters(data.chapters)
-    this.setConnections(data.connections)
-    this.setEvents(data.events)
-    this.setTimelines(data.timelines)
-    this.setStorylines(data.storyLines)
-    this.setSettings(data.subway_settings)
-
-    this.setLoading(false)
+setWorldData(data: world): void {
+  const basicworldInfo: basicWorld = {
+    created_at: data.created_at,
+    id: data.id,
+    name: data.name,
+    description: data.description
   }
+  this.setWorld(basicworldInfo)
+  this.setPapers(data.papers)
+  this.setGroupConnection(data.groupConnections)
+  this.setChapters(data.chapters)
+  this.setConnections(data.connections)
+  this.setEvents(data.events)
+
+  // 📌 IDs de timelines e storylines que estão sendo usados por capítulos visíveis
+  const usedTimelineIds = new Set(
+    data.chapters.filter(ch => ch.visible && ch.timeline_id).map(ch => ch.timeline_id)
+  )
+  const usedStorylineIds = new Set(
+    data.chapters.filter(ch => ch.visible && ch.storyline_id).map(ch => ch.storyline_id)
+  )
+
+  // 📎 Filtra apenas os que estão sendo usados por algum capítulo visível
+  const filteredTimelines = data.timelines.filter(t => usedTimelineIds.has(t.id))
+  const filteredStorylines = data.storyLines.filter(s => usedStorylineIds.has(s.id))
+
+  this.setTimelines(filteredTimelines)
+  this.setStorylines(filteredStorylines)
+  this.setSettings(data.subway_settings)
+
+  this.setLoading(false)
+}
+
+
 
   setLoading(status: boolean) {
     this.loadingSubject.next(status);

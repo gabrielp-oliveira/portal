@@ -39,12 +39,12 @@ const routes: Routes = [
     TopPanelComponent,
     BottomSheetComponent,
     ChapterDetailsComponent,
-    PaperCardComponent,
   ],
   providers: [BottomSheetService],
   imports: [
     FooterComponent,
     CommonModule,
+    PaperCardComponent,
     MatIconModule,
     MatFormFieldModule,
     MatCheckboxModule,
@@ -59,6 +59,6 @@ const routes: Routes = [
     MatDividerModule,
     RouterModule.forChild(routes),
 
-  ]
+  ],
 })
 export class ReadWorldModule { }

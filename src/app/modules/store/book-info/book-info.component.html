@@ -19,7 +19,6 @@
       <p *ngIf="book.world_id && PaperCount > 1">
         Universe:
         <a [routerLink]="['/store/universe/', book.world_id]">{{ book.world_name }}</a>
-        <span *ngIf="book.order > 0"> – book {{ book.order }}</span>
       </p>
 
       <!-- 📅 Publicação e idioma -->
@@ -73,7 +72,7 @@
       <div *ngIf="worldDescription" class="universe-description-block">
         <ng-container *ngIf="worldDescription.length > 200; else fullUniverseDesc">
           <p class="universe-description"
-            [innerText]="showFullUniverseDesc ? worldDescription : (worldDescription | slice:0:200) + '...'">
+            [innerText]="showFullUniverseDesc ? worldDescription : (worldDescription | truncate: 200)">
           </p>
           <button mat-button (click)="showFullUniverseDesc = !showFullUniverseDesc">
             {{ showFullUniverseDesc ? 'Show less' : 'Show more' }}

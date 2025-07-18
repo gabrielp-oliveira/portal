@@ -53,6 +53,7 @@ export class TopPanelComponent implements OnInit {
         this.firstLoad = false;
       }
 
+      console.log('0',params['searchType'])
       this.emitFilters(false); // ⚠️ não atualiza a URL neste ponto
     });
   }

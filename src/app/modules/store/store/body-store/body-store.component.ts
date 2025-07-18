@@ -32,7 +32,7 @@ export class BodyStoreComponent implements OnInit {
     private storeService: StoreService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -42,22 +42,35 @@ export class BodyStoreComponent implements OnInit {
       this.pageIndex = page - 1;
 
       // ⚠️ Não alteramos os outros filtros aqui, apenas o índice
+
+      this.filter.searchType = params['searchType'] || 'books';
+      this.filter.query = params['query'] || '';
+      this.filter.genre = params['genre'] || '';
+      this.filter.author = params['author'] || '';
+      this.filter.universe = params['universe'] || '';
+      this.filter.sort = params['sort'] || 'title';
+      this.filter.order = params['order'] || 'asc';
+      this.filter.status = params['status'] || '';
+
       this.storeService.setFilter({
         ...this.filter,
         startIndex,
         quantity: this.pageSize
       });
+
+      console.log('1', params['searchType'])
     });
 
     this.storeService.filter$.subscribe((filter) => {
+      console.log('2', filter['searchType'])
       this.filter = {
-        searchType: filter.searchType ?? 'books',
+        searchType: filter.searchType,
         query: filter.query ?? '',
         genre: filter.genre ?? '',
         author: filter.author ?? '',
         universe: filter.universe ?? '',
-        sort: filter.sort ?? 'title',
-        order: filter.order ?? 'asc',
+        sort: filter.sort,
+        order: filter.order,
         quantity: filter.quantity ?? 15,
         startIndex: filter.startIndex ?? 0,
         status: filter.status ?? undefined
@@ -65,6 +78,8 @@ export class BodyStoreComponent implements OnInit {
 
       this.pageSize = this.filter.quantity;
       this.pageIndex = Math.floor((this.filter.startIndex || 0) / this.pageSize);
+
+      console.log(this.filter)
 
       if (this.filter.searchType === 'books') {
         this.fetchBooks();
@@ -95,7 +110,6 @@ export class BodyStoreComponent implements OnInit {
   }
 
   fetchBooks(): void {
-    console.log(this.filter)
     this.storeService.getBooks(this.filter).subscribe((res) => {
       this.pagedPapers = res.papers;
       this.totalElements = res.total;
