@@ -3,6 +3,7 @@ import { LibraryService } from '../library.service';
 import { paper, world } from '../../../models/paperTrailTypes';
 import { paperCard } from '../../read-world/paper-card/paper-card.component';
 import { WorldDataService } from '../../dashboard/world-data.service';
+import { StoreService } from '../../store/store.service';
 
 @Component({
   selector: 'app-library',
@@ -23,7 +24,11 @@ export class LibraryComponent implements OnInit {
   activeTabIndex: number = 0; // ✅ agora declarado
   paperCardList: paperCard[]
 
-  constructor(private libraryService: LibraryService, private wd: WorldDataService) {}
+  constructor(
+    private libraryService: LibraryService,
+     private wd: WorldDataService,
+     private store: StoreService
+    ) {}
 
   ngOnInit(): void {
     this.fetchBooks(); // books é a aba padrão
@@ -51,6 +56,9 @@ fetchBooks(): void {
       this.loadingBooks = false;
     }
   });
+  // this.store.getWishlist().subscribe((a) => {
+  //   console.log(a)
+  // })
 }
 
 

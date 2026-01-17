@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { TxtEditorComponent } from "../txt-editor/txt-editor.component";
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -11,12 +13,23 @@ import { TxtEditorComponent } from "../txt-editor/txt-editor.component";
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, OnDestroy {
 
-  isUserLogged:boolean = false
-  constructor(private auth: AuthService){}
-  ngOnInit(){
-   this.isUserLogged= this.auth.isUserLogged() 
+  isUserLogged: boolean = false;
+  private destroy$ = new Subject<void>();
 
+  constructor(private auth: AuthService) {}
+
+  ngOnInit(): void {
+    this.auth.isLogged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(status => {
+        this.isUserLogged = status;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

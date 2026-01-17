@@ -7,7 +7,6 @@
           <img [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'" alt="Home"
             class="home-icon" />
         </button>
-
       </div>
 
       <div class="header-group middle-group">
@@ -17,12 +16,11 @@
         </button>
         <button class="btn-flat" (click)="GoTo('/library')">
           <mat-icon>library_books</mat-icon>
-          <span>library</span>
+          <span>Biblioteca</span>
         </button>
-
         <button class="btn-flat" (click)="shareStore()">
           <mat-icon>share</mat-icon>
-          <span>share</span>
+          <span>Compartilhar</span>
         </button>
       </div>
 
@@ -34,9 +32,34 @@
           <span>Modo</span>
         </button>
 
+        <!-- Menu do usuário sempre visível -->
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="btn-flat">
+          <mat-icon>account_circle</mat-icon>
+        </button>
 
+        <mat-menu #userMenu="matMenu">
+          <ng-container *ngIf="isLogged; else loginOption">
+            <button mat-menu-item (click)="GoTo('/profile')">
+              <mat-icon>person</mat-icon>
+              <span>Perfil</span>
+            </button>
+            <button mat-menu-item (click)="GoTo('/wishlist')">
+              <mat-icon>favorite</mat-icon>
+              <span>Wishlist</span>
+            </button>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Sair</span>
+            </button>
+          </ng-container>
 
-        <div class="user-icon">👤</div>
+          <ng-template #loginOption>
+            <button mat-menu-item (click)="GoTo('/login')">
+              <mat-icon>login</mat-icon>
+              <span>Entrar</span>
+            </button>
+          </ng-template>
+        </mat-menu>
       </div>
     </header>
   </ng-container>
@@ -52,25 +75,54 @@
     </div>
 
     <div class="header-group middle-group">
-      <button class="btn-flat" (click)="GoTo('store')">
+      <button class="btn-flat" (click)="GoTo('/store')">
         <mat-icon>shopping_cart</mat-icon>
         <span>Store</span>
       </button>
-      <button class="btn-flat" (click)="GoTo('library')">
+      <button class="btn-flat" (click)="GoTo('/library')">
         <mat-icon>library_books</mat-icon>
-        <span>library</span>
+        <span>Biblioteca</span>
       </button>
       <button class="btn-flat" (click)="shareStore()">
         <mat-icon>share</mat-icon>
-        <span>share</span>
+        <span>Compartilhar</span>
       </button>
     </div>
 
     <div class="header-group">
-      <!-- ❌ Sem botão de modo -->
+      <!-- ❌ Sem toggle de tema -->
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" class="btn-flat">
+        <mat-icon>account_circle</mat-icon>
+      </button>
 
+      <mat-menu #userMenu="matMenu">
+        <ng-container *ngIf="isLogged; else loginOptionDefault">
+          <button mat-menu-item (click)="navigateIfLogged('/profile')">
+            <mat-icon>person</mat-icon>
+            <span>Perfil</span>
+          </button>
+          <button mat-menu-item (click)="navigateIfLogged('/wishlist')">
+            <mat-icon>favorite</mat-icon>
+            <span>Wishlist</span>
+          </button>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>log out</mat-icon>
+            <span>log out</span>
+          </button>
+        </ng-container>
 
-      <div class="user-icon">👤</div>
+        <ng-template #loginOptionDefault>
+          <button mat-menu-item (click)="GoTo('/login')">
+            <mat-icon>login</mat-icon>
+            <span>sign in</span>
+          </button>
+          <button mat-menu-item (click)="GoTo('/signup')">
+            <mat-icon>signup</mat-icon>
+            <span>sign up</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
     </div>
   </header>
 </ng-template>

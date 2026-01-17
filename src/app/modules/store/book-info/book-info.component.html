@@ -38,6 +38,19 @@
       <p *ngIf="book.total_pages">
         pages: <strong>{{ book.total_pages }}</strong>
       </p>
+      <p *ngIf="isLogged">
+        <button (click)="toggleWishlist()" mat-icon-button>
+          <mat-icon [ngStyle]="{ color: isInWishlist ? 'red' : '#999' }">
+            {{ isInWishlist ? 'favorite' : 'favorite_border' }}
+          </mat-icon>
+        </button>
+
+        
+      </p>
+
+
+
+
 
 
 
@@ -55,7 +68,7 @@
           </button>
 
           <!-- Botão para ler o universo -->
-           <!-- http://localhost:4200/read/The%20Tarzan%20Saga -->
+          <!-- http://localhost:4200/read/The%20Tarzan%20Saga -->
           <button mat-raised-button color="primary" [routerLink]="['/read', book.world_name]">
             🌌 Read universe
           </button>

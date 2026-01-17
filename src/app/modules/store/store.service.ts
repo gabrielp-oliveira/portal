@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { paper, world, StoreFilter } from '../../models/paperTrailTypes'; // ajuste caminho se necessário
 
 
@@ -18,16 +18,17 @@ export type paperResponse = {
   "PaperCount": number;
   "price": number;
   "isPurchased": boolean;
+  "isInWishlist": boolean;
 }
 
 
-  export type checkout= {
-    paymentMethod: string,
-    type: string,
-    country: string,
-    currencyCode: string,
-    id: string,
-  }
+export type checkout = {
+  paymentMethod: string,
+  type: string,
+  country: string,
+  currencyCode: string,
+  id: string,
+}
 
 export interface SimplePaper {
   id: string;
@@ -43,7 +44,7 @@ export interface SimplePaper {
   providedIn: 'root'
 })
 export class StoreService {
-  baseUrl = 'http://localhost:4040/api/store';
+  baseUrl = 'http://localhost:4040/api/';
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
 
   // Armazena o filtro central
@@ -73,36 +74,36 @@ export class StoreService {
   }
 
   // Chamada à API para buscar livros
-getBooks(filter: StoreFilter = {
-  searchType: 'books',
-  quantity: 0
-}): Observable<{ papers: paper[]; total: number }> {
-  let params = new HttpParams();
+  getBooks(filter: StoreFilter = {
+    searchType: 'books',
+    quantity: 0
+  }): Observable<{ papers: paper[]; total: number }> {
+    let params = new HttpParams();
 
-  // filtros principais
-  if (filter.query) params = params.set('query', filter.query);
-  if (filter.genre) params = params.set('genre', filter.genre);
-  if (filter.author) params = params.set('author', filter.author);
-  if (filter.universe) params = params.set('universe', filter.universe);
-  if (filter.status) params = params.set('status', filter.status); // ✅ novo filtro de status
+    // filtros principais
+    if (filter.query) params = params.set('query', filter.query);
+    if (filter.genre) params = params.set('genre', filter.genre);
+    if (filter.author) params = params.set('author', filter.author);
+    if (filter.universe) params = params.set('universe', filter.universe);
+    if (filter.status) params = params.set('status', filter.status); // ✅ novo filtro de status
 
-  // ordenação e paginação
-  params = params.set('sort', filter.sort || 'name');
-  params = params.set('order', filter.order || 'asc');
-  params = params.set('quantity', (filter.quantity ?? 15).toString());
-  params = params.set('startIndex', (filter.startIndex ?? 0).toString());
+    // ordenação e paginação
+    params = params.set('sort', filter.sort || 'name');
+    params = params.set('order', filter.order || 'asc');
+    params = params.set('quantity', (filter.quantity ?? 15).toString());
+    params = params.set('startIndex', (filter.startIndex ?? 0).toString());
 
-  return this.http.get<{ papers: paper[]; total: number }>(
-    `${this.baseUrl}/books`,
-    { params }
-  );
-}
+    return this.http.get<{ papers: paper[]; total: number }>(
+      `${this.baseUrl}store/books`,
+      { params }
+    );
+  }
 
 
 
-getPaperById(id: string, currencyCode: string, country: string): Observable<paperResponse> {
-  return this.http.get<paperResponse>(`${this.baseUrl}/books/${id}?currency=${currencyCode}&country=${country}`);
-}
+  getPaperById(id: string, currencyCode: string, country: string): Observable<paperResponse> {
+    return this.http.get<paperResponse>(`${this.baseUrl}store/books/${id}?currency=${currencyCode}&country=${country}`);
+  }
 
 
   // 🌌 Lista de universos
@@ -123,23 +124,23 @@ getPaperById(id: string, currencyCode: string, country: string): Observable<pape
     params = params.set('startIndex', (filter.startIndex ?? 0).toString());
 
     return this.http.get<{ worlds: world[]; total: number }>(
-      `${this.baseUrl}/universes`,
+      `${this.baseUrl}store/universes`,
       { params }
     );
   }
 
 
   // 🌍 Detalhes de um universo
-getUniverseById(id: string, currencyCode: string, country: string): Observable<world> {
-  return this.http.get<world>(
-    `${this.baseUrl}/universes/${id}?currency=${currencyCode}&country=${country}`
-  );
-}
+  getUniverseById(id: string, currencyCode: string, country: string): Observable<world> {
+    return this.http.get<world>(
+      `${this.baseUrl}store/universes/${id}?currency=${currencyCode}&country=${country}`
+    );
+  }
 
 
   // 🔎 Filtros disponíveis
   getMetadata(): Observable<{ genres: string[], authors: string[] }> {
-    return this.http.get<{ genres: string[], authors: string[] }>(`${this.baseUrl}/metadata`);
+    return this.http.get<{ genres: string[], authors: string[] }>(`${this.baseUrl}store/metadata`);
   }
 
   // 🔁 Métodos legados de papers
@@ -150,30 +151,44 @@ getUniverseById(id: string, currencyCode: string, country: string): Observable<w
     this.paperSubject.next(pp);
   }
 
-  getBooksByAuthor(authorId:string): Observable<SimplePaper[]> {
-    return this.http.get<SimplePaper[]>(`${this.baseUrl}/books/author/${authorId}`);
+  getBooksByAuthor(authorId: string): Observable<SimplePaper[]> {
+    return this.http.get<SimplePaper[]>(`${this.baseUrl}store/books/author/${authorId}`);
   }
   getStorePapers(): paper[] {
     return this.storePapersSubject.value ?? [];
   }
 
-checkoutBook(body: checkout) {
-  return this.http.post(`${this.baseUrl}/checkout/book/${body.id}`, body);
-}
+  checkoutBook(body: checkout) {
+    return this.http.post(`${this.baseUrl}store/checkout/book/${body.id}`, body);
+  }
 
-checkoutUniverse(body: checkout) {
-  return this.http.post(`${this.baseUrl}/checkout/universe/${body.id}`, body);
-}
+  checkoutUniverse(body: checkout) {
+    return this.http.post(`${this.baseUrl}store/checkout/universe/${body.id}`, body);
+  }
 
   getBooksByGenreExcludingUniverse(body: {
-  currentBookId: string;
-  worldId: string;
-  genres: string[];
-}): Observable<SimplePaper[]> {
-  return this.http.post<SimplePaper[]>(
-    `${this.baseUrl}/books/recommendations/by-genre`,
-    body
-  );
-}
+    currentBookId: string;
+    worldId: string;
+    genres: string[];
+  }): Observable<SimplePaper[]> {
+    return this.http.post<SimplePaper[]>(
+      `${this.baseUrl}store/books/recommendations/by-genre`,
+      body
+    );
+  }
+
+
+  addToWishlist(paperId: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}wishlist/${paperId}`, {});
+  }
+
+  removeFromWishlist(paperId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}wishlist/${paperId}`);
+  }
+
+  getWishlist(): Observable<string[]> {
+    return this.http.get<{ wishlist: string[] }>(`${this.baseUrl}wishlist`)
+      .pipe(map(res => res.wishlist));
+  }
 
 }

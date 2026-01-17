@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import {
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  UrlTree,
+  Router
+} from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
@@ -10,48 +16,60 @@ export class AuthGuard implements CanActivate {
 
   constructor(private router: Router, private auth: AuthService) {}
 
+  private isTokenValid(token: string | null, expiryString: string | null): boolean {
+    if (!token || !expiryString) return false;
+
+    const expMs = Date.parse(expiryString);
+    if (!Number.isFinite(expMs)) return false;
+
+    return expMs > Date.now();
+  }
+
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
-    
+
+    // ✅ Caso 1: Token válido no localStorage
     const token = localStorage.getItem('accessToken');
     const expiryString = localStorage.getItem('expiry');
-    const expiry = expiryString ? new Date(expiryString) : null;
 
-    if (token && expiry && expiry.getTime() > Date.now()) {
-      this.auth.logged = true;
+    if (this.isTokenValid(token, expiryString)) {
+      this.auth.setLoggedStatus(true);
       return true;
     }
 
-    // Check if token is present in URL
+    // ✅ Caso 2: Token vindo por URL (callback do login)
     const urlToken = next.queryParams['accessToken'];
     const urlExpiry = next.queryParams['expiry'];
+    const urlSessionId = next.queryParams['sessionId'];
 
-    if (urlToken && urlExpiry) {
-      // Save to localStorage
+    if (urlToken && urlExpiry && this.isTokenValid(urlToken, urlExpiry)) {
       localStorage.setItem('accessToken', urlToken);
       localStorage.setItem('expiry', urlExpiry);
-      this.auth.logged = true;
 
-      // Remove token from URL without reloading the app
-      const queryParams = { ...next.queryParams };
-      delete queryParams['accessToken'];
-      delete queryParams['expiry'];
+      // ✅ essencial pro seu backend (middleware exige X-Session-ID)
+      if (urlSessionId) {
+        localStorage.setItem('sessionId', urlSessionId);
+      }
 
+      this.auth.setLoggedStatus(true);
+
+      // limpa os query params
       this.router.navigate([], {
-        queryParams,
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
+        queryParams: {},
+        queryParamsHandling: '',
+        replaceUrl: true
       });
 
-      // Return false so that the guard runs again with the updated localStorage
       return false;
     }
 
-    // If no valid token, redirect to login
-    this.auth.logged = false;
-    this.router.navigate(['/login']);
-    return false;
+    // ❌ Caso 3: Token ausente ou inválido
+    this.auth.setLoggedStatus(false);
+
+    return this.router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: state.url }
+    });
   }
 }

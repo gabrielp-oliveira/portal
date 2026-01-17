@@ -14,6 +14,7 @@ export class PaperPageComponent implements OnInit {
   worldDescription!: string;
   recommendedBooks: any;
   isPurchased: boolean = false;
+  isInWishlist: boolean = false;
 
   country: string = 'US';
   currencyCode: string = 'USD';
@@ -46,6 +47,7 @@ export class PaperPageComponent implements OnInit {
             this.PaperCount = paper.PaperCount;
             this.worldDescription = paper.worldDescription;
             this.isPurchased = paper.isPurchased;
+            this.isInWishlist = paper.isInWishlist;
           });
       });
   }
