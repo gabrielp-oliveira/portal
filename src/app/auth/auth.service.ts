@@ -4,6 +4,20 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
+type LoginResponse = {
+  accessToken: string;
+  refreshToken?: string;
+  sessionId?: string;
+  expiry: string; // PADRÃO DEFINITIVO
+};
+
+type RefreshResponse = {
+  accessToken: string;
+  refreshToken?: string;
+  sessionId?: string;
+  expiry: string; // PADRÃO DEFINITIVO
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -11,87 +25,128 @@ export class AuthService {
   private isLoggedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
   public isLogged$ = this.isLoggedSubject.asObservable();
 
+  private readonly AUTH_BASE = 'http://localhost:8080';
+  private readonly REFRESH_URL = '/api/auth/refresh-token';
+
   constructor(private http: HttpClient, private router: Router) {}
+
+  private parseExpiry(raw?: string | null): number {
+    if (!raw) return 0;
+
+    // ISO / RFC string
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) return d.getTime();
+
+    // fallback caso venha timestamp string (ms ou s)
+    const n = Number(raw);
+    if (!isNaN(n)) return raw.length <= 10 ? n * 1000 : n;
+
+    return 0;
+  }
+
+  private setAuthStorage(opts: {
+    accessToken: string;
+    refreshToken?: string;
+    sessionId?: string;
+    expiry: string;
+  }): void {
+    localStorage.setItem('accessToken', opts.accessToken);
+    localStorage.setItem('expiry', opts.expiry);
+
+    // refreshToken pode não existir em alguns fluxos (ex: oauth dependendo do backend)
+    if (opts.refreshToken) localStorage.setItem('refreshToken', opts.refreshToken);
+
+    // sessionId pode rotacionar
+    if (opts.sessionId) localStorage.setItem('sessionId', opts.sessionId);
+  }
 
   private hasValidToken(): boolean {
     const token = localStorage.getItem('accessToken');
-    const expiry = new Date(localStorage.getItem('expiry') || '');
-    return !!token && expiry.getTime() > Date.now();
+    const expiryRaw = localStorage.getItem('expiry');
+    const expiryMs = this.parseExpiry(expiryRaw);
+    return !!token && expiryMs > Date.now();
   }
 
   googleLogin(): Observable<any> {
-    return this.http.get<{ url: string }>('http://localhost:8080/auth/google/getUrl').pipe(
-      tap(response => window.location.href = response.url)
-    );
+    return this.http
+      .get<{ url: string }>(`${this.AUTH_BASE}/auth/google/getUrl`)
+      .pipe(tap(r => (window.location.href = r.url)));
   }
 
   microsoftLogin(): Observable<any> {
-    return this.http.get<{ url: string }>('http://localhost:8080/auth/microsoft/getUrl');
+    return this.http
+      .get<{ url: string }>(`${this.AUTH_BASE}/auth/microsoft/getUrl`)
+      .pipe(tap(r => { if (r?.url) window.location.href = r.url; }));
+  }
+
+  signUp(body: any): void {
+    this.http
+      .post<{ url: string }>(`${this.AUTH_BASE}/signup`, body)
+      .subscribe(r => (window.location.href = r.url));
+  }
+
+  login(body: any): Observable<void> {
+    return this.http
+      .post<LoginResponse>(`${this.AUTH_BASE}/login`, body)
+      .pipe(
+        tap(resp => {
+          this.setAuthStorage({
+            accessToken: resp.accessToken,
+            refreshToken: resp.refreshToken,
+            sessionId: resp.sessionId,
+            expiry: resp.expiry
+          });
+
+          this.isLoggedSubject.next(true);
+          this.router.navigate(['/dashboard']);
+        }),
+        map(() => void 0),
+        catchError(err => {
+          this.isLoggedSubject.next(false);
+          return throwError(() => err);
+        })
+      );
+  }
+
+  refreshToken(): Observable<RefreshResponse> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const sessionId = localStorage.getItem('sessionId');
+
+    if (!refreshToken) {
+      this.isLoggedSubject.next(false);
+      return throwError(() => new Error('Missing refreshToken'));
+    }
+
+    return this.http
+      .post<RefreshResponse>(this.REFRESH_URL, { refreshToken, sessionId })
+      .pipe(
+        tap(resp => {
+          this.setAuthStorage({
+            accessToken: resp.accessToken,
+            refreshToken: resp.refreshToken,
+            sessionId: resp.sessionId,
+            expiry: resp.expiry
+          });
+
+          this.isLoggedSubject.next(true);
+        }),
+        catchError(err => {
+          this.isLoggedSubject.next(false);
+          return throwError(() => err);
+        })
+      );
   }
 
   logOut(): void {
-    console.log('3')
     localStorage.clear();
     this.isLoggedSubject.next(false);
     this.router.navigate(['/']);
   }
 
-  refreshToken(): Observable<any> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const sessionId = localStorage.getItem('sessionId');
-
-    console.log('sessionId ->', sessionId)
-    return this.http.post('/api/auth/refresh-token', { refreshToken, sessionId }).pipe(
-      tap((response: any) => {
-        localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken);
-        localStorage.setItem('expiry', response.tokenExpiry);
-
-            console.log('NOVO -> sessionId ->', response.sessionId)
-            console.log('SET NOVO -> sessionId ->', response)
-
-        // Garante que sessionId seja mantido atualizado, se o backend enviar um novo
-        if (response.sessionId) {
-          localStorage.setItem('sessionId', response.sessionId);
-        }
-
-        this.isLoggedSubject.next(true);
-      }),
-      catchError(error => throwError(error))
-    );
-  }
-
-  signUp(body: any): void {
-    this.http.post<{ url: string }>('http://localhost:8080/signup', body)
-      .subscribe(response => window.location.href = response.url);
-  }
-
-  login(body: any): Observable<void> {
-    return this.http.post<{ accessToken: string, refreshToken: string, expiry: string, sessionId: string }>('http://localhost:8080/login', body).pipe(
-      tap(response => {
-        localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken);
-        localStorage.setItem('expiry', response.expiry);
-        localStorage.setItem('sessionId', response.sessionId);
-    console.log('SET LOGIN SESSIONiD ->', response.sessionId)
-
-        this.isLoggedSubject.next(true);
-        this.router.navigate(['/dashboard']);
-      }),
-      map(() => void 0),
-      catchError(err => {
-        this.isLoggedSubject.next(false);
-        return throwError(err);
-      })
-    );
-  }
-
-  // Método extra (opcional) para usar no AuthGuard
   setLoggedStatus(logged: boolean): void {
     this.isLoggedSubject.next(logged);
   }
 
-  // (opcional) para reutilizar sessionId
   getSessionId(): string | null {
     return localStorage.getItem('sessionId');
   }

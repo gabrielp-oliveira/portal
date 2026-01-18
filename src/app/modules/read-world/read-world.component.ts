@@ -48,6 +48,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     this.api.getWorldDataByName(encodeURIComponent(worldName))
       .pipe(takeUntil(this.destroy$))
       .subscribe((world) => {
+        console.log(world)
         const coloredPapers = (world.papers || []).map(p => ({ ...p, visible: true }));
         const paperColorMap = new Map(coloredPapers.map(p => [p.id, p.color]));
 
@@ -105,6 +106,15 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
 
         // ✅ Evita reenviar dados se não houve alteração relevante
 
+        console.log('dados -> ',{
+            type: "set-data",
+            data: {
+              timelines: visibleTimelines,
+              storylines: visibleStorylines,
+              chapters: visibleChapters,
+              settings
+            }
+          })
           this.iframe.contentWindow?.postMessage({
             type: "set-data",
             data: {

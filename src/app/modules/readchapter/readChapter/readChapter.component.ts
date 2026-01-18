@@ -51,7 +51,7 @@ export class ReadChapterComponent implements OnInit {
   onIframeLoad() {
     if (!this.chapterOrder || !this.paperId || !this.iframe?.contentWindow) return;
 
-    const jwt = localStorage.getItem('jwt') || '';
+    const jwt = localStorage.getItem('accessToken') || '';
 
     const payload = {
       type: 'init',
