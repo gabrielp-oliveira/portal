@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, combineLatest, takeUntil } from 'rxjs';
+import { Subject, combineLatest, takeUntil, debounceTime } from 'rxjs';
 import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
 import { Timeline, Chapter, StoryLine, paper, paperCard, chapterDetailsModal } from '../../models/paperTrailTypes';
@@ -17,6 +17,9 @@ import { MatDialog } from '@angular/material/dialog';
 export class ReadWorldComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private iframe!: HTMLIFrameElement;
+  private settingsUpdate$ = new Subject<boolean>();
+  private readonly ANIMATION_MS = 400;
+  private lastSentPayload: string | null = null;
   paperCardList: paperCard[]
 
   constructor(
@@ -36,8 +39,22 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     this.iframe = document.getElementById("board-frame") as HTMLIFrameElement;
     if (!this.iframe) return;
 
+    this.settingsUpdate$
+      .pipe(debounceTime(this.ANIMATION_MS), takeUntil(this.destroy$))
+      .subscribe((collapsed_all) => {
+        const current = this.wd.getSettings();
+        if (!current?.id) return;
+        console.log(`[Board] 💾 Persistindo collapsed_all: ${collapsed_all}`);
+        const updated = { ...current, collapsed_all };
+        this.wd.setSettings(updated);
+        this.api.updateSettings(updated.id, updated)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((ss) => this.wd.setSettings({ ...ss, collapsed_all }));
+      });
+
     // 🛠️ Adiciona listener uma única vez
     this.iframe.addEventListener("load", () => {
+      console.log('[Board] 🖼️ Iframe carregado — iniciando sync');
       this.setupDataSyncWithIframe();
     }, { once: true });
 
@@ -45,10 +62,10 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     window.addEventListener("message", this.handleIframeMessage);
 
     // 🔁 Carrega os dados e aplica visible: true
-    this.api.getWorldDataByName(encodeURIComponent(worldName))
+    this.api.getWorldDataByName(worldName)
       .pipe(takeUntil(this.destroy$))
       .subscribe((world) => {
-        console.log(world)
+        console.log('[Board] 🌐 World data recebido — collapsed_all:', world?.subway_settings?.collapsed_all, '| settings.id:', world?.subway_settings?.id);
         const coloredPapers = (world.papers || []).map(p => ({ ...p, visible: true }));
         const paperColorMap = new Map(coloredPapers.map(p => [p.id, p.color]));
 
@@ -84,52 +101,52 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([chapters, timelines, storylines, settings]) => {
-        if (!settings) return;
-        // console.log('....')
+        // Aguarda settings reais (id vazio = BehaviorSubject default, dados ainda não carregados)
+        if (!settings?.id) {
+          console.log('[Board] ⏳ combineLatest emitiu mas settings ainda não carregados (id vazio) — ignorando');
+          return;
+        }
+
         const visibleChapters = chapters.filter(c => c.visible);
-        
+
         const visibleTimelines = timelines
-        .filter(t => t.visible)
-        .sort((a, b) => a.order - b.order)
-        .map((t, index) => ({ ...t, order: index + 1 }));
-        
-        // console.log('....',visibleTimelines )
+          .filter(t => t.visible)
+          .sort((a, b) => a.order - b.order)
+          .map((t, index) => ({ ...t, order: index + 1 }));
+
         const visibleStorylines = storylines;
 
-        // 🔒 Serializa só as propriedades relevantes
+        console.log(`[Board] 🔄 combineLatest emit — settings.id: ${settings.id} | collapsed_all: ${settings.collapsed_all} | chapters: ${visibleChapters.length} | timelines: ${visibleTimelines.length}`);
+
+        // 🔒 Serializa apenas dados que o board NÃO gerencia localmente.
+        // collapsed_all, x, y, k são gerenciados pelo próprio board — incluí-los
+        // causaria full re-render (e reset de zoom) desnecessário a cada toggle/pan.
         const serialized = JSON.stringify({
-          x: settings.x,
-          y: settings.y,
-          k: settings.k,
-          theme: settings.theme
+          chapters: visibleChapters.map(c => c.id),
+          timelines: visibleTimelines.map(t => ({ id: t.id, order: t.order })),
+          storylines: visibleStorylines.map(s => s.id),
+          theme: settings.theme,
         });
 
         // ✅ Evita reenviar dados se não houve alteração relevante
+        if (serialized === this.lastSentPayload) {
+          console.log('[Board] ⏭️ set-data BLOQUEADO (payload idêntico) — collapsed_all:', settings.collapsed_all);
+          return;
+        }
+        this.lastSentPayload = serialized;
 
-        console.log('dados -> ',{
-            type: "set-data",
-            data: {
-              timelines: visibleTimelines,
-              storylines: visibleStorylines,
-              chapters: visibleChapters,
-              settings
-            }
-          })
-          this.iframe.contentWindow?.postMessage({
-            type: "set-data",
-            data: {
-              timelines: visibleTimelines,
-              storylines: visibleStorylines,
-              chapters: visibleChapters,
-              settings
-            }
-          }, "*");
-        
+        // O board espera collapsedAll (camelCase), mas o model usa collapsed_all (snake_case)
+        const boardSettings = { ...settings, collapsedAll: settings.collapsed_all };
 
-        // 💡 Mesmo se settings não mudou, podemos reenviar apenas o tema se quiser reforçar
+        console.log(`[Board] 📤 set-data ENVIADO — collapsed_all: ${settings.collapsed_all} | collapsedAll (board): ${boardSettings.collapsedAll} | theme: ${settings.theme} | chapters: ${visibleChapters.length}`);
         this.iframe.contentWindow?.postMessage({
-          type: "set-light",
-          data: { light: settings.theme }
+          type: "set-data",
+          data: {
+            timelines: visibleTimelines,
+            storylines: visibleStorylines,
+            chapters: visibleChapters,
+            settings: boardSettings
+          }
         }, "*");
       });
   }
@@ -141,15 +158,19 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     if (type === "chapter-option-selected") {
       this.ChapterSelect(data)
     } else if (type === "chapter-focus") {
-      // console.log("🟢 Usuário focou ->:", data);
+      // ignorado
     } else if (type === "board-transform-update") {
-      // console.log("🟢 Transformação do board ->:", data);
+      console.log('[Board] 📍 board-transform-update recebido:', data?.transform);
       this.boardTransform(data.transform)
+    } else if (type === "board-settings-update") {
+      console.log(`[Board] 🔘 board-settings-update recebido — collapsedAll: ${data?.collapsedAll}`);
+      this.boardSettingsUpdate(data)
     }
   };
 
   ngOnDestroy(): void {
     window.removeEventListener("message", this.handleIframeMessage);
+    this.lastSentPayload = null;
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -171,10 +192,14 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
 
 
 
+  boardSettingsUpdate(data: { collapsedAll: boolean }) {
+    this.settingsUpdate$.next(data.collapsedAll);
+  }
+
   boardTransform(data: boardTransformation) {
     const current = this.wd.getSettings();
 
-    if (current) {
+    if (current && current.id) {
       const changed =
         current.x !== data.x || current.y !== data.y || current.k !== data.k;
 

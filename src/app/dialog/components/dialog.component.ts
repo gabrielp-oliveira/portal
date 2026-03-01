@@ -747,9 +747,11 @@ constructor(private fb: FormBuilder,private api:ApiService,
  } 
     onSubmit(){
       this.wd.setLoading(true)
-    
-      const body = this.worldForm.value
-      body.id = this.ss?.id
+
+      const body: Subway_Settings = {
+        ...this.ss,
+        ...this.worldForm.value,
+      }
       this.api.updateSettings(body.id, body)
       .pipe(takeUntil(this.destroy$))
       .subscribe({

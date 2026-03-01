@@ -210,7 +210,8 @@ export type Subway_Settings = {
     k: number,
     x: number,
     y: number,
-    world_id: string
+    world_id: string,
+    collapsed_all: boolean,
 };
 
 

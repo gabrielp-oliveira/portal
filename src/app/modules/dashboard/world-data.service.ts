@@ -31,7 +31,8 @@ export class WorldDataService {
     k: 0.7,
     x: 0,
     y: 0,
-    world_id: ''
+    world_id: '',
+    collapsed_all: false,
   });
 
   // Observables para os componentes se inscreverem
