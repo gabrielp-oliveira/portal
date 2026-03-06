@@ -4,6 +4,7 @@ import { StoreService } from '../store.service';
 import { world } from '../../../models/paperTrailTypes';
 
 @Component({
+  standalone: false,
   selector: 'app-universe-page',
   templateUrl: './universe-page.component.html',
   styleUrls: ['./universe-page.component.scss']

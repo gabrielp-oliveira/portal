@@ -4,6 +4,7 @@ import { paper } from '../../../models/paperTrailTypes';
 import { Subscription } from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'app-recommended-books',
   templateUrl: './recommended-books.component.html',
   styleUrls: ['./recommended-books.component.scss']

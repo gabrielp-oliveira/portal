@@ -7,6 +7,7 @@ import { UtilsService } from '../../../utils.service';
 import { DialogService } from '../../../dialog/dialog.service';
 
 @Component({
+  standalone: false,
   selector: 'app-docx',
   templateUrl: './docx.component.html',
   styleUrl: './docx.component.scss'

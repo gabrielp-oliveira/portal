@@ -1,15 +1,14 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { AuthInterceptor } from './auth/auth.interceptor';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'; // Importe o novo interceptor
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './auth/auth.interceptor';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    importProvidersFrom(HttpClientModule),
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    provideAnimationsAsync() // Adicione o novo interceptor
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimationsAsync()
   ]
 };

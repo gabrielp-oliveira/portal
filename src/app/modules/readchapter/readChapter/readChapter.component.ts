@@ -8,6 +8,7 @@ import { ErrorService } from '../../error.service';
 import { Chapter, Subway_Settings, world } from '../../../models/paperTrailTypes';
 
 @Component({
+  standalone: false,
   selector: 'app-readChapter',
   templateUrl: './readChapter.component.html',
   styleUrls: ['./readChapter.component.scss']

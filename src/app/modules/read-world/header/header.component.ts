@@ -1,23 +1,24 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Subway_Settings } from '../../../models/paperTrailTypes';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../auth/auth.service';
 
 @Component({
+  standalone: false,
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
   @Input() worldName: string = 'O Mundo das Irmãs March';
   settings$!: Observable<Subway_Settings>;
   isLogged = false;
 
-  private destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -35,7 +36,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.settings$ = this.wd.settings$;
 
     this.auth.isLogged$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(status => {
         this.isLogged = status;
       });
@@ -43,13 +44,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout() {
     this.auth.logOut();
-    this.router.navigate(['/']); // redireciona após logout
+    this.router.navigate(['/']);
   }
 
   toggleTheme(settings: Subway_Settings) {
     const updatedSettings = { ...settings, theme: !settings.theme };
     this.api.updateSettings(settings.id, updatedSettings).subscribe(() => {
-      this.wd.setSettings(updatedSettings); // atualiza o estado
+      this.wd.setSettings(updatedSettings);
     });
   }
 
@@ -65,10 +66,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
         alert('📋 Link copiado!');
       });
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

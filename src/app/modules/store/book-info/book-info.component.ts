@@ -1,15 +1,15 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
 import { FullPaper, StoreService } from '../store.service';
 import { AuthService } from '../../../auth/auth.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: false,
   selector: 'app-book-info',
   templateUrl: './book-info.component.html',
   styleUrls: ['./book-info.component.scss']
 })
-export class BookInfoComponent implements OnInit, OnDestroy {
+export class BookInfoComponent implements OnInit {
   @Input() book: FullPaper;
   @Input() worldDescription: string;
   @Input() PaperCount: number;
@@ -21,21 +21,16 @@ export class BookInfoComponent implements OnInit, OnDestroy {
   showFullUniverseDesc = false;
 
   isLogged = false;
-  private destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
 
   constructor(private store: StoreService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.auth.isLogged$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(status => {
         this.isLogged = status;
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   optimizeImage(url: string, width: number = 300): string {

@@ -5,6 +5,7 @@ import { PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-store-body',
   templateUrl: './body-store.component.html',
   styleUrls: ['./body-store.component.scss']

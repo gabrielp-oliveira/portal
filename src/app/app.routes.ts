@@ -1,17 +1,17 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './guards/auth.guard';
-import { NoAuthGuard } from './guards/no-auth-guard.guard';
+import { authGuard } from './guards/auth.guard';
+import { noAuthGuard } from './guards/no-auth-guard.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () => import('./standAlone/auth/auth.component').then(c => c.AuthComponent),
-    canActivate: [NoAuthGuard]
+    canActivate: [noAuthGuard]
   },
   {
     path: 'signup',
     loadComponent: () => import('./standAlone/signup/signup.component').then(c => c.SignupComponent),
-    canActivate: [NoAuthGuard]
+    canActivate: [noAuthGuard]
   },
   {
     path: '',
@@ -20,17 +20,17 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadChildren: () => import('./modules/dashboard/dashboard.module').then(c => c.DashboardModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'world/:id',
     loadChildren: () => import('./modules/world/world.module').then(c => c.worldModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'library',
     loadChildren: () => import('./modules/library/library.module').then(c => c.LibraryModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'store',
@@ -39,17 +39,17 @@ export const routes: Routes = [
   {
     path: 'world/:id/chapter/:chapterId',
     loadChildren: () => import('./modules/docx/docx.module').then(c => c.DocxModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'read/:worldName',
     loadChildren: () => import('./modules/read-world/read-world.module').then(c => c.ReadWorldModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'read/book/:paperId/chapter/:chapterOrder',
     loadChildren: () => import('./modules/readchapter/readChapter.module').then(c => c.ReadChapterModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
   }
 
 ];

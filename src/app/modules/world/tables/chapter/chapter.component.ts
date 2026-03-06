@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, DestroyRef, inject } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
@@ -8,10 +8,11 @@ import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, distinctUntilChanged, Subject, takeUntil,  } from 'rxjs';
+import { combineLatest, distinctUntilChanged } from 'rxjs';
 import { PapperComponent } from '../papper/papper.component';
 import { UtilsService } from '../../../../utils.service';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 
@@ -19,11 +20,12 @@ import { MatMenuTrigger } from '@angular/material/menu';
 
 
 @Component({
+  standalone: false,
   selector: 'app-chapter',
   templateUrl: './chapter.component.html',
   styleUrl: './chapter.component.scss'
 })
-export class ChapterComponent implements OnInit {
+export class ChapterComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['order', 'name', 'created_at',  'papperName', "timelineName", 'storylineName','options'];
   dataSource = new MatTableDataSource<ExtendedChapter>([]);
 
@@ -59,9 +61,10 @@ export class ChapterComponent implements OnInit {
 
   };
 
-  gridHeight = 50
+  gridHeight = 50;
 
-  destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
+  private resizeSvgFn = (e: Event) => this.resizeSvg(e as any);
 
   orderSearchValue: string = ""
   nameSearchValue: string = ""
@@ -88,9 +91,7 @@ export class ChapterComponent implements OnInit {
   ) { }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    window.removeEventListener('resize', () => {});
-    this.destroy$.complete();
+    window.removeEventListener('resize', this.resizeSvgFn);
   }
 
   openChapterOptions(event: MouseEvent, c: Chapter) {
@@ -168,8 +169,8 @@ export class ChapterComponent implements OnInit {
   }
   ngOnInit() {
 
-    this.pageWidth = window.innerWidth
-    window.addEventListener('resize', (e) => this.resizeSvg(e));
+    this.pageWidth = window.innerWidth;
+    window.addEventListener('resize', this.resizeSvgFn);
 
     // this.dialog.openCreateChapterDialog('150ms', '150ms')
 
@@ -181,7 +182,7 @@ export class ChapterComponent implements OnInit {
     .pipe(
       distinctUntilChanged(() => this.compareUpdates())
     )
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe((data) => {
       let { chapters, papers, storyLines, timelines, ss } = data
 
@@ -303,7 +304,7 @@ export class ChapterComponent implements OnInit {
       chapter.range= tl?.adjustedRange || 0
       console.log(tl?.adjustedRange)
       this.api.updateChapter(chapter.id, chapter)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((c) => {
         this.wd.updateChapter(c)
       })
@@ -350,7 +351,7 @@ export class ChapterComponent implements OnInit {
   
     // Envia a atualização ao servidor apenas para os capítulos do mesmo `paper`
     this.api.updateChapterList(chaptersInSamePaper)
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe((updatedChapters) => {
       updatedChapters.forEach((c) => {
         this.wd.updateChapter(c);

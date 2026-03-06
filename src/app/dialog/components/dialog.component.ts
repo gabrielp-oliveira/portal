@@ -23,6 +23,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 @Component({
+  standalone: false,
     selector: 'app-createPaperDialog',
     templateUrl: './createPaperDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -102,6 +103,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
   
   }
   @Component({
+  standalone: false,
     selector: 'app-createPaperDialog',
     templateUrl: './createChapterDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -207,6 +209,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
 
   @Component({
+  standalone: false,
     selector: 'app-updateChapterDialog',
     templateUrl: './updateChapterDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -328,6 +331,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
     }
   }
   @Component({
+  standalone: false,
     selector: 'app-updateTimelineDialog',
     templateUrl: './updateTimelineDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -423,6 +427,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
   }
   @Component({
+  standalone: false,
     selector: 'app-deleteTimelineDialog',
     templateUrl: './deleteTimelineDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -539,6 +544,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
   }
   @Component({
+  standalone: false,
     selector: 'app-deleteGroupConnectionDialog',
     templateUrl: './deleteGroupConnectionDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -594,6 +600,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
   }
   @Component({
+  standalone: false,
     selector: 'app-deleteChapterDialog',
     templateUrl: './deleteChapterDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -654,6 +661,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
   }
 
   @Component({
+  standalone: false,
     selector: 'app-createTimelineDialog',
     templateUrl: './createTimelineDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -708,6 +716,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
     }
   }
   @Component({
+  standalone: false,
     selector: 'app-subwaySettingsDialog',
     templateUrl: './subwaySettingsDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -767,6 +776,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
   
   @Component({
+  standalone: false,
     selector: 'app-createStorylineDialog',
     templateUrl: './createStorylineDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -835,6 +845,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
 
   @Component({
+  standalone: false,
     selector: 'app-createEventsDialog',
     templateUrl: './createEventsDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -908,6 +919,7 @@ constructor(private fb: FormBuilder,private api:ApiService,
 
 
   @Component({
+  standalone: false,
     selector: 'app-updatePaperDialog',
     templateUrl: './updatePaperDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -999,6 +1011,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
   }
   
   @Component({
+  standalone: false,
     selector: 'app-updateEventDialog',
     templateUrl: './updateEventDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1057,6 +1070,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
   
 
   @Component({
+  standalone: false,
     selector: 'app-createWorldDialog',
     templateUrl: './createWorldRootDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1157,6 +1171,7 @@ constructor(private fb: FormBuilder,
   }
 
   @Component({
+  standalone: false,
     selector: 'app-chapterDescriptionDialog',
     templateUrl: './chapterDescriptionDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1195,6 +1210,7 @@ private wd: WorldDataService ){
 
   }
   @Component({
+  standalone: false,
     selector: 'app-updateConnectionDialog',
     templateUrl: './updateConnectionDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1261,6 +1277,7 @@ private wd: WorldDataService ){
     
   }
   @Component({
+  standalone: false,
     selector: 'app-createGroupConnectionDialog',
     templateUrl: './createGroupConnectionDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1320,6 +1337,7 @@ constructor(
     
   }
   @Component({
+  standalone: false,
     selector: 'app-updateGroupConnection',
     templateUrl: './updateGroupConnectionDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1392,6 +1410,7 @@ constructor(
 
   
   @Component({
+  standalone: false,
     selector: 'app-strEdit',
     templateUrl: './strEditDialog.component.html',
     styleUrl: './dialog.component.scss'
@@ -1479,6 +1498,7 @@ constructor(
 
   
   @Component({
+  standalone: false,
     selector: 'app-infoDialog',
     templateUrl: './infoDialog.component.html',
     styleUrl: './dialog.component.scss'

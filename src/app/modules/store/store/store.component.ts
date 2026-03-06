@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { StoreFilter } from '../../../models/paperTrailTypes';
 
 @Component({
+  standalone: false,
   selector: 'app-store',
   templateUrl: './store.component.html',
   styleUrl: './store.component.scss'

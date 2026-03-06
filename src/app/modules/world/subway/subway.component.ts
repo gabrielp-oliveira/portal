@@ -17,6 +17,7 @@ const D3_ROOT_ELEMENT_ID = "subway";
 
 
 @Component({
+  standalone: false,
   selector: 'app-subway',
   templateUrl: './subway.component.html',
   styleUrls: ['./subway.component.scss']

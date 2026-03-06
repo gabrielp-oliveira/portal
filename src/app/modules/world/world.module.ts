@@ -23,7 +23,6 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { GroupConnectionComponent } from './tables/group-connection/group-connection.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SidenavComponent } from './sidenav/sidenav.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SettingsDialogComponent } from '../../dialog/components/dialog.component';

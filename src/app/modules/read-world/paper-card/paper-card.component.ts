@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chapter, paper } from '../../../models/paperTrailTypes';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { UtilsService } from '../../../utils.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChapterDetailsComponent } from '../dialog/chapter-details/chapter-details.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -45,7 +46,7 @@ export type paperCard = {
     ])
   ]
 })
-export class PaperCardComponent {
+export class PaperCardComponent implements OnInit {
   @Input() paperCard!: paperCard;
   @Input() theme: boolean | undefined;
   currentChapter: Chapter;
@@ -53,18 +54,19 @@ export class PaperCardComponent {
   isDarkMode = false;
   expandLabel = 'chapters';
 
-  constructor(
-    private wd: WorldDataService,
-    private dialog: MatDialog,
-    private router: Router
-  ) {  }
+  private wd = inject(WorldDataService);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-    ngOnInit(): void {
-    if(this.theme === undefined){
-      this.wd.settings$.subscribe(ss => {
-        this.isDarkMode = ss.theme;
-      });
-    }else{
+  ngOnInit(): void {
+    if (this.theme === undefined) {
+      this.wd.settings$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(ss => {
+          this.isDarkMode = ss.theme;
+        });
+    } else {
       this.isDarkMode = false;
     }
   }

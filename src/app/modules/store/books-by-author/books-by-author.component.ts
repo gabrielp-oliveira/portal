@@ -4,6 +4,7 @@ import { SimplePaper, StoreService } from '../store.service';
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-books-by-author',
   templateUrl: './books-by-author.component.html',
   styleUrls: ['./books-by-author.component.scss']

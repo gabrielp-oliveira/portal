@@ -13,6 +13,7 @@ import { UtilsService } from '../../../../utils.service';
 
 
 @Component({
+  standalone: false,
   selector: 'app-group-connection',
   templateUrl: './group-connection.component.html',
   styleUrl: './group-connection.component.scss'

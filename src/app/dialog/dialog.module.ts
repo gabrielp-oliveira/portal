@@ -21,7 +21,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatCardModule } from '@angular/material/card';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatNativeDateModule, NativeDateAdapter } from '@angular/material/core';
+import { MAT_DATE_FORMATS, MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,11 +40,6 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.component";
 import { LoadingComponent } from '../standAlone/loading/loading.component';
 
-import { provideNativeDateAdapter } from '@angular/material/core';
-
-
-
-
 
 
 @NgModule({
@@ -52,13 +47,13 @@ import { provideNativeDateAdapter } from '@angular/material/core';
     UpdateChapterDialogComponent, UpdatePaperDialogComponent,
     UpdateTimelineDialogComponent, createTimelineDialogComponent, createEventsDialogComponent,
     createStorylineDialogComponent, deleteTimelineDialogComponent, chapteDescriptionDialogComponent,
-    strEditDialogComponent, UpdateEventDialogComponent, 
-    InfoDialogComponent,deleteChapterDialogComponent,deleteGroupConnectionDialogComponent,
+    strEditDialogComponent, UpdateEventDialogComponent,
+    InfoDialogComponent, deleteChapterDialogComponent, deleteGroupConnectionDialogComponent,
     updateConnectionDialogComponent, createGroupConnectionDialogComponent, updateGroupConnectionDialogComponent
   ],
   providers: [
-    { provide: DateAdapter, useClass: NativeDateAdapter }, // Fornece o DateAdapter
-    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }, // Configura o formato de data
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],
   imports: [
     CommonModule,

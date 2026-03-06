@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,8 +10,8 @@ import { Subway_Settings } from '../../models/paperTrailTypes';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../modules/api.service';
 import { WorldDataService } from '../../modules/dashboard/world-data.service';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
@@ -29,36 +29,30 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
   @Input() default: boolean = false;
 
+  private route = inject(ActivatedRoute);
+  private api = inject(ApiService);
+  private wd = inject(WorldDataService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
   settings$?: Observable<Subway_Settings>;
-  isLogged: boolean = false;
-  private destroy$ = new Subject<void>();
+  isLogged = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private api: ApiService,
-    private wd: WorldDataService,
-    private auth: AuthService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    if (!this.default) {
-      this.settings$ = this.wd.settings$;
-    }
-
+  constructor() {
     this.auth.isLogged$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(logged => {
         this.isLogged = logged;
       });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  ngOnInit(): void {
+    if (!this.default) {
+      this.settings$ = this.wd.settings$;
+    }
   }
 
   GoTo(route: string): void {

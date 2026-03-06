@@ -11,6 +11,7 @@ import {
 import { ApiService } from '../../../api.service';
 
 @Component({
+  standalone: false,
   selector: 'app-chapter-details',
   templateUrl: './chapter-details.component.html',
   styleUrls: ['./chapter-details.component.scss']

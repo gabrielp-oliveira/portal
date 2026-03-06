@@ -6,6 +6,7 @@ import { Chapter } from '../../../models/paperTrailTypes';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-preview',
   templateUrl: './preview.component.html',
   styleUrl: './preview.component.scss'

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,7 +25,7 @@ export class UniverseCardComponent {
   @Input() world: world;
   @Input() library: boolean = false;
 
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   defaultCover = 'assets/defaultCover.png';
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';

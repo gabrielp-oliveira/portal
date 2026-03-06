@@ -1,18 +1,20 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject, DestroyRef, inject } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { ErrorService } from '../../error.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { Chapter, paper, Timeline } from '../../../models/paperTrailTypes';
-import { Subject, takeUntil, take } from 'rxjs';
+import { take } from 'rxjs';
 import { BottomSheetService } from '../bottom-sheet.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: false,
   selector: 'app-bottom-sheet',
   templateUrl: './bottom-sheet.component.html',
   styleUrls: ['./bottom-sheet.component.scss']
 })
-export class BottomSheetComponent implements OnDestroy {
+export class BottomSheetComponent {
 
   search = '';
   displayedChaptersColumns = ['visible', 'title', 'order', 'read'];
@@ -26,8 +28,8 @@ export class BottomSheetComponent implements OnDestroy {
   timelineSortBy: 'name' | 'order' = 'order';
   sortAsc: boolean = true;
 
-  isDarkTheme: boolean = false
-  destroy$ = new Subject<void>();
+  isDarkTheme: boolean = false;
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     @Inject(MAT_BOTTOM_SHEET_DATA) public data: { type: string },
@@ -46,7 +48,7 @@ export class BottomSheetComponent implements OnDestroy {
   ngOnInit() {
 
     this.wd.chapters$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (chapters) => {
           this.chapters = chapters;
@@ -54,8 +56,7 @@ export class BottomSheetComponent implements OnDestroy {
         error: (err) => this.errorHandler.errHandler(err)
       });
     this.wd.timelines$
-
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (timeline) => {
           this.timelines = timeline;
@@ -63,8 +64,7 @@ export class BottomSheetComponent implements OnDestroy {
         error: (err) => this.errorHandler.errHandler(err)
       });
     this.wd.papers$
-
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (papers) => {
           this.papers = papers;
@@ -72,19 +72,14 @@ export class BottomSheetComponent implements OnDestroy {
         error: (err) => this.errorHandler.errHandler(err)
       });
     this.wd.settings$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ss) => {
-        this.isDarkTheme = ss.theme
+        this.isDarkTheme = ss.theme;
         this.applyThemeToMaterialClasses();
-      })
+      });
 
     this.observeBottomSheetChanges(); // observa novas instâncias
 
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
 
@@ -242,8 +237,7 @@ onPaperVisibilityToggle(paper: paper) {
       subtree: true,
     });
 
-    // Opcional: guarda para desconectar depois, se quiser limpar
-    this.destroy$.subscribe(() => observer.disconnect());
+    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 
 

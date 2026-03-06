@@ -4,6 +4,7 @@ import { StoreFilter } from '../../../../models/paperTrailTypes';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-top-panel',
   templateUrl: './topPanel.component.html',
   styleUrls: ['./topPanel.component.scss']

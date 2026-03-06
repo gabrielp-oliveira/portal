@@ -6,6 +6,7 @@ import { WorldDataService } from '../../dashboard/world-data.service';
 import { StoreService } from '../../store/store.service';
 
 @Component({
+  standalone: false,
   selector: 'app-library',
   templateUrl: './library.component.html',
   styleUrls: ['./library.component.scss']

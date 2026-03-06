@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ApiService } from '../../api.service';
@@ -6,11 +6,12 @@ import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { DialogService } from '../../../dialog/dialog.service';
-import { basicWorld, Chapter, infoDialog, paper, world } from '../../../models/paperTrailTypes';
-import { Subject, takeUntil } from 'rxjs';
+import { basicWorld, Chapter, paper } from '../../../models/paperTrailTypes';
 import { MatSidenav } from '@angular/material/sidenav';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: false,
   selector: 'app-world',
   templateUrl: './world.component.html',
   styleUrl: './world.component.scss'
@@ -28,20 +29,22 @@ papper: paper;
   ) { }
 
   papers$: paper[];
-  worldId:String;
-  chapters$: Chapter[]
-  worldData: basicWorld | null
+  worldId: String;
+  chapters$: Chapter[];
+  worldData: basicWorld | null;
   panelSSOpenState = true;
   panelCreationButtonsOpenState = true;
   panelGroupConnectionOpenState = true;
-  destroy$ = new Subject<void>();
-  showLoading = this.wd.loading$
-  pageWidth:number
+  private destroyRef = inject(DestroyRef);
+  showLoading = this.wd.loading$;
+  pageWidth: number;
   @ViewChild('sidenav') sidenav!: MatSidenav;
+
+  private resizeSvgFn = (e: Event) => this.resizeSvg(e as any);
 
   ngAfterViewInit(): void {
 
-    window.addEventListener('resize', (e) => this.resizeSvg(e));
+    window.addEventListener('resize', this.resizeSvgFn);
     if(window.innerWidth <=1400) {
       setTimeout(() => {
         this.sidenav.close()
@@ -63,17 +66,17 @@ papper: paper;
       }
       
       this.wd.world$
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((w) => {
         this.worldData = w
       })
       this.wd.chapters$
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((c) => {
         this.chapters$ = c
       })
       this.wd.papers$
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((p) => {
         this.papers$ = p
       })
@@ -88,9 +91,7 @@ papper: paper;
       }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    window.removeEventListener('resize', () => {});
+    window.removeEventListener('resize', this.resizeSvgFn);
   }
 
   private resizeSvg(e:any) {
@@ -158,7 +159,7 @@ papper: paper;
 
     
     this.api.getWorldData(id)
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (data) => {  
         this.wd.setWorldData(data)

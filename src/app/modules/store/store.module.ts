@@ -35,7 +35,7 @@ import { StoreWrapperComponent } from './store-wrapper/store-wrapper.component';
 import { UniverseCheckoutComponent } from './universe-checkout/universe-checkout.component';
 import { BookCheckoutComponent } from './book-checkout/book-checkout.component';
 
-import { AuthGuard } from '../../guards/auth.guard';
+import { authGuard } from '../../guards/auth.guard';
 import { FooterComponent } from '../read-world/footer/footer.component';
 import { TruncatePipe } from "../../truncate.pipe";
 
@@ -46,9 +46,9 @@ const routes: Routes = [
     children: [
       { path: '', component: StoreComponent },
       { path: 'book/:paperId', component: PaperPageComponent },
-      { path: 'book/:paperId/checkout', component: BookCheckoutComponent, canActivate: [AuthGuard] },
+      { path: 'book/:paperId/checkout', component: BookCheckoutComponent, canActivate: [authGuard] },
       { path: 'universe/:id', component: UniversePageComponent },
-      { path: 'universe/:id/checkout', component: UniverseCheckoutComponent, canActivate: [AuthGuard] },
+      { path: 'universe/:id/checkout', component: UniverseCheckoutComponent, canActivate: [authGuard] },
     ]
   }
 ];

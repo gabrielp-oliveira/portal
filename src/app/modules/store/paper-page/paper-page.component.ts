@@ -3,6 +3,7 @@ import { StoreService } from '../store.service';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-paper-page',
   templateUrl: './paper-page.component.html',
   styleUrls: ['./paper-page.component.scss'], // Corrigido

@@ -1,19 +1,20 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../error.service';
 import { basicWorld, Chapter, paper, StoryLine, Timeline, world } from '../../../models/paperTrailTypes';
-import { Subject, takeUntil } from 'rxjs';
 import { BottomSheetService } from '../bottom-sheet.service';
 import { UtilsService } from '../../../utils.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: false,
   selector: 'app-top-panel',
   templateUrl: './top-panel.component.html',
   styleUrls: ['./top-panel.component.scss']
 })
-export class TopPanelComponent implements OnInit, OnDestroy {
+export class TopPanelComponent implements OnInit {
   @Input() world!: world;
 
   basicWorld: basicWorld | null
@@ -29,14 +30,12 @@ export class TopPanelComponent implements OnInit, OnDestroy {
   completedChapters = 0;
   totalChapters = 0;
 
-
-  destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
 
   papers$ = this.wd.papers$;
   timelines$ = this.wd.timelines$;
   storylines$ = this.wd.storylines$;
   chapters$ = this.wd.chapters$;
-  world$ = this.wd.world$;
 
   constructor(
     private route: ActivatedRoute,
@@ -48,31 +47,28 @@ export class TopPanelComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.wd.world$.subscribe((a) => {
-      this.basicWorld = a
-    })
-    this.wd.settings$.pipe(takeUntil(this.destroy$)).subscribe((status) => {
+    this.wd.world$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(a => {
+        this.basicWorld = a;
+      });
+    this.wd.settings$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(status => {
       this.isDarkMode = status.theme;
     });
 
-    this.papers$.pipe(takeUntil(this.destroy$)).subscribe(papers => {
+    this.papers$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(papers => {
       this.hiddenPapersCount = -papers.filter(p => !p.visible).length;
     });
-    this.chapters$.pipe(takeUntil(this.destroy$)).subscribe(chapters => {
+    this.chapters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(chapters => {
       this.hiddenChaptersCount = -chapters.filter(p => !p.visible).length;
 
       this.totalChapters = chapters.length;
       this.completedChapters = chapters.filter(c => c.completed).length;
     });
 
-    this.timelines$.pipe(takeUntil(this.destroy$)).subscribe(timelines => {
+    this.timelines$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(timelines => {
       this.hiddenTimelinesCount = -timelines.filter(p => !p.visible).length;
     });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   openBottomSheet(type: 'chapters' | 'books' | 'timelines') {

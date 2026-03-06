@@ -1,23 +1,15 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class NoAuthGuard implements CanActivate {
+export const noAuthGuard: CanActivateFn = () => {
+  const router = inject(Router);
+  const token = localStorage.getItem('accessToken');
+  const expiry = new Date(localStorage.getItem('expiry') || '');
 
-  constructor(private router: Router) {}
-
-  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
-    const token = localStorage.getItem('accessToken');
-
-    const expiry = new Date(localStorage.getItem('expiry') || '');
-    if (token && expiry.getTime() > new Date().getTime()) {
-      this.router.navigate(['/']);
-      return false; 
-    }else{    
-      return true;
-    }
+  if (token && expiry.getTime() > new Date().getTime()) {
+    router.navigate(['/']);
+    return false;
+  } else {
+    return true;
   }
-}
+};

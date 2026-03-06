@@ -1,13 +1,14 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, inject } from '@angular/core';
 // import { Editor, Toolbar } from '@kolkov/';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AngularEditorModule, AngularEditorConfig, AeToolbarSetComponent} from '@kolkov/angular-editor';
 import { MatButtonModule } from '@angular/material/button';
 import { Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
-import { Chapter, description } from '../../models/paperTrailTypes';
+import { debounceTime } from 'rxjs/operators';
+import { description } from '../../models/paperTrailTypes';
 import { ApiService } from '../../modules/api.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-txt-editor',
@@ -16,11 +17,10 @@ import { ApiService } from '../../modules/api.service';
   templateUrl: './txt-editor.component.html',
   styleUrls: ['./txt-editor.component.scss'],
 })
-export class TxtEditorComponent implements OnInit, OnDestroy {
+export class TxtEditorComponent implements OnInit {
 
-@Input() data: description; 
+@Input() data: description;
 private contentSubject = new Subject<string>();
-private destroy$ = new Subject<void>();
 @Output() valueChanged = new EventEmitter<string>();
 content = new FormControl('');
 editorConfig: AngularEditorConfig = {
@@ -59,12 +59,14 @@ editorConfig: AngularEditorConfig = {
 
 };
 
-  constructor(private api:ApiService) {
+  private api = inject(ApiService);
+
+  constructor() {
     // Configura o debounceTime para atrasar a execução do emitVal
     this.contentSubject
       .pipe(
         // debounceTime(1000), // 30 segundos de debounce
-        takeUntil(this.destroy$)
+        takeUntilDestroyed()
       )
       .subscribe((content) => {
         this.emitVal(content);
@@ -102,10 +104,6 @@ ngOnChanges(changes: any) {
 
       })
     }
-  }
-
-  ngOnDestroy(): void {
-    // Destruir o editor ao destruir o componente
   }
 
   // Método para salvar o conteúdo

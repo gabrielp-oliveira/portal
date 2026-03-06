@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HeaderStoreComponent } from './topPanel.component';
+import { TopPanelComponent } from './topPanel.component';
 
-describe('HeaderStoreComponent', () => {
-  let component: HeaderStoreComponent;
-  let fixture: ComponentFixture<HeaderStoreComponent>;
+describe('TopPanelComponent', () => {
+  let component: TopPanelComponent;
+  let fixture: ComponentFixture<TopPanelComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderStoreComponent]
+      declarations: [TopPanelComponent]
     })
     .compileComponents();
-    
-    fixture = TestBed.createComponent(HeaderStoreComponent);
+
+    fixture = TestBed.createComponent(TopPanelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

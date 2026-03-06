@@ -1,10 +1,9 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterModule } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-auth',
@@ -13,20 +12,19 @@ import { CommonModule } from '@angular/common';
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss'
 })
-export class AuthComponent implements OnDestroy {
+export class AuthComponent {
 
-  private destroy$ = new Subject<void>();
+  private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   signUpForm = new FormGroup({
     email: new FormControl("", [Validators.required, Validators.email]),
     password: new FormControl("", [Validators.required, Validators.minLength(5)]),
   });
 
-  constructor(private authService: AuthService) {}
-
   googleLogin() {
     this.authService.googleLogin()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((a) => {
           window.location.href = a
       });
@@ -34,7 +32,7 @@ export class AuthComponent implements OnDestroy {
 
   microsoftLogin() {
     this.authService.microsoftLogin()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((a) => {
           window.location.href = a
       });
@@ -43,7 +41,7 @@ export class AuthComponent implements OnDestroy {
   onSubmit() {
     if (this.signUpForm.valid) {
       this.authService.login(this.signUpForm.value)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
             console.log('Login realizado com sucesso.');
@@ -55,10 +53,5 @@ export class AuthComponent implements OnDestroy {
     } else {
       console.warn('Formulário inválido');
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

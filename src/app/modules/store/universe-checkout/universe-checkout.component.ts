@@ -5,6 +5,7 @@ import { paper } from '../../../models/paperTrailTypes';
 import { Subscription } from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'app-universe-checkout',
   templateUrl: './universe-checkout.component.html',
   styleUrls: ['./universe-checkout.component.scss']

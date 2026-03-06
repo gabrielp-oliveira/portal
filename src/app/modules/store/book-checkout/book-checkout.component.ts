@@ -1,15 +1,16 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { paper } from '../../../models/paperTrailTypes';
 import { ActivatedRoute } from '@angular/router';
 import { StoreService } from '../store.service';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: false,
   selector: 'app-book-checkout',
   templateUrl: './book-checkout.component.html',
   styleUrls: ['./book-checkout.component.scss']
 })
-export class BookCheckoutComponent implements OnInit, OnDestroy {
+export class BookCheckoutComponent implements OnInit {
   type: 'book' | 'universe';
   id: string;
 
@@ -22,7 +23,7 @@ export class BookCheckoutComponent implements OnInit, OnDestroy {
   currencyCode = 'BRL';
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
 
-  private subscriptions: Subscription[] = [];
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -49,12 +50,13 @@ export class BookCheckoutComponent implements OnInit, OnDestroy {
         this.currencyCode = 'USD';
       })
       .finally(() => {
-        const sub = this.store.getPaperById(paperId, this.currencyCode, this.country).subscribe((res) => {
-          this.book = res.paper;
-          this.collectionName = res.paper.name;
-          this.total = res.paper.price;
-        });
-        this.subscriptions.push(sub);
+        this.store.getPaperById(paperId, this.currencyCode, this.country)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe((res) => {
+            this.book = res.paper;
+            this.collectionName = res.paper.name;
+            this.total = res.paper.price;
+          });
       });
   }
 
@@ -72,24 +74,20 @@ export class BookCheckoutComponent implements OnInit, OnDestroy {
       id: this.id,
     };
 
-    const sub = this.store.checkoutBook(body).subscribe({
-      next: (res: any) => {
-        if (res.price === 0) {
-          alert('Livro gratuito adicionado à sua biblioteca!');
-        } else if (res.checkoutUrl) {
-          window.location.href = res.checkoutUrl;
+    this.store.checkoutBook(body)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          if (res.price === 0) {
+            alert('Livro gratuito adicionado à sua biblioteca!');
+          } else if (res.checkoutUrl) {
+            window.location.href = res.checkoutUrl;
+          }
+        },
+        error: (err) => {
+          const msg = err?.error?.error || 'Erro ao iniciar o checkout.';
+          console.error(msg);
         }
-      },
-      error: (err) => {
-        const msg = err?.error?.error || 'Erro ao iniciar o checkout.';
-        console.error(msg);
-      }
-    });
-
-    this.subscriptions.push(sub);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+      });
   }
 }

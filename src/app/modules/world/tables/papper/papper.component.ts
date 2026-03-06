@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, DestroyRef, inject } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSort } from '@angular/material/sort';
@@ -8,17 +8,19 @@ import { ErrorService } from '../../../error.service';
 import { DialogService } from '../../../../dialog/dialog.service';
 import { ApiService } from '../../../api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs';
 import { UtilsService } from '../../../../utils.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 
 @Component({
+  standalone: false,
   selector: 'app-papper',
   templateUrl: './papper.component.html',
   styleUrls: ['./papper.component.scss'],
 })
-export class PapperComponent implements OnInit {
+export class PapperComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['order', 'name', 'created_at','description', 'update'];
   dataSource = new MatTableDataSource<paper>([]);
 
@@ -42,8 +44,9 @@ export class PapperComponent implements OnInit {
   dateSearchValue: string = ""
   startDateSearchValue: string = ""
   endDateSearchValue: string = ""
-  destroy$ = new Subject<void>();
-  pageWidth:number
+  private destroyRef = inject(DestroyRef);
+  private resizeSvgFn = (e: Event) => this.resizeSvg(e as any);
+  pageWidth: number;
   constructor(
     private wd: WorldDataService,
     private router: Router,
@@ -62,8 +65,8 @@ export class PapperComponent implements OnInit {
     this.dialog.openChapterDescription(params, '150ms','150ms')
   }
   ngOnInit() {
-    this.pageWidth = window.innerWidth
-    window.addEventListener('resize', (e) => this.resizeSvg(e));
+    this.pageWidth = window.innerWidth;
+    window.addEventListener('resize', this.resizeSvgFn);
 
     this.wd.papers$.pipe(
       distinctUntilChanged(() => {
@@ -79,14 +82,14 @@ export class PapperComponent implements OnInit {
         }
       })
     )
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe((p) => {
       this.dataSource.data = p
       this.papers$ = p
     })
 
     this.wd.chapters$
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe((c) => {
       this.chapters$ = c
     })
@@ -94,9 +97,7 @@ export class PapperComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    window.removeEventListener('resize', () => {});
-    this.destroy$.complete();
+    window.removeEventListener('resize', this.resizeSvgFn);
   }
 
   resizeSvg(e:any){
@@ -116,7 +117,7 @@ export class PapperComponent implements OnInit {
       return pp
     })
     this.api.updatePaperList(data)
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe((a) => {
       data.forEach((p) => {
         this.wd.updatePaper(p)

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReadChapterComponent } from './readchapter/readChapter.component';
+import { ReadChapterComponent } from './readChapter/readChapter.component';
 import { RouterModule, Routes } from '@angular/router';
 
 
@@ -11,7 +11,7 @@ const routes: Routes = [
   }
 ];
 @NgModule({
-  declarations: [],
+  declarations: [ReadChapterComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes)

@@ -3,6 +3,7 @@ import { paper } from '../../../models/paperTrailTypes';
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-paper-card',
   templateUrl: './paper-card.component.html',
   styleUrl: './paper-card.component.scss'

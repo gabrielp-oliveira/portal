@@ -1,6 +1,7 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, combineLatest, takeUntil, debounceTime } from 'rxjs';
+import { Subject, combineLatest, debounceTime } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { WorldDataService } from '../dashboard/world-data.service';
 import { ErrorService } from '../error.service';
 import { Timeline, Chapter, StoryLine, paper, paperCard, chapterDetailsModal } from '../../models/paperTrailTypes';
@@ -10,12 +11,13 @@ import { ChapterDetailsComponent } from './dialog/chapter-details/chapter-detail
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-read-world',
   templateUrl: './read-world.component.html',
   styleUrls: ['./read-world.component.scss']
 })
 export class ReadWorldComponent implements AfterViewInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
   private iframe!: HTMLIFrameElement;
   private settingsUpdate$ = new Subject<boolean>();
   private readonly ANIMATION_MS = 400;
@@ -40,7 +42,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
     if (!this.iframe) return;
 
     this.settingsUpdate$
-      .pipe(debounceTime(this.ANIMATION_MS), takeUntil(this.destroy$))
+      .pipe(debounceTime(this.ANIMATION_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe((collapsed_all) => {
         const current = this.wd.getSettings();
         if (!current?.id) return;
@@ -48,7 +50,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
         const updated = { ...current, collapsed_all };
         this.wd.setSettings(updated);
         this.api.updateSettings(updated.id, updated)
-          .pipe(takeUntil(this.destroy$))
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe((ss) => this.wd.setSettings({ ...ss, collapsed_all }));
       });
 
@@ -63,7 +65,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
 
     // 🔁 Carrega os dados e aplica visible: true
     this.api.getWorldDataByName(worldName)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((world) => {
         console.log('[Board] 🌐 World data recebido — collapsed_all:', world?.subway_settings?.collapsed_all, '| settings.id:', world?.subway_settings?.id);
         const coloredPapers = (world.papers || []).map(p => ({ ...p, visible: true }));
@@ -99,7 +101,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       this.wd.storylines$,
       this.wd.settings$
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([chapters, timelines, storylines, settings]) => {
         // Aguarda settings reais (id vazio = BehaviorSubject default, dados ainda não carregados)
         if (!settings?.id) {
@@ -171,8 +173,6 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener("message", this.handleIframeMessage);
     this.lastSentPayload = null;
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
 
@@ -213,7 +213,7 @@ export class ReadWorldComponent implements AfterViewInit, OnDestroy {
       };
 
       this.api.updateSettings(updated.id, updated)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((ss) => {
           this.wd.setSettings(ss);
         });

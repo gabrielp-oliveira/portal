@@ -1,35 +1,26 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { CommonModule } from '@angular/common';
-import { TxtEditorComponent } from "../txt-editor/txt-editor.component";
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TxtEditorComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit {
+  private auth = inject(AuthService);
 
-  isUserLogged: boolean = false;
-  private destroy$ = new Subject<void>();
+  isUserLogged = false;
 
-  constructor(private auth: AuthService) {}
+  private readonly isLogged$ = this.auth.isLogged$.pipe(takeUntilDestroyed());
 
   ngOnInit(): void {
-    this.auth.isLogged$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(status => {
-        this.isUserLogged = status;
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.isLogged$.subscribe(status => {
+      this.isUserLogged = status;
+    });
   }
 }

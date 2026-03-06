@@ -1,17 +1,20 @@
 .iframe-container {
-  width: 100%;
+  max-width: 100%;
   height: min-content;
   overflow: hidden;
-  background-color: white;
+  background-color: rgb(63, 63, 63);
   padding-bottom: 10px;
-  
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  position: relative;
   iframe {
     width: 100%;
-    height: 100%;
+    max-width: 2000px;
     border: none;
     display: block;
-    height: 60vh;
-    border: 2px solid red;
+    height: 500px;
+    position: relative;
   }
 }
 
