@@ -1,0 +1,148 @@
+.paper-card {
+  padding: 16px;
+  border-radius: 10px;
+  width: 100%;
+  transition: background 0.3s, color 0.3s;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &.dark-theme {
+    background: #1e1e1e;
+    color: white;
+
+    .meta { color: #ccc; }
+
+    .continue-btn {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .block { background: #444; }
+
+    .expand-toggle { color: #aaa; #toggleLabel { color: #ccc; } }
+
+    .chapter-list::-webkit-scrollbar-thumb { background-color: #555; }
+  }
+
+  &.light-theme {
+    background: #fafafa;
+    color: #222;
+
+    .meta { color: #555; }
+
+    .continue-btn {
+      background: #e0e0e0;
+      color: #222;
+      border: 1px solid #999;
+    }
+
+    .block { background: #bbb; }
+
+    .expand-toggle { color: #444; #toggleLabel { color: #444; } }
+
+    .chapter-list::-webkit-scrollbar-thumb { background-color: #999; }
+  }
+}
+
+// ── Book cover ───────────────────────────────────────────────────────────────
+.cover-container {
+  margin-right: 16px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.book-cover {
+  width: 110px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+
+  &:hover { transform: scale(1.03); }
+}
+
+// ── Card header ───────────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.left h3 {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.meta {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  button { margin-bottom: 4px; }
+}
+
+// ── Progress ─────────────────────────────────────────────────────────────────
+.progress {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.progress-bar {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  gap: 2px;
+}
+
+.block {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: #888;
+}
+
+.block.read     { background: #4caf50 !important; }
+.block.favorite { border: 2px solid gold; }
+
+// ── Expand toggle ─────────────────────────────────────────────────────────────
+.expand-toggle {
+  align-self: flex-end;
+}
+
+// ── Chapter list ──────────────────────────────────────────────────────────────
+.chapter-list {
+  margin-top: 8px;
+  padding: 0 8px 0 12px;
+  max-height: 200px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar       { width: 6px; }
+  &::-webkit-scrollbar-thumb { border-radius: 4px; }
+}
+
+.chapter-item {
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: space-between;
+
+  > span {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+
+    span       { margin: 0 5px; }
+    mat-icon   { margin: 0 5px; }
+  }
+}

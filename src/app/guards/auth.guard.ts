@@ -7,7 +7,7 @@ import {
 } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../core/auth/auth.service';
 
 function log(...args: any[]) {
   console.log('[AuthGuard]', ...args);

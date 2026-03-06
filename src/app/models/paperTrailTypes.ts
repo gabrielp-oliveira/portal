@@ -23,10 +23,10 @@ export type info<t> = {
     data: t
 }
 export interface ExtendedChapter extends Chapter {
-    papperName: string,
+    paperName: string,
     timelineName: string,
     storylineName: string,
-    papperOrder: number
+    paperOrder: number
     // eventName:string
 }
 

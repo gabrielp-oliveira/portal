@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run build)",
       "Bash(npm install --legacy-peer-deps)",
-      "Bash(npx ng build)"
+      "Bash(npx ng build)",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_Name -match ''node|ts|alc|angular''} | Select-Object Name, Id, CPU\")",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_CPU -gt 0} | Select-Object Name, Id | head -20\")",
+      "Bash(powershell -Command \"robocopy src\\\\app\\\\modules src\\\\app\\\\features /E /NFL /NDL /NJH /NJS /NC /NS\")",
+      "Bash(npx ng build --configuration development)"
     ]
   }
 }

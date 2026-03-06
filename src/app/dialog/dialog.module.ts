@@ -30,15 +30,15 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { PaperInfoComponent } from '../standAlone/info/paper-info/paper-info.component';
-import { ChapterInfoComponent } from '../standAlone/info/chapter-info/chapter-info.component';
-import { ConnectionGroupInfoComponent } from '../standAlone/info/connectionGroup-info/connectionGroup-info.component';
-import { StorylineInfoComponent } from '../standAlone/info/storyline-info/storyline-info.component';
-import { EventInfoComponent } from '../standAlone/info/event-info/event-info.component';
-import { TimelineInfoComponent } from '../standAlone/info/timeline-info/timeline-info.component';
+import { PaperInfoComponent } from '../shared/info/paper-info/paper-info.component';
+import { ChapterInfoComponent } from '../shared/info/chapter-info/chapter-info.component';
+import { ConnectionGroupInfoComponent } from '../shared/info/connectionGroup-info/connectionGroup-info.component';
+import { StorylineInfoComponent } from '../shared/info/storyline-info/storyline-info.component';
+import { EventInfoComponent } from '../shared/info/event-info/event-info.component';
+import { TimelineInfoComponent } from '../shared/info/timeline-info/timeline-info.component';
 import {MatTabsModule} from '@angular/material/tabs';
-import { TxtEditorComponent } from "../standAlone/txt-editor/txt-editor.component";
-import { LoadingComponent } from '../standAlone/loading/loading.component';
+import { TxtEditorComponent } from "../shared/txt-editor/txt-editor.component";
+import { LoadingComponent } from '../shared/loading/loading.component';
 
 
 

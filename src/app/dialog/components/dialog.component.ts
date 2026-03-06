@@ -1,15 +1,15 @@
 import { Component, ErrorHandler, Inject, inject, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ApiService } from '../../modules/api.service';
+import { ApiService } from '../../core/api.service';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { WorldDataService } from '../../modules/dashboard/world-data.service';
+import { WorldDataService } from '../../features/dashboard/world-data.service';
 import { Chapter, Connection, createWorld, description, Event, GroupConnection, info, infoDialog, paper, StoryLine, Subway_Settings, Timeline, world } from '../../models/paperTrailTypes';
 import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
 import { UtilsService } from '../../utils.service';
-import { TxtEditorComponent } from '../../standAlone/txt-editor/txt-editor.component';
-import { ErrorService } from '../../modules/error.service';
+import { TxtEditorComponent } from '../../shared/txt-editor/txt-editor.component';
+import { ErrorService } from '../../core/error.service';
 import { DialogService } from '../dialog.service';
 import { tree } from 'd3';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -934,7 +934,7 @@ description:description
 constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDataService,
   private dialogRef: MatDialogRef<UpdatePaperDialogComponent>,
       private utils:UtilsService,private errorHandler:ErrorService,
-      @Inject(MAT_DIALOG_DATA) public data: { papperId: string }
+      @Inject(MAT_DIALOG_DATA) public data: { paperId: string }
     ){
       this.worldForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
@@ -951,7 +951,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
       })
 
 
-      this.api.getPaperData(this.data.papperId)
+      this.api.getPaperData(this.data.paperId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (paper) => {
@@ -975,7 +975,7 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
 
     chapterBackgroundColor() {    
       return {
-        'background-color': this.worldForm.value.color || this.utils.numberToHex(this.data.papperId),
+        'background-color': this.worldForm.value.color || this.utils.numberToHex(this.data.paperId),
       }
    
     }
@@ -988,10 +988,10 @@ constructor(private fb: FormBuilder,private api:ApiService, private wd: WorldDat
     
       const body = this.worldForm.value
       body.world_id = this.worldId
-      body.id = this.data.papperId
+      body.id = this.data.paperId
       body.color = this.worldForm.value.color
       console.log(this.worldForm.value.color)
-      this.api.updatePaper(this.data.papperId, this.worldForm.value)
+      this.api.updatePaper(this.data.paperId, this.worldForm.value)
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         

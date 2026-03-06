@@ -12,7 +12,7 @@ import { chapteDescriptionDialogComponent, createChapterDialogComponent,
        deleteGroupConnectionDialogComponent} from './components/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { Chapter, chapterBasicInfo, ChapterDetails, Connection, description, Event, GroupConnection, info, infoDialog, paper, StoryLine, Timeline } from '../models/paperTrailTypes';
-import { PreviewComponent } from '../modules/docx/preview/preview.component';
+import { PreviewComponent } from '../features/docx/preview/preview.component';
 
 @Injectable({
   providedIn: 'root'
@@ -164,12 +164,12 @@ export class DialogService {
       data: {chapterId: chapterId}
     });
   }
-  openUpdatePaperrDialog(enterAnimationDuration: string, exitAnimationDuration: string, papperId: string): void {
+  openUpdatePaperDialog(enterAnimationDuration: string, exitAnimationDuration: string, paperId: string): void {
     this.dialog.open(UpdatePaperDialogComponent, {
       width: '450px',
       enterAnimationDuration,
       exitAnimationDuration,
-      data: {papperId: papperId}
+      data: {paperId: paperId}
     });
   }
   openDataPickerDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {

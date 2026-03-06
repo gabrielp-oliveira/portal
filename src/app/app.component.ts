@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
-import { HeaderComponent } from './standAlone/header/header.component';
-import { FooterComponent } from './modules/read-world/footer/footer.component';
+import { HeaderComponent } from './shared/header/header.component';
+import { FooterComponent } from './features/read-world/footer/footer.component';
 import { CommonModule } from '@angular/common'; // ✅ AQUI
 import { filter } from 'rxjs/operators';
 

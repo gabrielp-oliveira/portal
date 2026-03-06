@@ -1,0 +1,38 @@
+// ── Board iframe ─────────────────────────────────────────────────────────────
+.iframe-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: #3f3f3f;
+  display: flex;
+  justify-content: center;
+  position: relative;
+
+  iframe {
+    width: 100%;
+    max-width: 2000px;
+    border: none;
+    display: block;
+    height: 640px;
+  }
+}
+
+// ── Paper cards grid ─────────────────────────────────────────────────────────
+.paper-cards-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 16px;
+  padding: 20px 24px;
+  background-color: #f4f4f4;
+  min-height: 200px;
+}
+
+// ── Dark mode overrides ──────────────────────────────────────────────────────
+.dark {
+  .paper-cards-wrapper {
+    background-color: #1c1c1c;
+  }
+
+  .iframe-container {
+    background-color: #111;
+  }
+}
