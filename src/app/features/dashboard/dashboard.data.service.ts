@@ -2,7 +2,7 @@ import { Injectable, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../core/api.service';
 import { ErrorService } from '../../core/error.service';
-import { DashboardResponse } from '../../models/paperTrailTypes';
+import { DashboardNotStarted, DashboardResponse } from '../../models/paperTrailTypes';
 
 export interface StatCard {
   icon: string;
@@ -20,6 +20,13 @@ export class DashboardDataService {
   loading = true;
   data: DashboardResponse | null = null;
   statCards: StatCard[] = [];
+
+  /** Pre-computed once on load — avoids O(n) recomputation on every CD cycle. */
+  notStartedByUniverse: Array<{ world: string; books: DashboardNotStarted[] }> = [];
+
+  /** O(1) lookups replacing O(n) .some() calls in *ngFor loops. */
+  private favoriteChapterIdsSet = new Set<string>();
+  private annotatedChapterIdsSet = new Set<string>();
 
   // world_id → world_name lookup built from worlds_summary
   private worldNameMap = new Map<string, string>();
@@ -68,6 +75,14 @@ export class DashboardDataService {
               .map(r => [r.paper_id, r.world_name!])
           );
           this.statCards = this.buildStatCards(res);
+          this.favoriteChapterIdsSet = new Set(
+            (res.favorite_chapters ?? []).map(c => c.chapter_id)
+          );
+          this.annotatedChapterIdsSet = new Set(
+            (res.favorite_annotations ?? []).map(a => a.chapter_id).filter(Boolean)
+          );
+          this.notStartedByUniverse = this.buildNotStartedByUniverse(res.not_started ?? []);
+          this.autoCollapseEmpty();
           this.loading = false;
         },
         error: (e) => {
@@ -75,6 +90,18 @@ export class DashboardDataService {
           this.loading = false;
         }
       });
+  }
+
+  private buildNotStartedByUniverse(
+    books: DashboardNotStarted[]
+  ): Array<{ world: string; books: DashboardNotStarted[] }> {
+    const map = new Map<string, DashboardNotStarted[]>();
+    for (const b of books) {
+      const key = b.world_name ?? 'Sem universo';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(b);
+    }
+    return Array.from(map.entries()).map(([world, books]) => ({ world, books }));
   }
 
   private buildStatCards(res: DashboardResponse): StatCard[] {
@@ -136,6 +163,29 @@ export class DashboardDataService {
     );
   }
 
+  // ── Auto-collapse empty sections (in-memory only, no localStorage) ───────
+  private autoCollapseEmpty(): void {
+    if (!this.data) return;
+    const d = this.data;
+    const emptySections: Array<[string, number]> = [
+      ['in-progress',       d.papers_in_progress.length + (d.continue_reading ? 1 : 0)],
+      ['not-started',       d.not_started.length],
+      ['recommended',       d.recommended.length],
+      ['recently-updated',  d.recently_updated.length],
+      ['completed',         d.recently_completed.length],
+      ['recently-read',     d.recently_read.length],
+      ['fav-chapters',      d.favorite_chapters.length],
+      ['fav-annotations',   d.favorite_annotations.length],
+      ['genres',            d.genre_breakdown.length],
+      ['wishlist',          d.wishlist_available.length],
+    ];
+    for (const [id, count] of emptySections) {
+      if (count === 0) {
+        this.collapsedSections.add(id);
+      }
+    }
+  }
+
   // ── Section collapse state ────────────────────────────────────────────────
   isSectionCollapsed(id: string): boolean {
     return this.collapsedSections.has(id);
@@ -163,12 +213,12 @@ export class DashboardDataService {
     return name ? ['/read', name] : null;
   }
 
-  // ── Cross-section helpers ─────────────────────────────────────────────────
+  // ── Cross-section helpers (O(1) Set lookups) ─────────────────────────────
   isChapterFavorite(chapterId: string): boolean {
-    return this.data?.favorite_chapters.some(c => c.chapter_id === chapterId) ?? false;
+    return this.favoriteChapterIdsSet.has(chapterId);
   }
 
   hasChapterAnnotation(chapterId: string): boolean {
-    return this.data?.favorite_annotations.some(a => a.chapter_id === chapterId) ?? false;
+    return this.annotatedChapterIdsSet.has(chapterId);
   }
 }

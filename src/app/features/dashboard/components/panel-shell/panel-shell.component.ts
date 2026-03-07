@@ -20,5 +20,6 @@ export class PanelShellComponent {
   @Input() icon = '';
   @Input() iconClass = '';
   @Input() collapsed = false;
+  @Input() count: number | null = null;
   @Output() toggle = new EventEmitter<void>();
 }

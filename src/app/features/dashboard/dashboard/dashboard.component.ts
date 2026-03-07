@@ -1,6 +1,8 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, NgZone, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
+import { fromEvent } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ThemeService } from '../../../core/theme.service';
 import { DashboardDataService } from '../dashboard.data.service';
@@ -15,37 +17,45 @@ export class DashboardComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   isDark = this.theme.isDark;
+  statsCollapsed = true;
+  showBackToTop = false;
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   constructor(
     private auth: AuthService,
     public theme: ThemeService,
     public ds: DashboardDataService,
     private titleService: Title,
+    private meta: Meta,
+    private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
     this.titleService.setTitle('Painel de leitura | Portal');
+    this.meta.updateTag({ name: 'description', content: 'Acompanhe seu progresso de leitura, livros em andamento, capítulos favoritos e estatísticas no painel do Portal.' });
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
 
     this.theme.isDark$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(dark => { this.isDark = dark; });
 
+    // Scroll listener fora da zona do Angular — não dispara CD a cada evento;
+    // só entra na zona quando o valor de showBackToTop realmente muda.
+    this.ngZone.runOutsideAngular(() => {
+      fromEvent(window, 'scroll', { passive: true })
+        .pipe(throttleTime(150), takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          const next = window.scrollY > 300;
+          if (next !== this.showBackToTop) {
+            this.ngZone.run(() => { this.showBackToTop = next; });
+          }
+        });
+    });
+
     this.ds.load(this.destroyRef);
-  }
-
-  // ── Template helpers (pure, stateless) ───────────────────────────────────
-  progress(completed: number, total: number): number {
-    if (!total) return 0;
-    return Math.round((completed / total) * 100);
-  }
-
-  timeAgo(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}min atrás`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h atrás`;
-    return `${Math.floor(hrs / 24)}d atrás`;
   }
 
   logOut(): void {

@@ -166,7 +166,6 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 8px;
-  margin-bottom: 16px;
 
   @media (max-width: 1100px) { grid-template-columns: repeat(4, 1fr); }
   @media (max-width: 600px)  { grid-template-columns: repeat(2, 1fr); }
@@ -290,7 +289,8 @@
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  // Espaço vertical para o hover translateY(-6px) não ser clipado pelo overflow:hidden do panel
+  padding: 8px 2px 6px;
 
   &::-webkit-scrollbar { height: 3px; }
   &::-webkit-scrollbar-track { background: var(--surface2); border-radius: 2px; }
@@ -328,7 +328,7 @@
   &__cover {
     position: relative;
     width: 100%;
-    height: 180px;
+    aspect-ratio: 2 / 3; // proporção de capa de livro — sem altura fixa
     display: flex;
     align-items: center;
     justify-content: center;
@@ -339,14 +339,15 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      transition: transform .4s cubic-bezier(.2, 0, .1, 1);
+      // contain → mostra a capa inteira; o fundo colorido do livro preenche os espaços
+      object-fit: contain;
+      transition: transform .4s cubic-bezier(.2, 0, .1, 1), opacity .2s;
     }
 
-    &--dim img { opacity: .75; }
+    &--dim img { opacity: .7; }
   }
 
-  &:hover &__cover img { transform: scale(1.06); }
+  &:hover &__cover img { transform: scale(1.04); }
 
   &__badge {
     position: absolute;
@@ -419,23 +420,18 @@
     flex-shrink: 0;
   }
 
-  &__continue-badge {
-    position: absolute;
-    bottom: 6px;
-    left: 6px;
-    right: 6px;
-    background: var(--teal);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 6px;
-    z-index: 2;
+  &__continue-tag {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    margin-bottom: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--teal);
 
-    mat-icon { font-size: 12px; width: 12px; height: 12px; }
+    mat-icon { font-size: 11px; width: 11px; height: 11px; }
   }
 
   &--featured {
@@ -443,7 +439,7 @@
     border: 1px solid var(--border);
     border-top: 3px solid color-mix(in srgb, var(--bk, var(--teal)) 75%, transparent);
 
-    .book-card__cover { height: 210px; }
+    // --featured usa aspect-ratio 2/3 herdado, flex-basis maior dá cover maior naturalmente
   }
 
   &__cover-link {
@@ -468,10 +464,11 @@
     padding: 2px 6px;
     border-radius: 6px;
     background: var(--surface2);
+    border: 1px solid var(--border);
     transition: color .12s, background .12s;
 
-    &:not([href]):not([ng-reflect-router-link]) { opacity: .35; cursor: default; pointer-events: none; }
-    &:hover { color: var(--teal); background: rgba(42, 157, 143, .12); }
+    &:not([href]):not([ng-reflect-router-link]) { opacity: .3; cursor: default; pointer-events: none; }
+    &:hover { color: var(--text); background: var(--surface); }
     &:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
 
     mat-icon { font-size: 11px; width: 11px; height: 11px; }
@@ -1139,6 +1136,91 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+// ── Universe group (Não iniciados agrupados por universo) ──────────────────────
+.universe-group {
+  & + & { margin-top: 10px; }
+}
+
+.universe-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+  padding: 4px 6px 4px 4px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background .15s, color .15s;
+
+  mat-icon { font-size: 12px; width: 12px; height: 12px; flex-shrink: 0; }
+
+  &__arrow {
+    opacity: 0;
+    transform: translateX(-3px);
+    transition: opacity .15s, transform .15s;
+  }
+
+  &:hover {
+    color: var(--text);
+    background: var(--surface2);
+
+    .universe-cta-btn__arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  &:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
+}
+
+// ── Section CTA (links de descoberta no rodapé da seção) ───────────────────────
+.section-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px 2px;
+  flex-wrap: wrap;
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: background .14s, color .14s;
+
+    mat-icon { font-size: 13px; width: 13px; height: 13px; }
+
+    &:hover {
+      color: var(--text);
+      background: var(--surface);
+    }
+  }
+}
+
+// ── Chapter snippet (descrição resumida) ───────────────────────────────────────
+.ch-item__snippet {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 // stat-item gets a subtle scale pop on hover
 .stat-item {
   &:hover { transform: translateY(-3px) scale(1.01); }
@@ -1468,6 +1550,90 @@
   font-style: normal;
 }
 
+// ── Stats section (collapsible on mobile) ─────────────────────────────────────
+.stats-section {
+  margin-bottom: 16px;
+}
+
+.stats-toggle {
+  display: none; // hidden on desktop
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--muted);
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  transition: background .12s;
+  box-shadow: var(--shadow);
+
+  &:hover { background: var(--surface2); }
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--teal); }
+
+  &:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 8px; }
+}
+
+.stats-toggle__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-strip-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows .28s cubic-bezier(.4, 0, .2, 1), opacity .22s ease;
+  opacity: 1;
+
+  > * { overflow: hidden; }
+
+  &--collapsed {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+// ── Back to top ────────────────────────────────────────────────────────────────
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  transition: opacity .2s, transform .2s;
+  animation: fadeInUp .2s ease;
+
+  &:hover { opacity: .88; transform: translateY(-2px); }
+  &:active { transform: translateY(0); }
+  &:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
 // Tablet (grid already collapses at 1024px — just tighten spacing)
@@ -1478,6 +1644,14 @@
 
 // Large phones & small tablets
 @media (max-width: 768px) {
+  .stats-toggle { display: flex; margin-bottom: 8px; }
+  .stats-section { margin-bottom: 12px; }
+
+  // Imagens de capa: usar cover para evitar pillarbox colorido
+  .book-card__cover img { object-fit: cover; }
+
+  .back-to-top { bottom: 16px; right: 14px; width: 40px; height: 40px; }
+
   .db__head { margin-bottom: 14px; padding: 12px 14px; }
 
   .db__title { font-size: 18px; }
@@ -1509,10 +1683,10 @@
 
   .book-card {
     flex: 0 0 115px;
-    &__cover { height: 155px; }
+    // aspect-ratio 2/3 já se adapta à largura do card
     &--featured {
       flex: 0 0 140px;
-      .book-card__cover { height: 185px; }
+      // aspect-ratio herdado
     }
   }
 
@@ -1570,7 +1744,7 @@
     &__author { font-size: 10px; }
     &--featured {
       flex: 0 0 130px;
-      .book-card__cover { height: 170px; }
+      // aspect-ratio herdado
     }
   }
 

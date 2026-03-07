@@ -13,6 +13,8 @@ import { LoadingComponent } from '../../shared/loading/loading.component';
 import { DashboardDataService } from './dashboard.data.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { HighlightPipe } from './highlight.pipe';
+import { ProgressPipe } from './pipes/progress.pipe';
+import { TimeAgoPipe } from './pipes/time-ago.pipe';
 import { StatsStripComponent } from './components/stats-strip/stats-strip.component';
 import { PanelShellComponent } from './components/panel-shell/panel-shell.component';
 
@@ -22,6 +24,8 @@ const routes: Routes = [{ path: '', component: DashboardComponent }];
   declarations: [
     DashboardComponent,
     HighlightPipe,
+    ProgressPipe,
+    TimeAgoPipe,
     StatsStripComponent,
     PanelShellComponent,
   ],

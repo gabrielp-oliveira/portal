@@ -7,6 +7,8 @@
       <span class="panel__title-left">
         <mat-icon [class]="iconClass" aria-hidden="true">{{ icon }}</mat-icon>
         {{ title }}
+        <span class="panel__count" *ngIf="count !== null && count !== undefined"
+              aria-hidden="true">{{ count }}</span>
       </span>
       <mat-icon class="panel__collapse-chevron" aria-hidden="true">
         {{ collapsed ? 'expand_more' : 'expand_less' }}

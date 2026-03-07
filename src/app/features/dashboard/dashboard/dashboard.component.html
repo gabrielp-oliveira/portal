@@ -1,7 +1,7 @@
 <div class="db" [class.dark]="isDark" role="main">
 
   <!-- ── Skeleton ─────────────────────────────────────────────────── -->
-  <div class="db__inner" *ngIf="ds.loading" aria-busy="true" aria-label="Carregando painel">
+  <div class="db__inner" *ngIf="ds.loading" role="status" aria-label="Carregando painel">
     <div class="sk-stats" aria-hidden="true">
       <div class="sk-block" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
     </div>
@@ -31,26 +31,38 @@
         </h1>
         <p class="db__sub">Acompanhe seu progresso de leitura</p>
       </div>
-      <div class="db__head-stats">
+      <dl class="db__head-stats" aria-label="Resumo rápido">
         <div class="db__head-stat">
-          <span class="db__head-stat__val">{{ ds.data.stats.total_papers }}</span>
-          <span class="db__head-stat__lbl">Livros</span>
+          <dd class="db__head-stat__val">{{ ds.data.stats.total_papers }}</dd>
+          <dt class="db__head-stat__lbl">Livros</dt>
         </div>
         <div class="db__head-divider" aria-hidden="true"></div>
         <div class="db__head-stat">
-          <span class="db__head-stat__val">{{ ds.data.stats.completed_chapters }}</span>
-          <span class="db__head-stat__lbl">Caps. lidos</span>
+          <dd class="db__head-stat__val">{{ ds.data.stats.completed_chapters }}</dd>
+          <dt class="db__head-stat__lbl">Caps. lidos</dt>
         </div>
         <div class="db__head-divider" aria-hidden="true"></div>
         <div class="db__head-stat">
-          <span class="db__head-stat__val">{{ ds.data.reading_streak.current_days }}</span>
-          <span class="db__head-stat__lbl">Dias streak</span>
+          <dd class="db__head-stat__val">{{ ds.data.reading_streak.current_days }}</dd>
+          <dt class="db__head-stat__lbl">Dias streak</dt>
         </div>
-      </div>
+      </dl>
     </header>
 
     <!-- ── Stats strip ────────────────────────────────────────────── -->
-    <app-stats-strip [cards]="ds.statCards"></app-stats-strip>
+    <div class="stats-section">
+      <button class="stats-toggle" (click)="statsCollapsed = !statsCollapsed"
+              [attr.aria-expanded]="!statsCollapsed" aria-controls="stats-strip-content">
+        <span class="stats-toggle__label">
+          <mat-icon aria-hidden="true">bar_chart</mat-icon>
+          Estatísticas
+        </span>
+        <mat-icon aria-hidden="true">{{ statsCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+      <div id="stats-strip-content" class="stats-strip-wrap" [class.stats-strip-wrap--collapsed]="statsCollapsed">
+        <app-stats-strip [cards]="ds.statCards"></app-stats-strip>
+      </div>
+    </div>
 
     <!-- ── Main grid ──────────────────────────────────────────────── -->
     <div class="db__grid">
@@ -60,6 +72,7 @@
 
         <!-- Em andamento -->
         <app-panel-shell headerId="hdr-in-progress" title="Em andamento" icon="local_library"
+                         [count]="ds.data.papers_in_progress.length"
                          [collapsed]="ds.isSectionCollapsed('in-progress')"
                          (toggle)="ds.toggleSection('in-progress')">
           <ng-container *ngIf="ds.data.continue_reading || ds.data.papers_in_progress.length; else emptyInProgress">
@@ -72,18 +85,20 @@
                     <div class="book-card__cover" [style.background]="cr.color">
                       <img *ngIf="cr.cover_url" [src]="cr.cover_url" [alt]="cr.paper_name" loading="lazy" />
                       <span *ngIf="!cr.cover_url" class="cover-initial" aria-hidden="true">{{ cr.paper_name.charAt(0) }}</span>
-                      <div class="book-card__continue-badge" aria-hidden="true">
-                        <mat-icon aria-hidden="true">play_circle</mat-icon> Continuar
-                      </div>
                     </div>
                   </a>
                   <div class="book-card__foot">
+                    <div class="book-card__continue-tag" aria-hidden="true">
+                      <mat-icon aria-hidden="true">play_circle</mat-icon> Continuar lendo
+                    </div>
                     <p class="book-card__chapter">{{ cr.title }}</p>
                     <p class="book-card__name">{{ cr.paper_name }}</p>
-                    <p class="book-card__author">{{ timeAgo(cr.last_read_at) }}</p>
+                    <p class="book-card__author">{{ cr.last_read_at | timeAgo }}</p>
                     <a class="book-card__world-btn"
                        [routerLink]="ds.worldRoute(cr.world_id, cr.world_name, cr.paper_id)"
                        [title]="ds.worldRoute(cr.world_id, cr.world_name, cr.paper_id) ? 'Ir para o universo' : 'Universo não disponível'"
+                       [attr.aria-disabled]="!ds.worldRoute(cr.world_id, cr.world_name, cr.paper_id) || null"
+                       [attr.tabindex]="ds.worldRoute(cr.world_id, cr.world_name, cr.paper_id) ? null : '-1'"
                        aria-label="Ir para o universo">
                       <mat-icon aria-hidden="true">public</mat-icon> Universo
                     </a>
@@ -95,11 +110,11 @@
                      *ngIf="!ds.data.continue_reading || p.id !== ds.data.continue_reading.paper_id">
                   <a class="book-card__cover-link"
                      [routerLink]="['/read/book', p.id, 'chapter', '1']"
-                     [attr.aria-label]="p.name + ' — ' + progress(p.completed_chapters, p.total_chapters) + '% concluído'">
+                     [attr.aria-label]="p.name + ' — ' + (p.completed_chapters | progress:p.total_chapters) + '% concluído'">
                     <div class="book-card__cover" [style.background]="p.color">
                       <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" loading="lazy" />
                       <span *ngIf="!p.cover_url" class="cover-initial" aria-hidden="true">{{ p.name.charAt(0) }}</span>
-                      <span class="book-card__badge" aria-hidden="true">{{ progress(p.completed_chapters, p.total_chapters) }}%</span>
+                      <span class="book-card__badge" aria-hidden="true">{{ p.completed_chapters | progress:p.total_chapters }}%</span>
                     </div>
                   </a>
                   <div class="book-card__foot">
@@ -107,11 +122,11 @@
                     <p class="book-card__author">{{ p.author_name }}</p>
                     <div class="mini-track mt4"
                          role="progressbar"
-                         [attr.aria-valuenow]="progress(p.completed_chapters, p.total_chapters)"
+                         [attr.aria-valuenow]="p.completed_chapters | progress:p.total_chapters"
                          aria-valuemin="0" aria-valuemax="100"
-                         [attr.aria-label]="progress(p.completed_chapters, p.total_chapters) + '% concluído'">
+                         [attr.aria-label]="(p.completed_chapters | progress:p.total_chapters) + '% concluído'">
                       <div class="mini-track__fill"
-                           [style.width.%]="progress(p.completed_chapters, p.total_chapters)"
+                           [style.width.%]="p.completed_chapters | progress:p.total_chapters"
                            [style.background]="p.color"></div>
                     </div>
                     <a class="book-card__world-btn"
@@ -136,46 +151,74 @@
 
         <!-- Não iniciados -->
         <app-panel-shell headerId="hdr-not-started" title="Não iniciados" icon="bookmark_border"
+                         [count]="ds.data.not_started.length"
                          [collapsed]="ds.isSectionCollapsed('not-started')"
                          (toggle)="ds.toggleSection('not-started')">
           <ng-container *ngIf="ds.data.not_started.length; else emptyNotStarted">
-            <div class="books-track" role="list">
-              <div class="book-card" role="listitem" [style.--bk]="p.color"
-                   *ngFor="let p of ds.data.not_started">
-                <a class="book-card__cover-link"
-                   [routerLink]="['/read/book', p.paper_id, 'chapter', '1']"
-                   [attr.aria-label]="'Começar a ler: ' + p.name">
-                  <div class="book-card__cover book-card__cover--dim" [style.background]="p.color">
-                    <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" loading="lazy" />
-                    <span *ngIf="!p.cover_url" class="cover-initial" aria-hidden="true">{{ p.name.charAt(0) }}</span>
-                    <mat-icon class="book-card__play" aria-hidden="true">play_circle</mat-icon>
-                  </div>
-                </a>
-                <div class="book-card__foot">
-                  <p class="book-card__name">{{ p.name }}</p>
-                  <p class="book-card__author">{{ p.author_name }}</p>
-                  <p class="book-card__meta">{{ p.total_chapters }} caps.</p>
-                  <a class="book-card__world-btn"
-                     [routerLink]="ds.worldRoute(p.world_id, p.world_name, p.paper_id)"
-                     [title]="ds.worldRoute(p.world_id, p.world_name, p.paper_id) ? 'Ir para o universo' : 'Universo não disponível'"
-                     aria-label="Ir para o universo">
-                    <mat-icon aria-hidden="true">public</mat-icon> Universo
+
+            <!-- Livros agrupados por universo — cabeçalho-link acima de cada grupo -->
+            <div class="universe-group" *ngFor="let group of ds.notStartedByUniverse">
+
+              <a class="universe-cta-btn"
+                 *ngIf="group.world !== 'Sem universo'"
+                 [routerLink]="['/read', group.world]"
+                 [attr.aria-label]="'Explorar universo: ' + group.world">
+                <mat-icon aria-hidden="true">public</mat-icon>
+                <span>{{ group.world }}</span>
+                <mat-icon class="universe-cta-btn__arrow" aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+
+              <div class="books-track" role="list">
+                <div class="book-card" role="listitem" [style.--bk]="p.color"
+                     *ngFor="let p of group.books">
+                  <a class="book-card__cover-link"
+                     [routerLink]="['/read/book', p.paper_id, 'chapter', '1']"
+                     [attr.aria-label]="'Começar a ler: ' + p.name">
+                    <div class="book-card__cover book-card__cover--dim" [style.background]="p.color">
+                      <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" loading="lazy" />
+                      <span *ngIf="!p.cover_url" class="cover-initial" aria-hidden="true">{{ p.name.charAt(0) }}</span>
+                      <mat-icon class="book-card__play" aria-hidden="true">play_circle</mat-icon>
+                    </div>
                   </a>
+                  <div class="book-card__foot">
+                    <p class="book-card__name">{{ p.name }}</p>
+                    <p class="book-card__author">{{ p.author_name }}</p>
+                    <p class="book-card__meta">{{ p.total_chapters }} caps.</p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- CTA de descoberta -->
+            <div class="section-cta">
+              <a class="section-cta__link" [routerLink]="['/library']">
+                <mat-icon aria-hidden="true">library_books</mat-icon> Biblioteca
+              </a>
+              <a class="section-cta__link" [routerLink]="['/store']">
+                <mat-icon aria-hidden="true">shopping_cart</mat-icon> Descobrir na store
+              </a>
+            </div>
+
           </ng-container>
           <ng-template #emptyNotStarted>
             <div class="panel-empty">
               <mat-icon aria-hidden="true">bookmark_border</mat-icon>
               <p>Nenhum livro na fila ainda.</p>
-              <a [routerLink]="['/library']" class="panel-empty__link">Ver biblioteca</a>
+              <div class="section-cta" style="justify-content:center; padding-top:6px">
+                <a class="section-cta__link" [routerLink]="['/library']">
+                  <mat-icon aria-hidden="true">library_books</mat-icon> Biblioteca
+                </a>
+                <a class="section-cta__link" [routerLink]="['/store']">
+                  <mat-icon aria-hidden="true">shopping_cart</mat-icon> Store
+                </a>
+              </div>
             </div>
           </ng-template>
         </app-panel-shell>
 
         <!-- Recomendados -->
         <app-panel-shell headerId="hdr-recommended" title="Recomendados para você" icon="recommend"
+                         [count]="ds.data.recommended.length"
                          [collapsed]="ds.isSectionCollapsed('recommended')"
                          (toggle)="ds.toggleSection('recommended')">
           <ng-container *ngIf="ds.data.recommended.length; else emptyRecommended">
@@ -207,6 +250,7 @@
 
         <!-- Recentes -->
         <app-panel-shell headerId="hdr-recently-updated" title="Recentes" icon="history"
+                         [count]="ds.data.recently_updated.length"
                          [collapsed]="ds.isSectionCollapsed('recently-updated')"
                          (toggle)="ds.toggleSection('recently-updated')">
           <ng-container *ngIf="ds.data.recently_updated.length; else emptyRecentlyUpdated">
@@ -216,7 +260,7 @@
                   <span class="ch-item__dot" [style.background]="ch.color" aria-hidden="true"></span>
                   <div class="ch-item__body">
                     <span class="ch-item__title">{{ ch.title }}</span>
-                    <span class="ch-item__meta">{{ ch.paper_name }} · {{ timeAgo(ch.last_update) }}</span>
+                    <span class="ch-item__meta">{{ ch.paper_name }} · {{ ch.last_update | timeAgo }}</span>
                   </div>
                   <mat-icon class="ch-item__arrow" aria-hidden="true">chevron_right</mat-icon>
                 </a>
@@ -239,6 +283,7 @@
 
         <!-- Concluídos -->
         <app-panel-shell headerId="hdr-completed" title="Concluídos" icon="check_circle"
+                         [count]="ds.data.recently_completed.length"
                          [collapsed]="ds.isSectionCollapsed('completed')"
                          (toggle)="ds.toggleSection('completed')">
           <ng-container *ngIf="ds.data.recently_completed.length; else emptyCompleted">
@@ -251,7 +296,7 @@
                   </div>
                   <div class="ch-item__body">
                     <span class="ch-item__title">{{ p.name }}</span>
-                    <span class="ch-item__meta">{{ p.author_name }} · {{ timeAgo(p.completed_at) }}</span>
+                    <span class="ch-item__meta">{{ p.author_name }} · {{ p.completed_at | timeAgo }}</span>
                   </div>
                   <mat-icon class="icon-green ch-item__arrow" aria-hidden="true">check</mat-icon>
                 </a>
@@ -407,11 +452,11 @@
           </div>
           <div class="mini-track mt4"
                role="progressbar"
-               [attr.aria-valuenow]="progress(ds.data.stats.pages_read, ds.data.stats.total_pages)"
+               [attr.aria-valuenow]="ds.data.stats.pages_read | progress:ds.data.stats.total_pages"
                aria-valuemin="0" aria-valuemax="100"
                aria-label="Total de páginas lidas no conjunto da biblioteca">
             <div class="mini-track__fill"
-                 [style.width.%]="progress(ds.data.stats.pages_read, ds.data.stats.total_pages)"></div>
+                 [style.width.%]="ds.data.stats.pages_read | progress:ds.data.stats.total_pages"></div>
           </div>
           <p class="activity-panel__total">
             {{ ds.data.stats.pages_read | number }} / {{ ds.data.stats.total_pages | number }} páginas lidas no total
@@ -420,6 +465,7 @@
 
         <!-- Lidos recentemente -->
         <app-panel-shell headerId="hdr-recently-read" title="Lidos recentemente" icon="schedule"
+                         [count]="ds.data.recently_read.length"
                          [collapsed]="ds.isSectionCollapsed('recently-read')"
                          (toggle)="ds.toggleSection('recently-read')">
           <ng-container *ngIf="ds.data.recently_read.length; else emptyRecentlyRead">
@@ -432,7 +478,8 @@
                   </div>
                   <div class="ch-item__body">
                     <span class="ch-item__title">{{ ch.title }}</span>
-                    <span class="ch-item__meta">{{ ch.paper_name }} · {{ timeAgo(ch.last_read_at) }}</span>
+                    <span class="ch-item__meta">{{ ch.paper_name }} · {{ ch.last_read_at | timeAgo }}</span>
+                    <p class="ch-item__snippet" *ngIf="ch.description">{{ ch.description }}</p>
                     <div class="ch-item__badges">
                       <span class="ch-badge ch-badge--fav" role="img" aria-label="Capítulo favorito"
                             *ngIf="ds.isChapterFavorite(ch.chapter_id)">
@@ -466,6 +513,7 @@
         <!-- Capítulos favoritos -->
         <app-panel-shell headerId="hdr-fav-chapters" title="Capítulos favoritos" icon="favorite"
                          iconClass="icon-red"
+                         [count]="ds.data.favorite_chapters.length"
                          [collapsed]="ds.isSectionCollapsed('fav-chapters')"
                          (toggle)="ds.toggleSection('fav-chapters')">
           <ng-container *ngIf="ds.data.favorite_chapters.length; else emptyFavChapters">
@@ -500,6 +548,7 @@
         <!-- Destaques favoritos -->
         <app-panel-shell headerId="hdr-fav-annotations" title="Destaques favoritos" icon="star"
                          iconClass="icon-yellow"
+                         [count]="ds.data.favorite_annotations.length"
                          [collapsed]="ds.isSectionCollapsed('fav-annotations')"
                          (toggle)="ds.toggleSection('fav-annotations')">
           <ng-container *ngIf="ds.data.favorite_annotations.length; else emptyAnnotations">
@@ -569,6 +618,7 @@
 
         <!-- Gêneros -->
         <app-panel-shell headerId="hdr-genres" title="Gêneros" icon="category"
+                         [count]="ds.data.genre_breakdown.length"
                          [collapsed]="ds.isSectionCollapsed('genres')"
                          (toggle)="ds.toggleSection('genres')">
           <ng-container *ngIf="ds.data.genre_breakdown.length; else emptyGenres">
@@ -580,7 +630,7 @@
                 </div>
                 <div class="mini-track mt4" aria-hidden="true">
                   <div class="mini-track__fill"
-                       [style.width.%]="progress(g.book_count, ds.data.genre_breakdown[0].book_count)"></div>
+                       [style.width.%]="g.book_count | progress:ds.data.genre_breakdown[0].book_count"></div>
                 </div>
               </div>
             </div>
@@ -595,6 +645,7 @@
 
         <!-- Lista de desejos -->
         <app-panel-shell headerId="hdr-wishlist" title="Lista de desejos" icon="bookmark"
+                         [count]="ds.data.wishlist_available.length"
                          [collapsed]="ds.isSectionCollapsed('wishlist')"
                          (toggle)="ds.toggleSection('wishlist')">
           <ng-container *ngIf="ds.data.wishlist_available.length; else emptyWishlist">
@@ -628,4 +679,11 @@
     </div>
 
   </div>
+
+  <!-- Back to top -->
+  <button class="back-to-top" *ngIf="showBackToTop"
+          (click)="scrollToTop()"
+          aria-label="Voltar ao topo">
+    <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+  </button>
 </div>
