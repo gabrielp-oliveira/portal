@@ -1,0 +1,21 @@
+<div class="toast-stack" aria-live="assertive" aria-atomic="false">
+  <div
+    class="toast toast--{{ t.type }}"
+    role="alert"
+    *ngFor="let t of toast.toasts$ | async; trackBy: trackById">
+
+    <mat-icon class="toast__icon" aria-hidden="true">{{ icon(t.type) }}</mat-icon>
+
+    <p class="toast__msg">{{ t.message }}</p>
+
+    <button class="toast__close" type="button"
+            (click)="toast.dismiss(t.id)"
+            aria-label="Fechar notificação">
+      <mat-icon aria-hidden="true">close</mat-icon>
+    </button>
+
+    <div class="toast__bar"
+         [style.animation-duration.ms]="t.duration"
+         aria-hidden="true"></div>
+  </div>
+</div>

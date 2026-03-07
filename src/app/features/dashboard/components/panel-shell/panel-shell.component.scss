@@ -1,0 +1,93 @@
+// CSS variables cascade from .db ancestor — no need to redefine here
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s;
+
+  &__title {
+    margin: 0 0 12px;
+    padding: 0;
+  }
+}
+
+.panel__title--toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--teal);
+  }
+
+  .icon-red    { color: #E76F51; }
+  .icon-yellow { color: #E9C46A; }
+  .icon-green  { color: #2A9D8F; }
+
+  &:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  &:hover .panel__collapse-chevron { color: var(--teal); }
+}
+
+.panel__title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel__collapse-chevron {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color .15s;
+}
+
+// ── Smooth collapse via CSS grid rows ────────────────────────────────────────
+// grid-template-rows: 0fr → 1fr smoothly animates height without clipping
+.panel__content {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows .28s cubic-bezier(.4, 0, .2, 1),
+              opacity .22s ease;
+  opacity: 1;
+}
+
+.panel__content-inner {
+  overflow: hidden; // needed for 0fr to fully collapse
+  padding-top: 2px;
+}
+
+.panel--collapsed {
+  .panel__content {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  .panel__title { margin-bottom: 0; }
+}

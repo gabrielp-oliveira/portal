@@ -1,0 +1,174 @@
+import { Injectable, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../core/api.service';
+import { ErrorService } from '../../core/error.service';
+import { DashboardResponse } from '../../models/paperTrailTypes';
+
+export interface StatCard {
+  icon: string;
+  value: number | string;
+  label: string;
+  accent: string;
+}
+
+@Injectable()
+export class DashboardDataService {
+  private static readonly LS_ANN      = 'db-expanded-annotations';
+  private static readonly LS_SECTIONS = 'db-collapsed-sections';
+
+  // ── Data state ───────────────────────────────────────────────────────────
+  loading = true;
+  data: DashboardResponse | null = null;
+  statCards: StatCard[] = [];
+
+  // world_id → world_name lookup built from worlds_summary
+  private worldNameMap = new Map<string, string>();
+  // paper_id → world_name lookup built from recently_read (has inline world data)
+  private paperWorldMap = new Map<string, string>();
+
+  // ── UI state (persisted) ─────────────────────────────────────────────────
+  expandedAnnotations = new Set<string>(
+    JSON.parse(localStorage.getItem(DashboardDataService.LS_ANN) ?? '[]')
+  );
+  collapsedSections = new Set<string>(
+    JSON.parse(localStorage.getItem(DashboardDataService.LS_SECTIONS) ?? '[]')
+  );
+
+  // ── Search state ─────────────────────────────────────────────────────────
+  searchQuery = '';
+
+  constructor(private api: ApiService, private err: ErrorService) {}
+
+  // ── Data loading ──────────────────────────────────────────────────────────
+  load(destroyRef: DestroyRef): void {
+    this.api.getDashboard()
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.data = {
+            ...res,
+            recently_read:        res.recently_read        ?? [],
+            papers_in_progress:   res.papers_in_progress   ?? [],
+            recently_completed:   res.recently_completed   ?? [],
+            not_started:          res.not_started          ?? [],
+            recently_updated:     res.recently_updated     ?? [],
+            favorite_chapters:    res.favorite_chapters    ?? [],
+            favorite_annotations: res.favorite_annotations ?? [],
+            worlds_summary:       res.worlds_summary       ?? [],
+            wishlist_available:   res.wishlist_available   ?? [],
+            recommended:          res.recommended          ?? [],
+            genre_breakdown:      res.genre_breakdown      ?? [],
+          };
+          this.worldNameMap = new Map(
+            (res.worlds_summary ?? []).map(w => [w.world_id, w.name])
+          );
+          this.paperWorldMap = new Map(
+            (res.recently_read ?? [])
+              .filter(r => r.world_name)
+              .map(r => [r.paper_id, r.world_name!])
+          );
+          this.statCards = this.buildStatCards(res);
+          this.loading = false;
+        },
+        error: (e) => {
+          this.err.errHandler(e);
+          this.loading = false;
+        }
+      });
+  }
+
+  private buildStatCards(res: DashboardResponse): StatCard[] {
+    const s = res.stats;
+    return [
+      { icon: 'public',        value: s.total_worlds,       label: 'Mundos',           accent: '#264653' },
+      { icon: 'menu_book',     value: s.total_papers,       label: 'Livros',           accent: '#2A9D8F' },
+      { icon: 'article',       value: s.total_chapters,     label: 'Capítulos',        accent: '#264653' },
+      { icon: 'check_circle',  value: s.completed_chapters, label: 'Concluídos',       accent: '#2A9D8F' },
+      { icon: 'favorite',      value: s.favorite_chapters,  label: 'Favoritos',        accent: '#E76F51' },
+      { icon: 'sticky_note_2', value: s.total_annotations,  label: 'Anotações',        accent: '#E9C46A' },
+      { icon: 'auto_stories',  value: s.pages_read,         label: 'Páginas lidas',    accent: '#F4A261' },
+      { icon: 'description',   value: s.total_pages,        label: 'Total de páginas', accent: '#264653' },
+    ];
+  }
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  get isSearching(): boolean {
+    return this.searchQuery.trim().length > 0;
+  }
+
+  get searchAnnotations() {
+    if (!this.data || !this.isSearching) return [];
+    const q = this.searchQuery.toLowerCase();
+    return this.data.favorite_annotations.filter(a =>
+      a.span_text.toLowerCase().includes(q) ||
+      (a.note?.toLowerCase().includes(q) ?? false) ||
+      a.chapter_title.toLowerCase().includes(q) ||
+      a.paper_name.toLowerCase().includes(q)
+    );
+  }
+
+  get searchChapters() {
+    if (!this.data || !this.isSearching) return [];
+    const q = this.searchQuery.toLowerCase();
+    return this.data.favorite_chapters.filter(c =>
+      c.title.toLowerCase().includes(q) ||
+      c.paper_name.toLowerCase().includes(q) ||
+      (c.description?.toLowerCase().includes(q) ?? false)
+    );
+  }
+
+  get searchHasResults(): boolean {
+    return this.searchAnnotations.length > 0 || this.searchChapters.length > 0;
+  }
+
+  // ── Annotation expand state ───────────────────────────────────────────────
+  isAnnotationOpen(id: string): boolean {
+    return this.expandedAnnotations.has(id);
+  }
+
+  toggleAnnotation(id: string): void {
+    this.expandedAnnotations.has(id)
+      ? this.expandedAnnotations.delete(id)
+      : this.expandedAnnotations.add(id);
+    localStorage.setItem(
+      DashboardDataService.LS_ANN,
+      JSON.stringify([...this.expandedAnnotations])
+    );
+  }
+
+  // ── Section collapse state ────────────────────────────────────────────────
+  isSectionCollapsed(id: string): boolean {
+    return this.collapsedSections.has(id);
+  }
+
+  toggleSection(id: string): void {
+    this.collapsedSections.has(id)
+      ? this.collapsedSections.delete(id)
+      : this.collapsedSections.add(id);
+    localStorage.setItem(
+      DashboardDataService.LS_SECTIONS,
+      JSON.stringify([...this.collapsedSections])
+    );
+  }
+
+  // ── World navigation ──────────────────────────────────────────────────────
+  /**
+   * Returns the Angular routerLink segments for a world page.
+   * Prefers the item's own world_name; falls back to worlds_summary lookup.
+   */
+  worldRoute(worldId?: string, worldName?: string, paperId?: string): string[] | null {
+    const name = worldName
+      ?? (worldId  ? this.worldNameMap.get(worldId)  : undefined)
+      ?? (paperId  ? this.paperWorldMap.get(paperId)  : undefined);
+    return name ? ['/read', name] : null;
+  }
+
+  // ── Cross-section helpers ─────────────────────────────────────────────────
+  isChapterFavorite(chapterId: string): boolean {
+    return this.data?.favorite_chapters.some(c => c.chapter_id === chapterId) ?? false;
+  }
+
+  hasChapterAnnotation(chapterId: string): boolean {
+    return this.data?.favorite_annotations.some(a => a.chapter_id === chapterId) ?? false;
+  }
+}

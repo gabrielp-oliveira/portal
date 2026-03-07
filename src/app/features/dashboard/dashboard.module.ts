@@ -1,40 +1,43 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { ApiService } from '../../core/api.service';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { ReactiveFormsModule } from '@angular/forms';
+
+import { ApiService } from '../../core/api.service';
 import { ErrorService } from '../../core/error.service';
-import { WorldDataService } from './world-data.service';
 import { LoadingComponent } from '../../shared/loading/loading.component';
 
-const routes: Routes = [
-  {
-    path: '',
-    component: DashboardComponent
-  }
-];
+import { DashboardDataService } from './dashboard.data.service';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { HighlightPipe } from './highlight.pipe';
+import { StatsStripComponent } from './components/stats-strip/stats-strip.component';
+import { PanelShellComponent } from './components/panel-shell/panel-shell.component';
+
+const routes: Routes = [{ path: '', component: DashboardComponent }];
 
 @NgModule({
-  declarations: [DashboardComponent],
-  providers: [ApiService, ErrorService, WorldDataService],
+  declarations: [
+    DashboardComponent,
+    HighlightPipe,
+    StatsStripComponent,
+    PanelShellComponent,
+  ],
+  providers: [
+    ApiService,
+    ErrorService,
+    DashboardDataService,
+    Title,
+  ],
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatCardModule,
-    MatProgressBarModule,
+    FormsModule,
     MatIconModule,
     MatButtonModule,
-    MatTooltipModule,
     LoadingComponent,
-    ReactiveFormsModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
   ]
 })
-export class DashboardModule { }
+export class DashboardModule {}

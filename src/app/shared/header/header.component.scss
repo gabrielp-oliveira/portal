@@ -1,175 +1,229 @@
-// ── Tokens ────────────────────────────────────────────────────────────────────
+// ── Tokens ─────────────────────────────────────────────────────────────────────
 .hdr {
-  --hdr-bg:        #fefefe;
-  --hdr-border:    #e5e5e5;
-  --hdr-text:      #333;
-  --hdr-muted:     #666;
-  --hdr-hover-bg:  rgba(0, 0, 0, 0.05);
-  --hdr-accent:    #2A9D8F;
-  --hdr-divider:   linear-gradient(90deg, #ff7e3f, #ffb347);
-  --hdr-shadow:    0 1px 4px rgba(0, 0, 0, 0.08);
+  --hdr-bg:      #fefefe;
+  --hdr-border:  #e8e6e3;
+  --hdr-text:    #1C1917;
+  --hdr-muted:   #78716C;
+  --hdr-hover:   rgba(0, 0, 0, .055);
+  --hdr-accent:  #2A9D8F;
+  --hdr-shadow:  0 1px 0 rgba(0, 0, 0, .06), 0 2px 8px rgba(0, 0, 0, .04);
 
   &.dark {
-    --hdr-bg:       #161514;
-    --hdr-border:   #2E2C2A;
-    --hdr-text:     #D6D3CE;
-    --hdr-muted:    #78716C;
-    --hdr-hover-bg: rgba(255, 255, 255, 0.06);
-    --hdr-shadow:   0 1px 4px rgba(0, 0, 0, 0.4);
+    --hdr-bg:     #161514;
+    --hdr-border: #2E2C2A;
+    --hdr-text:   #D6D3CE;
+    --hdr-muted:  #78716C;
+    --hdr-hover:  rgba(255, 255, 255, .06);
+    --hdr-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 8px rgba(0, 0, 0, .2);
   }
 }
 
-// ── Base ──────────────────────────────────────────────────────────────────────
+// ── Base ───────────────────────────────────────────────────────────────────────
 .hdr {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--hdr-bg);
-  color: var(--hdr-text);
+  background: var(--hdr-bg);
   border-bottom: 1px solid var(--hdr-border);
   box-shadow: var(--hdr-shadow);
-  transition: background-color .25s, color .25s, border-color .25s;
+  transition: background .25s, border-color .25s, box-shadow .25s;
 
-  // topo colorido
+  // Topo colorido — gradiente teal → dourado
   &::before {
     content: '';
     display: block;
     height: 3px;
-    background: var(--hdr-divider);
+    background: linear-gradient(90deg, #2A9D8F 0%, #52c7b8 60%, #E9C46A 100%);
   }
 }
 
-// ── Bar (linha principal) ──────────────────────────────────────────────────────
+// ── Bar ────────────────────────────────────────────────────────────────────────
 .hdr__bar {
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  height: 60px;
   gap: 8px;
+  height: 58px;
+  padding: 0 24px;
 }
 
-// ── Logo ──────────────────────────────────────────────────────────────────────
-.hdr__logo {
+// ── Brand (logo + nome) ────────────────────────────────────────────────────────
+.hdr__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background .15s;
   flex-shrink: 0;
-  margin-right: 8px;
+  text-decoration: none;
+
+  &:hover { background: var(--hdr-hover); }
+  &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: 2px; }
 }
 
-.home-icon {
-  width: 44px;
-  height: 44px;
+.hdr__logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
   object-fit: contain;
-  border-radius: 50%;
-  transition: transform .2s, box-shadow .2s;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active { transform: scale(0.95); }
+  flex-shrink: 0;
 }
 
-.hdr.dark .home-icon:hover {
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+.hdr__brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--hdr-text);
+  transition: color .25s;
 }
 
-// ── Nav (desktop) ────────────────────────────────────────────────────────────
+// ── Desktop nav ────────────────────────────────────────────────────────────────
 .hdr__nav {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
 }
 
-// ── Actions (direita) ────────────────────────────────────────────────────────
-.hdr__actions {
+.hdr__nav-link {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-
-// ── Hamburger — oculto no desktop ─────────────────────────────────────────────
-.hdr__burger {
-  display: none;
-}
-
-// ── Drawer mobile ────────────────────────────────────────────────────────────
-.hdr__drawer {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height .28s ease, border-color .25s;
-  border-top: 0px solid var(--hdr-border);
-
-  &.open {
-    max-height: 300px;
-    border-top-width: 1px;
-  }
-}
-
-.drawer-item {
-  width: 100%;
-  padding: 14px 24px;
-  justify-content: flex-start;
-  font-size: 15px;
-  border-bottom: 1px solid var(--hdr-border);
-
-  &:last-child { border-bottom: none; }
-
-  mat-icon { margin-right: 10px; }
-}
-
-// ── Btn base ─────────────────────────────────────────────────────────────────
-.btn-flat {
+  gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--hdr-text);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
+  padding: 7px 12px;
   border-radius: 8px;
-  transition: background-color .15s, color .15s;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hdr-muted);
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+  font-family: inherit;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
 
   &:hover {
-    background-color: var(--hdr-hover-bg);
-    color: var(--hdr-accent);
+    background: var(--hdr-hover);
+    color: var(--hdr-text);
   }
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: 2px; }
 }
 
-// ── Responsive ───────────────────────────────────────────────────────────────
+// ── Actions ────────────────────────────────────────────────────────────────────
+.hdr__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.hdr__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hdr-muted);
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+  &:hover {
+    background: var(--hdr-hover);
+    color: var(--hdr-text);
+  }
+
+  &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: 2px; }
+}
+
+// Hamburger — oculto no desktop
+.hdr__burger { display: none; }
+
+// ── Mobile drawer ──────────────────────────────────────────────────────────────
+.hdr__drawer {
+  overflow: hidden;
+  max-height: 0;
+  border-top: 1px solid transparent;
+  transition:
+    max-height .3s cubic-bezier(.4, 0, .2, 1),
+    border-top-color .25s;
+
+  &.open {
+    max-height: 480px;
+    border-top-color: var(--hdr-border);
+  }
+}
+
+.hdr__drawer-nav {
+  padding: 8px 0 0;
+}
+
+.hdr__drawer-footer {
+  padding: 4px 0 8px;
+  border-top: 1px solid var(--hdr-border);
+  margin-top: 4px;
+}
+
+.hdr__drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--hdr-text);
+  text-align: left;
+  transition: background .12s;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--hdr-muted);
+    flex-shrink: 0;
+  }
+
+  &:hover { background: var(--hdr-hover); }
+
+  &--muted {
+    color: var(--hdr-muted);
+    font-size: 13px;
+  }
+
+  &--danger {
+    color: #E76F51;
+    mat-icon { color: #E76F51; }
+  }
+
+  &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: -2px; }
+}
+
+// ── Responsive ─────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .hdr__nav {
-    display: none; // nav vira drawer
-  }
-
-  .hdr__burger {
-    display: flex;
-  }
-
-  .hdr__bar {
-    padding: 0 16px;
-  }
+  .hdr__nav       { display: none; }
+  .hdr__theme-btn { display: none; }
+  .hdr__burger    { display: flex; }
+  .hdr__bar       { padding: 0 16px; }
 }
 
 @media (max-width: 480px) {
-  .home-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .hdr__bar {
-    height: 54px;
-    padding: 0 12px;
-  }
-
-  // Esconde label dos botões de action no mobile pequeno
-  .hdr__actions .btn-flat span {
-    display: none;
-  }
+  .hdr__bar        { height: 52px; padding: 0 12px; }
+  .hdr__logo       { width: 28px; height: 28px; }
+  .hdr__brand-name { font-size: 13px; }
 }

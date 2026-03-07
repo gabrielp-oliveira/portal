@@ -12,8 +12,18 @@
   <script src="https://apis.google.com/js/api.js"></script>
   <script src="https://apis.google.com/js/picker.js"></script>
 
+  <!-- Tema aplicado antes do Angular carregar — evita flash de fundo -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('portal-color-scheme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefersDark)) {
+        document.documentElement.classList.add('dark-theme');
+      }
+    })();
+  </script>
 </head>
-<body >
+<body>
   <app-root></app-root>
 </body>
 </html>

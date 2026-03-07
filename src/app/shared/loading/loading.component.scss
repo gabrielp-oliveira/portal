@@ -1,29 +1,88 @@
-.loadingContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    background-color:
-        rgb(0, 0, 0, 0.5);
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    svg {
-        height: 100px;
-        position: relative;
-        z-index: 10000;
-        // top: calc(50% - 50px);
-        // left: calc(50% - 50px)
-    }
-    span {
-        color: white;
-        font-weight: 700;
-        font-size: 20px;
-        letter-spacing: 4px;
-        padding-bottom: 5px;
-        border-bottom: 5px solid #FF156D;
-    }
+// ── Overlay ────────────────────────────────────────────────────────────────────
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 9998;
+  display: grid;
+  place-items: center;
+  animation: overlay-in .2s ease;
+}
+
+// ── Card ───────────────────────────────────────────────────────────────────────
+.loader-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 32px 44px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, .18),
+    0 4px 12px rgba(0, 0, 0, .1),
+    0 0 0 1px rgba(0, 0, 0, .04);
+  animation: card-in .25s cubic-bezier(.2, 0, .1, 1);
+
+  :host-context(.dark-theme) & {
+    background: #1C1B1A;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, .55),
+      0 4px 12px rgba(0, 0, 0, .4),
+      0 0 0 1px rgba(255, 255, 255, .06);
+  }
+}
+
+// ── Spinner ────────────────────────────────────────────────────────────────────
+.loader-spinner {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+.loader-ring {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3.5px solid transparent;
+  border-top-color: #2A9D8F;
+  animation: spin .75s linear infinite;
+
+  &--inner {
+    inset: 9px;
+    border-top-color: rgba(42, 157, 143, .35);
+    border-right-color: rgba(42, 157, 143, .2);
+    animation-duration: 1.1s;
+    animation-direction: reverse;
+  }
+}
+
+// ── Label ──────────────────────────────────────────────────────────────────────
+.loader-text {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #78716C;
+
+  :host-context(.dark-theme) & { color: #A8A29E; }
+}
+
+// ── Keyframes ──────────────────────────────────────────────────────────────────
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: scale(.92) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }

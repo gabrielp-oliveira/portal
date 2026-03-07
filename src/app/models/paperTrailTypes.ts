@@ -315,6 +315,8 @@ export interface DashboardContinueReading {
   cover_url: string;
   color: string;
   last_read_at: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardGenreBreakdown {
@@ -332,6 +334,9 @@ export interface DashboardRecentlyRead {
   cover_url: string;
   color: string;
   last_read_at: string;
+  world_id?: string;
+  world_name?: string;
+  world_summary?: string;
 }
 
 export interface DashboardPaperInProgress {
@@ -342,6 +347,8 @@ export interface DashboardPaperInProgress {
   author_name: string;
   total_chapters: number;
   completed_chapters: number;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardRecentlyCompleted {
@@ -351,6 +358,8 @@ export interface DashboardRecentlyCompleted {
   color: string;
   author_name: string;
   completed_at: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardNotStarted {
@@ -361,6 +370,8 @@ export interface DashboardNotStarted {
   author_name: string;
   total_chapters: number;
   added_at: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardRecentChapter {
@@ -370,15 +381,20 @@ export interface DashboardRecentChapter {
   paper_id: string;
   paper_name: string;
   color: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardFavoriteChapter {
   chapter_id: string;
   title: string;
+  description?: string;
   order: number;
   paper_id: string;
   paper_name: string;
   color: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardFavoriteAnnotation {
@@ -391,6 +407,8 @@ export interface DashboardFavoriteAnnotation {
   paper_id: string;
   paper_name: string;
   created_at: string;
+  world_id?: string;
+  world_name?: string;
 }
 
 export interface DashboardWorldSummary {
@@ -406,6 +424,7 @@ export interface DashboardWishlistItem {
   name: string;
   cover_url: string;
   author_name: string;
+  world_name?: string;
   wishlisted_at: string;
 }
 

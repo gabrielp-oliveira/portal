@@ -3,13 +3,14 @@ import { Router, NavigationEnd } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from './features/read-world/footer/footer.component';
-import { CommonModule } from '@angular/common'; // ✅ AQUI
+import { ToastComponent } from './shared/toast/toast.component';
+import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent], // ✅ AQUI
+  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent, ToastComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

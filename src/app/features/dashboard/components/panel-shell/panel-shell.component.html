@@ -1,0 +1,21 @@
+<section class="panel" [class.panel--collapsed]="collapsed"
+         [attr.aria-labelledby]="headerId">
+  <h2 class="panel__title" [id]="headerId">
+    <button class="panel__title--toggle"
+            (click)="toggle.emit()"
+            [attr.aria-expanded]="!collapsed">
+      <span class="panel__title-left">
+        <mat-icon [class]="iconClass" aria-hidden="true">{{ icon }}</mat-icon>
+        {{ title }}
+      </span>
+      <mat-icon class="panel__collapse-chevron" aria-hidden="true">
+        {{ collapsed ? 'expand_more' : 'expand_less' }}
+      </mat-icon>
+    </button>
+  </h2>
+  <div class="panel__content">
+    <div class="panel__content-inner">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</section>
