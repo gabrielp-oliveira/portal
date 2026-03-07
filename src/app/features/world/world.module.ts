@@ -25,7 +25,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { GroupConnectionComponent } from './tables/group-connection/group-connection.component';
 import { SidenavComponent } from './sidenav/sidenav.component';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { SettingsDialogComponent } from '../../dialog/components/dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConnectionGroupInfoComponent } from "../../shared/info/connectionGroup-info/connectionGroup-info.component";
 import { ChapterInfoComponent } from "../../shared/info/chapter-info/chapter-info.component";
@@ -34,7 +33,6 @@ import { EventInfoComponent } from '../../shared/info/event-info/event-info.comp
 import { PaperInfoComponent } from '../../shared/info/paper-info/paper-info.component';
 import { TimelineInfoComponent } from '../../shared/info/timeline-info/timeline-info.component';
 import { LoadingComponent } from '../../shared/loading/loading.component';
-import { FooterComponent } from '../../shared/footer/footer.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 
@@ -49,7 +47,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [WorldComponent, SubwayComponent,
-     PaperTableComponent, ChapterComponent, GroupConnectionComponent, SettingsDialogComponent,
+     PaperTableComponent, ChapterComponent, GroupConnectionComponent,
      SidenavComponent],
   imports: [
     CommonModule,
@@ -61,7 +59,6 @@ const routes: Routes = [
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    FooterComponent,
     MatDatepickerModule,
     DragDropModule,
     MatTooltipModule,

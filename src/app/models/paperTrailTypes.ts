@@ -284,6 +284,157 @@ export interface ChapterConfiguration {
 }
 
 
+export interface DashboardStats {
+  total_worlds: number;
+  total_papers: number;
+  total_chapters: number;
+  completed_chapters: number;
+  favorite_chapters: number;
+  total_annotations: number;
+  total_pages: number;
+  pages_read: number;
+}
+
+export interface DashboardWeeklyActivity {
+  chapters_completed: number;
+  pages_read: number;
+  annotations: number;
+}
+
+export interface DashboardReadingStreak {
+  current_days: number;
+  best_days: number;
+}
+
+export interface DashboardContinueReading {
+  chapter_id: string;
+  title: string;
+  order: number;
+  paper_id: string;
+  paper_name: string;
+  cover_url: string;
+  color: string;
+  last_read_at: string;
+}
+
+export interface DashboardGenreBreakdown {
+  genre: string;
+  book_count: number;
+}
+
+export interface DashboardRecentlyRead {
+  chapter_id: string;
+  title: string;
+  description: string;
+  order: number;
+  paper_id: string;
+  paper_name: string;
+  cover_url: string;
+  color: string;
+  last_read_at: string;
+}
+
+export interface DashboardPaperInProgress {
+  id: string;
+  name: string;
+  cover_url: string;
+  color: string;
+  author_name: string;
+  total_chapters: number;
+  completed_chapters: number;
+}
+
+export interface DashboardRecentlyCompleted {
+  paper_id: string;
+  name: string;
+  cover_url: string;
+  color: string;
+  author_name: string;
+  completed_at: string;
+}
+
+export interface DashboardNotStarted {
+  paper_id: string;
+  name: string;
+  cover_url: string;
+  color: string;
+  author_name: string;
+  total_chapters: number;
+  added_at: string;
+}
+
+export interface DashboardRecentChapter {
+  chapter_id: string;
+  title: string;
+  last_update: string;
+  paper_id: string;
+  paper_name: string;
+  color: string;
+}
+
+export interface DashboardFavoriteChapter {
+  chapter_id: string;
+  title: string;
+  order: number;
+  paper_id: string;
+  paper_name: string;
+  color: string;
+}
+
+export interface DashboardFavoriteAnnotation {
+  id: string;
+  span_text: string;
+  note: string;
+  chapter_id: string;
+  chapter_title: string;
+  chapter_order?: number;
+  paper_id: string;
+  paper_name: string;
+  created_at: string;
+}
+
+export interface DashboardWorldSummary {
+  world_id: string;
+  name: string;
+  papers_count: number;
+  chapters_count: number;
+  completed_count: number;
+}
+
+export interface DashboardWishlistItem {
+  paper_id: string;
+  name: string;
+  cover_url: string;
+  author_name: string;
+  wishlisted_at: string;
+}
+
+export interface DashboardRecommended {
+  paper_id: string;
+  name: string;
+  cover_url: string;
+  color: string;
+  author_name: string;
+}
+
+export interface DashboardResponse {
+  stats: DashboardStats;
+  weekly_activity: DashboardWeeklyActivity;
+  reading_streak: DashboardReadingStreak;
+  continue_reading: DashboardContinueReading | null;
+  recently_read: DashboardRecentlyRead[];
+  papers_in_progress: DashboardPaperInProgress[];
+  recently_completed: DashboardRecentlyCompleted[];
+  not_started: DashboardNotStarted[];
+  recently_updated: DashboardRecentChapter[];
+  favorite_chapters: DashboardFavoriteChapter[];
+  favorite_annotations: DashboardFavoriteAnnotation[];
+  worlds_summary: DashboardWorldSummary[];
+  wishlist_available: DashboardWishlistItem[];
+  recommended: DashboardRecommended[];
+  genre_breakdown: DashboardGenreBreakdown[];
+}
+
 export interface paperCard {
     paper: paper,
     chapterList: Chapter[]

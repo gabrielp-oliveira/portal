@@ -1,11 +1,12 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../../core/auth/auth.service';
 import { DialogService } from '../../../dialog/dialog.service';
 import { ApiService } from '../../../core/api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../../core/error.service';
-import { Chapter, Subway_Settings, world } from '../../../models/paperTrailTypes';
+import { Chapter, Subway_Settings } from '../../../models/paperTrailTypes';
 
 @Component({
   standalone: false,
@@ -14,13 +15,14 @@ import { Chapter, Subway_Settings, world } from '../../../models/paperTrailTypes
   styleUrls: ['./readChapter.component.scss']
 })
 export class ReadChapterComponent implements OnInit {
+  readerUrl: SafeResourceUrl;
   private iframe!: HTMLIFrameElement;
   private currentTheme: boolean = true;
   private chapterOrder: string | null = null;
   private paperId: string | null = null;
-  private world!: world;
-  private chapters: Chapter[] = [];
-  private paperchapters: Chapter[] = [];
+  private worldName: string | undefined;
+  private hasNext: boolean = false;
+  private hasPrev: boolean = false;
   private chapter: Chapter
   private settings: Subway_Settings
   private preventEvent: boolean = false;
@@ -34,22 +36,19 @@ export class ReadChapterComponent implements OnInit {
     private dialog: DialogService,
     private wd: WorldDataService,
     private router: Router,
-  ) { }
+    private sanitizer: DomSanitizer,
+  ) {
+    this.readerUrl = this.sanitizer.bypassSecurityTrustResourceUrl('/assets/reader/index.html');
+  }
 
   ngOnInit() {
     const paperId = this.route.snapshot.paramMap.get('paperId');
     this.chapterOrder = this.route.snapshot.paramMap.get('chapterOrder');
-    this.paperId = paperId
-    this.iframe = document.getElementById("read-frame") as HTMLIFrameElement;
-
-    this.api.chaptersBook(paperId || "").subscribe((c) => {
-      this.paperchapters = c.chapters
-      this.world = c.world
-    })
-
+    this.paperId = paperId;
   }
 
-  onIframeLoad() {
+  onIframeLoad(event: Event) {
+    this.iframe = event.target as HTMLIFrameElement;
     if (!this.chapterOrder || !this.paperId || !this.iframe?.contentWindow) return;
 
     const jwt = localStorage.getItem('accessToken') || '';
@@ -64,7 +63,7 @@ export class ReadChapterComponent implements OnInit {
       }
     };
 
-    this.iframe.contentWindow.postMessage(payload, 'http://localhost:4200');
+    this.iframe.contentWindow.postMessage(payload, '*');
 
   }
 
@@ -85,8 +84,8 @@ export class ReadChapterComponent implements OnInit {
 
 
       case 'return-to-read-world':
-        if (this.world?.name) {
-          this.router.navigate(['/read', this.world.name]);
+        if (this.worldName) {
+          this.router.navigate(['/read', this.worldName]);
         } else {
           console.warn('🌐 Nome do mundo não encontrado');
         }
@@ -133,12 +132,14 @@ export class ReadChapterComponent implements OnInit {
           console.error('❌ Dados inválidos: paperId ou chapterOrder ausente');
           return;
         }
-        // this.api.fetchChapterByPaperAndTitle(this.chapterOrder, this.paperId).subscribe({
         this.api.getchaptersContent(this.chapterOrder, this.paperId).subscribe({
           next: (chapterData) => {
             console.log(chapterData)
             this.chapter = chapterData.chapter
             this.settings = chapterData.settings
+            this.hasNext = chapterData.hasNext
+            this.hasPrev = chapterData.hasPrev
+            this.worldName = chapterData.worldName
 
             this.iframe?.contentWindow?.postMessage({
               type: 'chapter-data-response',
@@ -246,36 +247,17 @@ export class ReadChapterComponent implements OnInit {
   }
 
   goToNextPaper() {
-    if (!this.paperId || !this.chapterOrder || !this.world?.name) {
-      console.log(this.paperId, this.chapterOrder, this.world?.name)
+    if (!this.paperId || !this.chapterOrder) {
       console.error("❗ Dados incompletos para navegação");
       return;
     }
 
-    const currentPaperId = this.paperId;
-    const currentOrder = Number(this.chapterOrder);
-
-    const sortedChapters = [...this.paperchapters].sort((a, b) => {
-      if (a.paper_id === b.paper_id) return a.order - b.order;
-      return a.paper_id.localeCompare(b.paper_id);
-    });
-
-    const currentIndex = sortedChapters.findIndex(
-      c => c.paper_id === currentPaperId && c.order === currentOrder
-    );
-
-    if (currentIndex === -1) {
-      console.error("❗ Capítulo atual não encontrado");
-      return;
-    }
-
-    const nextChapter = sortedChapters[currentIndex + 1];
-
-    if (nextChapter) {
-      window.location.href = `/read/book/${nextChapter.paper_id}/chapter/${nextChapter.order}`;
+    if (this.hasNext) {
+      const nextOrder = Number(this.chapterOrder) + 1;
+      window.location.href = `/read/book/${this.paperId}/chapter/${nextOrder}`;
     } else {
-      const worldName = this.world.name.split(" ").join("_");
-      window.location.href = `/read/${worldName}`;
+      const worldName = this.worldName?.split(" ").join("_");
+      window.location.href = worldName ? `/read/${worldName}` : `/dashboard`;
     }
   }
 
@@ -285,32 +267,10 @@ export class ReadChapterComponent implements OnInit {
       return;
     }
 
-    const currentPaperId = this.paperId;
-    const currentOrder = Number(this.chapterOrder);
-
-    const sortedChapters = [...this.paperchapters].sort((a, b) => {
-      if (a.paper_id === b.paper_id) return a.order - b.order;
-      return a.paper_id.localeCompare(b.paper_id);
-    });
-
-    const currentIndex = sortedChapters.findIndex(
-      c => c.paper_id === currentPaperId && c.order === currentOrder
-    );
-
-    console.log(currentPaperId)
-    console.log(sortedChapters)
-
-    if (currentIndex === -1) {
-      console.error("❗ Capítulo atual não encontrado");
-      return;
-    }
-
-    const prevChapter = sortedChapters[currentIndex - 1];
-
-    if (prevChapter) {
-      window.location.href = `/read/book/${prevChapter.paper_id}/chapter/${prevChapter.order}`;
+    if (this.hasPrev) {
+      const prevOrder = Number(this.chapterOrder) - 1;
+      window.location.href = `/read/book/${this.paperId}/chapter/${prevOrder}`;
     } else {
-      // const worldName = this.world.name.split(" ").join("_");
       window.location.href = `/dashboard`;
     }
   }

@@ -1,128 +1,118 @@
-<!-- Quando default = false → usa settings$ -->
+<!-- default = false → usa settings$ (rota world) -->
 <ng-container *ngIf="!default; else defaultHeader">
   <ng-container *ngIf="settings$ | async as settings">
-    <header class="header" [class.dark]="settings.theme">
-      <div class="header-group">
-        <button class="btn-flat" (click)="GoTo('/')">
-          <img [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'" alt="Home"
-            class="home-icon" />
-        </button>
-      </div>
+    <header class="hdr" [class.dark]="settings.theme">
+      <div class="hdr__bar">
 
-      <div class="header-group middle-group">
-        <button class="btn-flat" (click)="GoTo('/store')">
-          <mat-icon>shopping_cart</mat-icon>
-          <span>Store</span>
-        </button>
-        <button class="btn-flat" (click)="GoTo('/library')">
-          <mat-icon>library_books</mat-icon>
-          <span>Biblioteca</span>
-        </button>
-        <button class="btn-flat" (click)="shareStore()">
-          <mat-icon>share</mat-icon>
-          <span>Compartilhar</span>
-        </button>
-      </div>
-
-      <div class="header-group">
-        <button class="btn-flat" (click)="toggleTheme(settings)">
-          <mat-icon>
-            {{ settings.theme ? 'contrast' : 'brightness_6' }}
-          </mat-icon>
-          <span>Modo</span>
+        <button class="hdr__logo btn-flat" (click)="GoTo('/')">
+          <img [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'" alt="Home" class="home-icon" />
         </button>
 
-        <!-- Menu do usuário sempre visível -->
-        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="btn-flat">
-          <mat-icon>account_circle</mat-icon>
-        </button>
+        <nav class="hdr__nav">
+          <button class="btn-flat" (click)="GoTo('/store')">
+            <mat-icon>shopping_cart</mat-icon><span>Store</span>
+          </button>
+          <button class="btn-flat" (click)="GoTo('/library')">
+            <mat-icon>library_books</mat-icon><span>Biblioteca</span>
+          </button>
+          <button class="btn-flat" (click)="shareStore()">
+            <mat-icon>share</mat-icon><span>Compartilhar</span>
+          </button>
+        </nav>
+
+        <div class="hdr__actions">
+          <button class="btn-flat" (click)="toggleTheme(settings)">
+            <mat-icon>{{ settings.theme ? 'contrast' : 'brightness_6' }}</mat-icon>
+          </button>
+          <button mat-icon-button [matMenuTriggerFor]="userMenu" class="btn-flat">
+            <mat-icon>account_circle</mat-icon>
+          </button>
+          <button class="btn-flat hdr__burger" (click)="menuOpen = !menuOpen" aria-label="Menu">
+            <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+          </button>
+        </div>
 
         <mat-menu #userMenu="matMenu">
           <ng-container *ngIf="isLogged; else loginOption">
-            <button mat-menu-item (click)="GoTo('/profile')">
-              <mat-icon>person</mat-icon>
-              <span>Perfil</span>
-            </button>
-            <button mat-menu-item (click)="GoTo('/wishlist')">
-              <mat-icon>favorite</mat-icon>
-              <span>Wishlist</span>
-            </button>
-            <button mat-menu-item (click)="logout()">
-              <mat-icon>logout</mat-icon>
-              <span>Sair</span>
-            </button>
+            <button mat-menu-item (click)="GoTo('/profile')"><mat-icon>person</mat-icon><span>Perfil</span></button>
+            <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Sair</span></button>
           </ng-container>
-
           <ng-template #loginOption>
-            <button mat-menu-item (click)="GoTo('/login')">
-              <mat-icon>login</mat-icon>
-              <span>Entrar</span>
-            </button>
+            <button mat-menu-item (click)="GoTo('/login')"><mat-icon>login</mat-icon><span>Entrar</span></button>
           </ng-template>
         </mat-menu>
+      </div>
+
+      <div class="hdr__drawer" [class.open]="menuOpen">
+        <button class="btn-flat drawer-item" (click)="GoTo('/store'); menuOpen=false">
+          <mat-icon>shopping_cart</mat-icon><span>Store</span>
+        </button>
+        <button class="btn-flat drawer-item" (click)="GoTo('/library'); menuOpen=false">
+          <mat-icon>library_books</mat-icon><span>Biblioteca</span>
+        </button>
+        <button class="btn-flat drawer-item" (click)="shareStore(); menuOpen=false">
+          <mat-icon>share</mat-icon><span>Compartilhar</span>
+        </button>
       </div>
     </header>
   </ng-container>
 </ng-container>
 
-<!-- Quando default = true → tema claro fixo, sem settings nem toggle -->
+<!-- default = true → usa ThemeService (demais rotas) -->
 <ng-template #defaultHeader>
-  <header class="header">
-    <div class="header-group">
-      <button class="btn-flat" (click)="GoTo('/')">
-        <img src="assets/homeLightIcon.png" alt="Home" class="home-icon" />
-      </button>
-    </div>
+  <header class="hdr" [class.dark]="theme.isDark">
+    <div class="hdr__bar">
 
-    <div class="header-group middle-group">
-      <button class="btn-flat" (click)="GoTo('/store')">
-        <mat-icon>shopping_cart</mat-icon>
-        <span>Store</span>
-      </button>
-      <button class="btn-flat" (click)="GoTo('/library')">
-        <mat-icon>library_books</mat-icon>
-        <span>Biblioteca</span>
-      </button>
-      <button class="btn-flat" (click)="shareStore()">
-        <mat-icon>share</mat-icon>
-        <span>Compartilhar</span>
-      </button>
-    </div>
-
-    <div class="header-group">
-      <!-- ❌ Sem toggle de tema -->
-      <button mat-icon-button [matMenuTriggerFor]="userMenu" class="btn-flat">
-        <mat-icon>account_circle</mat-icon>
+      <button class="hdr__logo btn-flat" (click)="GoTo('/')">
+        <img [src]="theme.isDark ? 'assets/homeLightIcon.png' : 'assets/homeDarkIcon.png'" alt="Home" class="home-icon" />
       </button>
 
-      <mat-menu #userMenu="matMenu">
+      <nav class="hdr__nav">
+        <button class="btn-flat" (click)="GoTo('/store')">
+          <mat-icon>shopping_cart</mat-icon><span>Store</span>
+        </button>
+        <button class="btn-flat" (click)="GoTo('/library')">
+          <mat-icon>library_books</mat-icon><span>Biblioteca</span>
+        </button>
+        <button class="btn-flat" (click)="shareStore()">
+          <mat-icon>share</mat-icon><span>Compartilhar</span>
+        </button>
+      </nav>
+
+      <div class="hdr__actions">
+        <button class="btn-flat" (click)="theme.toggle()" [title]="theme.isDark ? 'Modo claro' : 'Modo escuro'">
+          <mat-icon>{{ theme.isDark ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="userMenuDefault" class="btn-flat">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <button class="btn-flat hdr__burger" (click)="menuOpen = !menuOpen" aria-label="Menu">
+          <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+        </button>
+      </div>
+
+      <mat-menu #userMenuDefault="matMenu">
         <ng-container *ngIf="isLogged; else loginOptionDefault">
-          <button mat-menu-item (click)="navigateIfLogged('/profile')">
-            <mat-icon>person</mat-icon>
-            <span>Perfil</span>
-          </button>
-          <button mat-menu-item (click)="navigateIfLogged('/wishlist')">
-            <mat-icon>favorite</mat-icon>
-            <span>Wishlist</span>
-          </button>
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>log out</mat-icon>
-            <span>log out</span>
-          </button>
+          <button mat-menu-item (click)="navigateIfLogged('/profile')"><mat-icon>person</mat-icon><span>Perfil</span></button>
+          <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Sair</span></button>
         </ng-container>
-
         <ng-template #loginOptionDefault>
-          <button mat-menu-item (click)="GoTo('/login')">
-            <mat-icon>login</mat-icon>
-            <span>sign in</span>
-          </button>
-          <button mat-menu-item (click)="GoTo('/signup')">
-            <mat-icon>signup</mat-icon>
-            <span>sign up</span>
-          </button>
+          <button mat-menu-item (click)="GoTo('/login')"><mat-icon>login</mat-icon><span>Entrar</span></button>
+          <button mat-menu-item (click)="GoTo('/signup')"><mat-icon>person_add</mat-icon><span>Criar conta</span></button>
         </ng-template>
       </mat-menu>
+    </div>
 
+    <div class="hdr__drawer" [class.open]="menuOpen">
+      <button class="btn-flat drawer-item" (click)="GoTo('/store'); menuOpen=false">
+        <mat-icon>shopping_cart</mat-icon><span>Store</span>
+      </button>
+      <button class="btn-flat drawer-item" (click)="GoTo('/library'); menuOpen=false">
+        <mat-icon>library_books</mat-icon><span>Biblioteca</span>
+      </button>
+      <button class="btn-flat drawer-item" (click)="shareStore(); menuOpen=false">
+        <mat-icon>share</mat-icon><span>Compartilhar</span>
+      </button>
     </div>
   </header>
 </ng-template>

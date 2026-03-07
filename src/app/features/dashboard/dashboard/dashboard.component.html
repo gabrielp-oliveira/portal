@@ -1,24 +1,429 @@
-<app-loading *ngIf="Showloading | async"></app-loading>
+<div class="db" [class.dark]="isDark">
 
-<a routerLink="/">home</a>
-<br>
-<button (click)="logOut()">Log out</button>
-<br>
-<br>
-<br>
-<br>
+  <!-- ── Skeleton ─────────────────────────────────────────────────── -->
+  <div class="db__inner" *ngIf="loading">
+    <div class="sk-stats">
+      <div class="sk-block" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+    </div>
+    <div class="sk-grid">
+      <div class="sk-col">
+        <div class="sk-block tall"></div>
+        <div class="sk-block"></div>
+        <div class="sk-block"></div>
+      </div>
+      <div class="sk-col">
+        <div class="sk-block activity"></div>
+        <div class="sk-block"></div>
+        <div class="sk-block"></div>
+      </div>
+    </div>
+  </div>
 
-<button mat-raised-button (click)="openDialog('150ms', '150ms')">Create new world</button>
-<br>
+  <!-- ── Content ──────────────────────────────────────────────────── -->
+  <div class="db__inner" *ngIf="!loading && data">
 
-<ul>
-    <li *ngFor="let w of worldList">
-        <a [routerLink]="['/world', w.id]">{{w.name}}</a>
-    </li>
-    <hr>
-    <hr>
-    <li *ngFor="let w of worldList">
-        <a [routerLink]="['/read',  setreadName(w.name)]">{{w.name}}</a>
-    </li>
-</ul>
+    <!-- Page title + action -->
+    <div class="db__head">
+      <div>
+        <h1 class="db__title">Painel de leitura</h1>
+        <p class="db__sub">{{ data.stats.total_papers }} livros &middot; {{ data.stats.total_chapters }} capítulos</p>
+      </div>
+      <button class="btn-create" (click)="openCreateWorldDialog()">
+        <mat-icon>add</mat-icon> Novo mundo
+      </button>
+    </div>
 
+    <!-- ── Stats strip ────────────────────────────────────────────── -->
+    <div class="stats-strip">
+      <div class="stat-item" *ngFor="let s of statCards" [style.--acc]="s.accent">
+        <mat-icon class="stat-item__icon">{{ s.icon }}</mat-icon>
+        <span class="stat-item__val">{{ s.value }}</span>
+        <span class="stat-item__lbl">{{ s.label }}</span>
+      </div>
+    </div>
+
+    <!-- ── Main grid ──────────────────────────────────────────────── -->
+    <div class="db__grid">
+
+      <!-- Left column -->
+      <div class="db__main">
+
+        <!-- Em andamento -->
+        <section class="panel" [class.panel--collapsed]="isSectionCollapsed('in-progress')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('in-progress', $event)">
+            <span class="panel__title-left"><mat-icon>local_library</mat-icon> Em andamento</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('in-progress') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="books-track" *ngIf="data.continue_reading || data.papers_in_progress.length">
+              <ng-container *ngIf="data.continue_reading as cr">
+                <a class="book-card book-card--featured"
+                   [routerLink]="['/read/book', cr.paper_id, 'chapter', cr.order]">
+                  <div class="book-card__cover" [style.background]="cr.color">
+                    <img *ngIf="cr.cover_url" [src]="cr.cover_url" [alt]="cr.paper_name" />
+                    <span *ngIf="!cr.cover_url" class="cover-initial">{{ cr.paper_name.charAt(0) }}</span>
+                    <div class="book-card__continue-badge">
+                      <mat-icon>play_circle</mat-icon> Continuar
+                    </div>
+                  </div>
+                  <div class="book-card__foot">
+                    <p class="book-card__chapter">{{ cr.title }}</p>
+                    <p class="book-card__name">{{ cr.paper_name }}</p>
+                    <p class="book-card__author">{{ timeAgo(cr.last_read_at) }}</p>
+                  </div>
+                </a>
+              </ng-container>
+              <ng-container *ngFor="let p of data.papers_in_progress">
+                <a class="book-card"
+                   *ngIf="!data.continue_reading || p.id !== data.continue_reading.paper_id"
+                   [routerLink]="['/read/book', p.id, 'chapter', '1']">
+                  <div class="book-card__cover" [style.background]="p.color">
+                    <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" />
+                    <span *ngIf="!p.cover_url" class="cover-initial">{{ p.name.charAt(0) }}</span>
+                    <div class="book-card__badge">{{ progress(p.completed_chapters, p.total_chapters) }}%</div>
+                  </div>
+                  <div class="book-card__foot">
+                    <p class="book-card__name">{{ p.name }}</p>
+                    <p class="book-card__author">{{ p.author_name }}</p>
+                    <div class="mini-track mt4">
+                      <div class="mini-track__fill"
+                        [style.width.%]="progress(p.completed_chapters, p.total_chapters)"
+                        [style.background]="p.color">
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </ng-container>
+            </div>
+            <div class="reading-empty" *ngIf="!data.continue_reading && !data.papers_in_progress.length">
+              <mat-icon class="empty-icon">auto_stories</mat-icon>
+              <p>Nenhuma leitura em andamento.</p>
+              <a [routerLink]="['/library']" class="link-teal">Ver biblioteca</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Não iniciados -->
+        <section class="panel" *ngIf="data.not_started.length"
+                 [class.panel--collapsed]="isSectionCollapsed('not-started')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('not-started', $event)">
+            <span class="panel__title-left"><mat-icon>bookmark_border</mat-icon> Não iniciados</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('not-started') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="books-track">
+              <a class="book-card" *ngFor="let p of data.not_started"
+                 [routerLink]="['/read/book', p.paper_id, 'chapter', '1']">
+                <div class="book-card__cover book-card__cover--dim" [style.background]="p.color">
+                  <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" />
+                  <span *ngIf="!p.cover_url" class="cover-initial">{{ p.name.charAt(0) }}</span>
+                  <mat-icon class="book-card__play">play_circle</mat-icon>
+                </div>
+                <div class="book-card__foot">
+                  <p class="book-card__name">{{ p.name }}</p>
+                  <p class="book-card__author">{{ p.author_name }}</p>
+                  <p class="book-card__meta">{{ p.total_chapters }} caps.</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recomendados -->
+        <section class="panel" *ngIf="data.recommended.length"
+                 [class.panel--collapsed]="isSectionCollapsed('recommended')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('recommended', $event)">
+            <span class="panel__title-left"><mat-icon>recommend</mat-icon> Recomendados para você</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('recommended') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="reco-list">
+              <a class="reco-item" *ngFor="let r of data.recommended" [routerLink]="['/store']">
+                <div class="reco-item__cover">
+                  <img *ngIf="r.cover_url" [src]="r.cover_url" [alt]="r.name" />
+                  <span *ngIf="!r.cover_url">{{ r.name.charAt(0) }}</span>
+                </div>
+                <div class="reco-item__body">
+                  <span class="reco-item__title">{{ r.name }}</span>
+                  <span class="reco-item__author">{{ r.author_name }}</span>
+                </div>
+                <mat-icon class="reco-item__arrow">chevron_right</mat-icon>
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right aside -->
+      <aside class="db__aside">
+
+        <!-- Streak de leitura -->
+        <div class="panel streak-panel">
+          <p class="panel__eyebrow">Sequência de leitura</p>
+          <div class="streak-row">
+            <div class="streak-main">
+              <mat-icon class="streak-icon">local_fire_department</mat-icon>
+              <span class="streak-val">{{ data.reading_streak.current_days }}</span>
+              <span class="streak-unit">dias</span>
+            </div>
+            <div class="streak-best">
+              <span class="streak-best__label">Recorde</span>
+              <span class="streak-best__val">{{ data.reading_streak.best_days }} dias</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Atividade semanal -->
+        <div class="panel">
+          <p class="panel__eyebrow">Esta semana</p>
+          <div class="weekly-grid">
+            <div class="weekly-item">
+              <mat-icon>menu_book</mat-icon>
+              <span class="weekly-item__val">{{ data.weekly_activity.chapters_completed }}</span>
+              <span class="weekly-item__lbl">caps. lidos</span>
+            </div>
+            <div class="weekly-item">
+              <mat-icon>description</mat-icon>
+              <span class="weekly-item__val">{{ data.weekly_activity.pages_read }}</span>
+              <span class="weekly-item__lbl">páginas</span>
+            </div>
+            <div class="weekly-item">
+              <mat-icon>edit_note</mat-icon>
+              <span class="weekly-item__val">{{ data.weekly_activity.annotations }}</span>
+              <span class="weekly-item__lbl">anotações</span>
+            </div>
+          </div>
+          <div class="mini-track mt4">
+            <div class="mini-track__fill"
+              [style.width.%]="progress(data.stats.pages_read, data.stats.total_pages)">
+            </div>
+          </div>
+          <p class="activity-panel__total">
+            {{ data.stats.pages_read | number }} / {{ data.stats.total_pages | number }} páginas lidas no total
+          </p>
+        </div>
+
+        <!-- Lidos recentemente -->
+        <section class="panel" *ngIf="data.recently_read.length"
+                 [class.panel--collapsed]="isSectionCollapsed('recently-read')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('recently-read', $event)">
+            <span class="panel__title-left"><mat-icon>schedule</mat-icon> Lidos recentemente</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('recently-read') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <ul class="ch-list">
+              <li class="ch-item" *ngFor="let ch of data.recently_read"
+                  [routerLink]="['/read/book', ch.paper_id, 'chapter', ch.order]">
+                <div class="mini-cover" [style.background]="ch.color">
+                  <img *ngIf="ch.cover_url" [src]="ch.cover_url" [alt]="ch.paper_name" />
+                  <span *ngIf="!ch.cover_url">{{ ch.paper_name.charAt(0) }}</span>
+                </div>
+                <div class="ch-item__body">
+                  <span class="ch-item__title">{{ ch.title }}</span>
+                  <span class="ch-item__meta">{{ ch.paper_name }} · {{ timeAgo(ch.last_read_at) }}</span>
+                  <div class="ch-item__badges">
+                    <span class="ch-badge ch-badge--fav" *ngIf="isChapterFavorite(ch.chapter_id)" title="Capítulo favorito">
+                      <mat-icon>favorite</mat-icon>
+                    </span>
+                    <span class="ch-badge ch-badge--note" *ngIf="hasChapterAnnotation(ch.chapter_id)" title="Tem anotação favorita">
+                      <mat-icon>sticky_note_2</mat-icon>
+                    </span>
+                  </div>
+                </div>
+                <mat-icon class="ch-item__arrow">chevron_right</mat-icon>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Capítulos favoritos -->
+        <section class="panel" *ngIf="data.favorite_chapters.length"
+                 [class.panel--collapsed]="isSectionCollapsed('fav-chapters')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('fav-chapters', $event)">
+            <span class="panel__title-left"><mat-icon class="icon-red">favorite</mat-icon> Capítulos favoritos</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('fav-chapters') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <ul class="ch-list">
+              <li class="ch-item" *ngFor="let ch of data.favorite_chapters"
+                  [routerLink]="['/read/book', ch.paper_id, 'chapter', ch.order]">
+                <span class="ch-item__dot" [style.background]="ch.color"></span>
+                <div class="ch-item__body">
+                  <span class="ch-item__title">{{ ch.title }}</span>
+                  <span class="ch-item__meta">{{ ch.paper_name }} · cap. {{ ch.order }}</span>
+                </div>
+                <mat-icon class="ch-item__arrow">chevron_right</mat-icon>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Anotações favoritas -->
+        <section class="panel" *ngIf="data.favorite_annotations.length"
+                 [class.panel--collapsed]="isSectionCollapsed('fav-annotations')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('fav-annotations', $event)">
+            <span class="panel__title-left"><mat-icon class="icon-yellow">star</mat-icon> Destaques favoritos</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('fav-annotations') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="ann-list">
+              <div class="ann-card" *ngFor="let a of data.favorite_annotations"
+                   [class.ann-card--open]="isAnnotationOpen(a.id)"
+                   (click)="toggleAnnotation(a.id)">
+                <div class="ann-card__row">
+                  <span class="ann-card__bar"></span>
+                  <div class="ann-card__body">
+                    <p class="ann-card__quote">{{ a.span_text }}</p>
+                    <span class="ann-card__meta">{{ a.paper_name }} · {{ a.chapter_title }}</span>
+                  </div>
+                  <mat-icon class="ann-card__chevron">
+                    {{ isAnnotationOpen(a.id) ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                </div>
+                <div class="ann-card__detail" *ngIf="isAnnotationOpen(a.id)"
+                     (click)="$event.stopPropagation()">
+                  <blockquote class="ann-card__blockquote">&ldquo;{{ a.span_text }}&rdquo;</blockquote>
+                  <div class="ann-card__note" *ngIf="a.note">
+                    <mat-icon>edit_note</mat-icon>
+                    <p>{{ a.note }}</p>
+                  </div>
+                  <div class="ann-card__footer">
+                    <span class="ann-card__date">{{ a.created_at | date:'dd/MM/yyyy' }}</span>
+                    <a class="btn-read"
+                       [routerLink]="['/read/book', a.paper_id, 'chapter', a.chapter_order ?? 1]"
+                       (click)="$event.stopPropagation()">
+                      <mat-icon>menu_book</mat-icon> Ler capítulo
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Capítulos recentes -->
+        <section class="panel" *ngIf="data.recently_updated.length"
+                 [class.panel--collapsed]="isSectionCollapsed('recently-updated')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('recently-updated', $event)">
+            <span class="panel__title-left"><mat-icon>history</mat-icon> Recentes</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('recently-updated') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <ul class="ch-list">
+              <li class="ch-item" *ngFor="let ch of data.recently_updated"
+                  [routerLink]="['/read/book', ch.paper_id, 'chapter', '1']">
+                <span class="ch-item__dot" [style.background]="ch.color"></span>
+                <div class="ch-item__body">
+                  <span class="ch-item__title">{{ ch.title }}</span>
+                  <span class="ch-item__meta">{{ ch.paper_name }} · {{ timeAgo(ch.last_update) }}</span>
+                </div>
+                <mat-icon class="ch-item__arrow">chevron_right</mat-icon>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Concluídos recentemente -->
+        <section class="panel" *ngIf="data.recently_completed.length"
+                 [class.panel--collapsed]="isSectionCollapsed('completed')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('completed', $event)">
+            <span class="panel__title-left"><mat-icon>check_circle</mat-icon> Concluídos</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('completed') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <ul class="ch-list">
+              <li class="ch-item" *ngFor="let p of data.recently_completed"
+                  [routerLink]="['/read/book', p.paper_id, 'chapter', '1']">
+                <div class="mini-cover" [style.background]="p.color">
+                  <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.name" />
+                  <span *ngIf="!p.cover_url">{{ p.name.charAt(0) }}</span>
+                </div>
+                <div class="ch-item__body">
+                  <span class="ch-item__title">{{ p.name }}</span>
+                  <span class="ch-item__meta">{{ p.author_name }} · {{ timeAgo(p.completed_at) }}</span>
+                </div>
+                <mat-icon class="icon-green ch-item__arrow">check</mat-icon>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Mundos -->
+        <section class="panel" *ngIf="data.worlds_summary.length"
+                 [class.panel--collapsed]="isSectionCollapsed('worlds')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('worlds', $event)">
+            <span class="panel__title-left"><mat-icon>public</mat-icon> Mundos</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('worlds') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <ul class="world-list">
+              <li class="world-item" *ngFor="let w of data.worlds_summary"
+                  [routerLink]="['/world', w.world_id]">
+                <div class="world-item__top">
+                  <span class="world-item__name">{{ w.name }}</span>
+                  <span class="world-item__pct">{{ progress(w.completed_count, w.chapters_count) }}%</span>
+                </div>
+                <span class="world-item__meta">{{ w.papers_count }} livros · {{ w.chapters_count }} caps.</span>
+                <div class="mini-track mt4">
+                  <div class="mini-track__fill"
+                       [style.width.%]="progress(w.completed_count, w.chapters_count)"></div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Gêneros -->
+        <section class="panel" *ngIf="data.genre_breakdown.length"
+                 [class.panel--collapsed]="isSectionCollapsed('genres')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('genres', $event)">
+            <span class="panel__title-left"><mat-icon>category</mat-icon> Gêneros</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('genres') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="genre-list">
+              <div class="genre-item" *ngFor="let g of data.genre_breakdown">
+                <div class="genre-item__top">
+                  <span class="genre-item__name">{{ g.genre }}</span>
+                  <span class="genre-item__count">{{ g.book_count }}</span>
+                </div>
+                <div class="mini-track mt4">
+                  <div class="mini-track__fill"
+                    [style.width.%]="progress(g.book_count, data.genre_breakdown[0].book_count)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Wishlist -->
+        <section class="panel" *ngIf="data.wishlist_available.length"
+                 [class.panel--collapsed]="isSectionCollapsed('wishlist')">
+          <h2 class="panel__title panel__title--toggle" (click)="toggleSection('wishlist', $event)">
+            <span class="panel__title-left"><mat-icon>bookmark</mat-icon> Lista de desejos</span>
+            <mat-icon class="panel__collapse-chevron">{{ isSectionCollapsed('wishlist') ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </h2>
+          <div class="panel__content">
+            <div class="reco-list">
+              <a class="reco-item" *ngFor="let w of data.wishlist_available" [routerLink]="['/store']">
+                <div class="reco-item__cover">
+                  <img *ngIf="w.cover_url" [src]="w.cover_url" [alt]="w.name" />
+                  <span *ngIf="!w.cover_url">{{ w.name.charAt(0) }}</span>
+                </div>
+                <div class="reco-item__body">
+                  <span class="reco-item__title">{{ w.name }}</span>
+                  <span class="reco-item__author">{{ w.author_name }}</span>
+                </div>
+                <mat-icon class="reco-item__arrow">chevron_right</mat-icon>
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+
+  </div>
+</div>

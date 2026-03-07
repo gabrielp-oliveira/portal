@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { WorldDataService } from '../../dashboard/world-data.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ThemeService } from '../../../core/theme.service';
 
 @Component({
   selector: 'app-footer',
@@ -12,14 +12,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent {
-  readonly wd = inject(WorldDataService);
-  isDarkMode = false;
+  private theme = inject(ThemeService);
+  isDarkMode = this.theme.isDark;
 
   constructor() {
-    this.wd.settings$
+    this.theme.isDark$
       .pipe(takeUntilDestroyed())
-      .subscribe(settings => {
-        this.isDarkMode = !settings.theme;
-      });
+      .subscribe(dark => { this.isDarkMode = dark; });
   }
 }

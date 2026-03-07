@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
-import { Chapter, ChapterAnnotation,UserChapterDetailsResponse, ChapterConfiguration, ChapterDetails, Connection, createWorld, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterAnnotation, UserChapterDetailsResponse, ChapterConfiguration, ChapterDetails, Connection, createWorld, DashboardResponse, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +13,10 @@ export class ApiService {
 
   selectedWorld: string = ""
   private baseUrl = 'http://localhost:9090';
+
+  getDashboard(): Observable<DashboardResponse> {
+    return this.http.get<DashboardResponse>(`${this.baseUrl}/dashboard`);
+  }
 
   getWorldList(): Observable<world[]> {
     return this.http.get<world[]>('http://localhost:9090/getWorldsList')
@@ -158,9 +162,9 @@ export class ApiService {
     chapterOrder: string,
     paperId: string
   ): Observable<{
-    settings: Subway_Settings;chapter:Chapter,totalPage:number 
-}> {
-    return this.http.get<{chapter:Chapter,totalPage:number, settings: Subway_Settings}>(`http://localhost:9090/chaptersContent?chapterOrder=${chapterOrder}&paperId=${paperId}`);
+    settings: Subway_Settings; chapter: Chapter; totalPage: number; hasNext: boolean; hasPrev: boolean; worldName?: string;
+  }> {
+    return this.http.get<{ chapter: Chapter; totalPage: number; settings: Subway_Settings; hasNext: boolean; hasPrev: boolean; worldName?: string; }>(`http://localhost:9090/chaptersContent?chapterOrder=${chapterOrder}&paperId=${paperId}`);
   }
 
     createAnnotation(annotation: ChapterAnnotation): Observable<ChapterAnnotation> {

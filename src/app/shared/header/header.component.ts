@@ -7,12 +7,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { Subway_Settings } from '../../models/paperTrailTypes';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { WorldDataService } from '../../features/dashboard/world-data.service';
 import { Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeService } from '../../core/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -32,14 +33,15 @@ import { AuthService } from '../../core/auth/auth.service';
 export class HeaderComponent implements OnInit {
   @Input() default: boolean = false;
 
-  private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private wd = inject(WorldDataService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  theme = inject(ThemeService);
 
   settings$?: Observable<Subway_Settings>;
   isLogged = false;
+  menuOpen = false;
 
   constructor() {
     this.auth.isLogged$

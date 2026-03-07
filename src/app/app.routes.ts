@@ -42,14 +42,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'read/book/:paperId/chapter/:chapterOrder',
+    loadChildren: () => import('./features/readchapter/readChapter.module').then(c => c.ReadChapterModule),
+    canActivate: [authGuard]
+  },
+  {
     path: 'read/:worldName',
     loadChildren: () => import('./features/read-world/read-world.module').then(c => c.ReadWorldModule),
     canActivate: [authGuard]
   },
-  {
-    path: 'read/book/:paperId/chapter/:chapterOrder',
-    loadChildren: () => import('./features/readchapter/readChapter.module').then(c => c.ReadChapterModule),
-    canActivate: [authGuard]
-  }
+  { path: '**', redirectTo: '' }
 
 ];
