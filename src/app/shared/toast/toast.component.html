@@ -4,14 +4,14 @@
     role="alert"
     *ngFor="let t of toast.toasts$ | async; trackBy: trackById">
 
-    <mat-icon class="toast__icon" aria-hidden="true">{{ icon(t.type) }}</mat-icon>
+    <span class="material-icons toast__icon" aria-hidden="true">{{ icon(t.type) }}</span>
 
     <p class="toast__msg">{{ t.message }}</p>
 
     <button class="toast__close" type="button"
             (click)="toast.dismiss(t.id)"
             aria-label="Fechar notificação">
-      <mat-icon aria-hidden="true">close</mat-icon>
+      <span class="material-icons" aria-hidden="true">close</span>
     </button>
 
     <div class="toast__bar"

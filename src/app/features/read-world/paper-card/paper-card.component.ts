@@ -16,6 +16,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TruncatePipe } from '../../../truncate.pipe';
+import { CloudinaryPipe } from '../../dashboard/pipes/cloudinary.pipe';
 
 export type paperCard = {
   paper: paper,
@@ -35,6 +36,7 @@ export type paperCard = {
     MatTooltipModule,
     MatDialogModule,
     TruncatePipe,
+    CloudinaryPipe,
   ],
   templateUrl: './paper-card.component.html',
   styleUrls: ['./paper-card.component.scss'],
@@ -72,11 +74,7 @@ export class PaperCardComponent implements OnInit {
   }
 
 
-    DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_100,f_auto,q_auto/defaultCover_lublod';
-
-  optimizeImage(url: string, width: number = 200): string {
-    return url?.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
-  }
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
 
   get completedCount(): number {
     return this.paperCard.chapterList.filter(ch => ch.completed).length;

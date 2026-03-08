@@ -34,11 +34,23 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "lodash"
+              "moment",
+              "gapi-script",
+              "@kolkov/angular-editor"
             ]
           },
           "configurations": {
             "production": {
+              "optimization": true,
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -47,8 +59,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "32kb",
+                  "maximumError": "64kb"
                 }
               ],
               "outputHashing": "all"

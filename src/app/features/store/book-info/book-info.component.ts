@@ -16,7 +16,7 @@ export class BookInfoComponent implements OnInit {
   @Input() isPurchased: boolean;
   @Input() isInWishlist: boolean;
 
-  DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
   showFullBookDesc = false;
   showFullUniverseDesc = false;
 
@@ -31,10 +31,6 @@ export class BookInfoComponent implements OnInit {
       .subscribe(status => {
         this.isLogged = status;
       });
-  }
-
-  optimizeImage(url: string, width: number = 300): string {
-    return url?.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
   }
 
   toggleWishlist() {

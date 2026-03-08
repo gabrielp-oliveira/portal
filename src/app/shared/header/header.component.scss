@@ -105,7 +105,7 @@
   white-space: nowrap;
   font-family: inherit;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
+  .material-icons { font-size: 16px; width: 16px; height: 16px; flex-shrink: 0; }
 
   &:hover {
     background: var(--hdr-hover);
@@ -138,7 +138,7 @@
   transition: background .15s, color .15s;
   flex-shrink: 0;
 
-  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  .material-icons { font-size: 20px; width: 20px; height: 20px; }
 
   &:hover {
     background: var(--hdr-hover);
@@ -191,7 +191,7 @@
   text-align: left;
   transition: background .12s;
 
-  mat-icon {
+  .material-icons {
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -208,10 +208,73 @@
 
   &--danger {
     color: #E76F51;
-    mat-icon { color: #E76F51; }
+    .material-icons { color: #E76F51; }
   }
 
   &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: -2px; }
+}
+
+// ── User menu dropdown (CSS-only, substitui MatMenuModule) ─────────────────────
+.hdr__user-menu-wrap {
+  position: relative;
+}
+
+.hdr__user-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--hdr-bg);
+  border: 1px solid var(--hdr-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .14), 0 1px 3px rgba(0, 0, 0, .08);
+  min-width: 152px;
+  padding: 4px;
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .15s, transform .15s, visibility 0s .15s;
+
+  &.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity .15s, transform .15s;
+  }
+}
+
+.hdr__user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--hdr-text);
+  text-align: left;
+  transition: background .12s;
+  white-space: nowrap;
+
+  .material-icons {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: var(--hdr-muted);
+    flex-shrink: 0;
+  }
+
+  &:hover { background: var(--hdr-hover); }
+  &:focus-visible { outline: 2px solid var(--hdr-accent); outline-offset: -2px; }
+
+  &--danger {
+    color: #E76F51;
+    .material-icons { color: #E76F51; }
+  }
 }
 
 // ── Responsive ─────────────────────────────────────────────────────────────────

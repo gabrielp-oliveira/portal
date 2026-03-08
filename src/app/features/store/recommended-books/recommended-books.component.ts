@@ -13,6 +13,7 @@ export class RecommendedBooksComponent implements OnInit, OnDestroy, OnChanges {
   @Input() book!: paper;
 
   recommendedBooks: SimplePaper[] = [];
+  loading = false;
   private subscription: Subscription | null = null;
 
   constructor(private storeService: StoreService) {}
@@ -34,6 +35,7 @@ export class RecommendedBooksComponent implements OnInit, OnDestroy, OnChanges {
   private fetchRecommendations(): void {
     this.subscription?.unsubscribe(); // garante que não fica inscrito múltiplas vezes
     if (this.book && this.book.id && this.book.genre?.length) {
+      this.loading = true;
       this.subscription = this.storeService.getBooksByGenreExcludingUniverse({
         currentBookId: this.book.id,
         worldId: this.book.world_id || '',
@@ -41,9 +43,11 @@ export class RecommendedBooksComponent implements OnInit, OnDestroy, OnChanges {
       }).subscribe({
         next: (books) => {
           this.recommendedBooks = books;
+          this.loading = false;
         },
         error: (err) => {
           console.error('Erro ao buscar livros recomendados:', err);
+          this.loading = false;
         }
       });
     } else {
@@ -51,10 +55,5 @@ export class RecommendedBooksComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  optimizeImage(url: string): string {
-    if (!url) return this.storeService.DEFAULT_COVER;
-    return url.includes('/upload/')
-      ? url.replace('/upload/', '/upload/w_100,h_150,c_fill,f_auto,q_auto/')
-      : url;
-  }
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
 }

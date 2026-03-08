@@ -1,21 +1,29 @@
+<div class="books-carousel sk-carousel" *ngIf="loading" aria-hidden="true">
+  <div class="sk-c-title"></div>
+  <div class="carousel-container">
+    <div class="sk-c-card" *ngFor="let i of [1,2,3,4,5]">
+      <div class="sk-c-cover"></div>
+      <div class="sk-c-line"></div>
+    </div>
+  </div>
+</div>
+
 <div
   class="books-carousel"
-  *ngIf="recommendedBooks && recommendedBooks.length && !(recommendedBooks.length === 1 && recommendedBooks[0].id === book.id)"
+  *ngIf="!loading && recommendedBooks && recommendedBooks.length && !(recommendedBooks.length === 1 && recommendedBooks[0].id === book.id)"
 >
   <h3 class="section-title">others</h3>
-  
+
   <div class="carousel-container">
     <div class="book-card" *ngFor="let book of recommendedBooks">
-
 
   <div class="cover-wrapper">
           <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
 
-    <img
-    [src]="optimizeImage(book.cover_url)"
-    alt="{{ book.name }}"
-    class="book-cover"
-    />
+    <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:100:150"
+         [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
+         [alt]="book.name" class="book-cover"
+         width="100" height="150" loading="lazy" decoding="async" />
   </div>
       <p class="book-title">{{ book.name }}</p>
       <div class="genre-list">

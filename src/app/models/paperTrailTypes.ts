@@ -454,6 +454,19 @@ export interface DashboardResponse {
   genre_breakdown: DashboardGenreBreakdown[];
 }
 
+/** Lightweight response for the /dashboard/hero endpoint — loaded first to unblock LCP. */
+export interface DashboardHeroStats {
+  total_papers: number;
+  completed_chapters: number;
+}
+
+export interface DashboardHeroResponse {
+  continue_reading: DashboardContinueReading | null;
+  papers_in_progress: DashboardPaperInProgress[];
+  stats: DashboardHeroStats;
+  reading_streak: DashboardReadingStreak;
+}
+
 export interface paperCard {
     paper: paper,
     chapterList: Chapter[]

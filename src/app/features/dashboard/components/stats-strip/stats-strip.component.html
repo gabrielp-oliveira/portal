@@ -1,6 +1,6 @@
 <div class="stats-strip" role="list" aria-label="Resumo estatístico">
   <div class="stat-item" role="listitem"
-       *ngFor="let s of cards" [style.--acc]="s.accent">
+       *ngFor="let s of cards; trackBy: trackByLabel" [style.--acc]="s.accent">
     <mat-icon class="stat-item__icon" aria-hidden="true">{{ s.icon }}</mat-icon>
     <span class="stat-item__val">{{ s.value }}</span>
     <span class="stat-item__lbl">{{ s.label }}</span>

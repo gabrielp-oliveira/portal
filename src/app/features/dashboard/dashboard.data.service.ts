@@ -1,8 +1,16 @@
 import { Injectable, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+import { retry, shareReplay } from 'rxjs/operators';
 import { ApiService } from '../../core/api.service';
 import { ErrorService } from '../../core/error.service';
-import { DashboardNotStarted, DashboardResponse } from '../../models/paperTrailTypes';
+import {
+  DashboardFavoriteAnnotation,
+  DashboardFavoriteChapter,
+  DashboardHeroResponse,
+  DashboardNotStarted,
+  DashboardResponse
+} from '../../models/paperTrailTypes';
 
 export interface StatCard {
   icon: string;
@@ -15,23 +23,24 @@ export interface StatCard {
 export class DashboardDataService {
   private static readonly LS_ANN      = 'db-expanded-annotations';
   private static readonly LS_SECTIONS = 'db-collapsed-sections';
+  private static readonly LS_HERO     = 'db-hero-cache';
+
+  // ── Notifica o componente OnPush de que o estado mudou ───────────────────
+  readonly stateChanged$ = new Subject<void>();
 
   // ── Data state ───────────────────────────────────────────────────────────
+  heroLoading = true;
+  heroData: DashboardHeroResponse | null = null;
   loading = true;
   data: DashboardResponse | null = null;
   statCards: StatCard[] = [];
 
-  /** Pre-computed once on load — avoids O(n) recomputation on every CD cycle. */
   notStartedByUniverse: Array<{ world: string; books: DashboardNotStarted[] }> = [];
 
-  /** O(1) lookups replacing O(n) .some() calls in *ngFor loops. */
-  private favoriteChapterIdsSet = new Set<string>();
-  private annotatedChapterIdsSet = new Set<string>();
-
-  // world_id → world_name lookup built from worlds_summary
-  private worldNameMap = new Map<string, string>();
-  // paper_id → world_name lookup built from recently_read (has inline world data)
-  private paperWorldMap = new Map<string, string>();
+  private favoriteChapterIdsSet    = new Set<string>();
+  private annotatedChapterIdsSet   = new Set<string>();
+  private worldNameMap             = new Map<string, string>();
+  private paperWorldMap            = new Map<string, string>();
 
   // ── UI state (persisted) ─────────────────────────────────────────────────
   expandedAnnotations = new Set<string>(
@@ -41,14 +50,82 @@ export class DashboardDataService {
     JSON.parse(localStorage.getItem(DashboardDataService.LS_SECTIONS) ?? '[]')
   );
 
-  // ── Search state ─────────────────────────────────────────────────────────
-  searchQuery = '';
+  // ── Search state — memoized: computed once per keystroke, not per CD cycle ─
+  private _searchQuery = '';
+  searchAnnotations: DashboardFavoriteAnnotation[] = [];
+  searchChapters:    DashboardFavoriteChapter[]    = [];
+  searchHasResults   = false;
+  isSearching        = false;
 
-  constructor(private api: ApiService, private err: ErrorService) {}
+  get searchQuery(): string { return this._searchQuery; }
+  set searchQuery(v: string) {
+    this._searchQuery = v;
+    this.recomputeSearch();
+  }
+
+  private recomputeSearch(): void {
+    const q = this._searchQuery.trim().toLowerCase();
+    this.isSearching = q.length > 0;
+
+    if (!this.data || !this.isSearching) {
+      this.searchAnnotations = [];
+      this.searchChapters    = [];
+      this.searchHasResults  = false;
+      return;
+    }
+
+    this.searchAnnotations = this.data.favorite_annotations.filter(a =>
+      a.span_text.toLowerCase().includes(q) ||
+      (a.note?.toLowerCase().includes(q) ?? false) ||
+      a.chapter_title.toLowerCase().includes(q) ||
+      a.paper_name.toLowerCase().includes(q)
+    );
+    this.searchChapters = this.data.favorite_chapters.filter(c =>
+      c.title.toLowerCase().includes(q) ||
+      c.paper_name.toLowerCase().includes(q) ||
+      (c.description?.toLowerCase().includes(q) ?? false)
+    );
+    this.searchHasResults = this.searchAnnotations.length > 0 || this.searchChapters.length > 0;
+  }
+
+  // Pre-started requests — fired at module init, before ngOnInit
+  private readonly _hero$ = this.api.getDashboardHero().pipe(retry(1), shareReplay({ bufferSize: 1, refCount: false }));
+  private readonly _dash$ = this.api.getDashboard().pipe(retry(1), shareReplay({ bufferSize: 1, refCount: false }));
+
+  constructor(private api: ApiService, private err: ErrorService) {
+    try {
+      const cached = localStorage.getItem(DashboardDataService.LS_HERO);
+      if (cached) {
+        this.heroData    = JSON.parse(cached);
+        this.heroLoading = false;
+      }
+    } catch { /* ignore */ }
+
+    // Trigger HTTP requests immediately (errors handled in load())
+    this._hero$.subscribe({ error: () => {} });
+    this._dash$.subscribe({ error: () => {} });
+  }
 
   // ── Data loading ──────────────────────────────────────────────────────────
   load(destroyRef: DestroyRef): void {
-    this.api.getDashboard()
+    // Phase 1: hero — result already in-flight or cached
+    this._hero$
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe({
+        next: (hero) => {
+          this.heroData    = hero;
+          this.heroLoading = false;
+          try { localStorage.setItem(DashboardDataService.LS_HERO, JSON.stringify(hero)); } catch { /* ignore */ }
+          this.stateChanged$.next();
+        },
+        error: () => {
+          this.heroLoading = false;
+          this.stateChanged$.next();
+        }
+      });
+
+    // Phase 2: full dashboard — result already in-flight or cached
+    this._dash$
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe({
         next: (res) => {
@@ -75,19 +152,28 @@ export class DashboardDataService {
               .map(r => [r.paper_id, r.world_name!])
           );
           this.statCards = this.buildStatCards(res);
-          this.favoriteChapterIdsSet = new Set(
-            (res.favorite_chapters ?? []).map(c => c.chapter_id)
-          );
-          this.annotatedChapterIdsSet = new Set(
-            (res.favorite_annotations ?? []).map(a => a.chapter_id).filter(Boolean)
-          );
-          this.notStartedByUniverse = this.buildNotStartedByUniverse(res.not_started ?? []);
+          this.favoriteChapterIdsSet  = new Set((res.favorite_chapters    ?? []).map(c => c.chapter_id));
+          this.annotatedChapterIdsSet = new Set((res.favorite_annotations ?? []).map(a => a.chapter_id).filter(Boolean));
+          this.notStartedByUniverse   = this.buildNotStartedByUniverse(res.not_started ?? []);
           this.autoCollapseEmpty();
+          this.heroData = {
+            continue_reading:   res.continue_reading,
+            papers_in_progress: res.papers_in_progress ?? [],
+            stats: {
+              total_papers:       res.stats.total_papers,
+              completed_chapters: res.stats.completed_chapters,
+            },
+            reading_streak: res.reading_streak,
+          };
           this.loading = false;
+          // Re-run search in case data arrived after the user typed something
+          this.recomputeSearch();
+          this.stateChanged$.next();
         },
         error: (e) => {
           this.err.errHandler(e);
           this.loading = false;
+          this.stateChanged$.next();
         }
       });
   }
@@ -118,52 +204,17 @@ export class DashboardDataService {
     ];
   }
 
-  // ── Search ────────────────────────────────────────────────────────────────
-  get isSearching(): boolean {
-    return this.searchQuery.trim().length > 0;
-  }
-
-  get searchAnnotations() {
-    if (!this.data || !this.isSearching) return [];
-    const q = this.searchQuery.toLowerCase();
-    return this.data.favorite_annotations.filter(a =>
-      a.span_text.toLowerCase().includes(q) ||
-      (a.note?.toLowerCase().includes(q) ?? false) ||
-      a.chapter_title.toLowerCase().includes(q) ||
-      a.paper_name.toLowerCase().includes(q)
-    );
-  }
-
-  get searchChapters() {
-    if (!this.data || !this.isSearching) return [];
-    const q = this.searchQuery.toLowerCase();
-    return this.data.favorite_chapters.filter(c =>
-      c.title.toLowerCase().includes(q) ||
-      c.paper_name.toLowerCase().includes(q) ||
-      (c.description?.toLowerCase().includes(q) ?? false)
-    );
-  }
-
-  get searchHasResults(): boolean {
-    return this.searchAnnotations.length > 0 || this.searchChapters.length > 0;
-  }
-
   // ── Annotation expand state ───────────────────────────────────────────────
-  isAnnotationOpen(id: string): boolean {
-    return this.expandedAnnotations.has(id);
-  }
+  isAnnotationOpen(id: string): boolean { return this.expandedAnnotations.has(id); }
 
   toggleAnnotation(id: string): void {
     this.expandedAnnotations.has(id)
       ? this.expandedAnnotations.delete(id)
       : this.expandedAnnotations.add(id);
-    localStorage.setItem(
-      DashboardDataService.LS_ANN,
-      JSON.stringify([...this.expandedAnnotations])
-    );
+    localStorage.setItem(DashboardDataService.LS_ANN, JSON.stringify([...this.expandedAnnotations]));
   }
 
-  // ── Auto-collapse empty sections (in-memory only, no localStorage) ───────
+  // ── Auto-collapse empty sections ──────────────────────────────────────────
   private autoCollapseEmpty(): void {
     if (!this.data) return;
     const d = this.data;
@@ -180,45 +231,29 @@ export class DashboardDataService {
       ['wishlist',          d.wishlist_available.length],
     ];
     for (const [id, count] of emptySections) {
-      if (count === 0) {
-        this.collapsedSections.add(id);
-      }
+      if (count === 0) this.collapsedSections.add(id);
     }
   }
 
   // ── Section collapse state ────────────────────────────────────────────────
-  isSectionCollapsed(id: string): boolean {
-    return this.collapsedSections.has(id);
-  }
+  isSectionCollapsed(id: string): boolean { return this.collapsedSections.has(id); }
 
   toggleSection(id: string): void {
     this.collapsedSections.has(id)
       ? this.collapsedSections.delete(id)
       : this.collapsedSections.add(id);
-    localStorage.setItem(
-      DashboardDataService.LS_SECTIONS,
-      JSON.stringify([...this.collapsedSections])
-    );
+    localStorage.setItem(DashboardDataService.LS_SECTIONS, JSON.stringify([...this.collapsedSections]));
   }
 
   // ── World navigation ──────────────────────────────────────────────────────
-  /**
-   * Returns the Angular routerLink segments for a world page.
-   * Prefers the item's own world_name; falls back to worlds_summary lookup.
-   */
   worldRoute(worldId?: string, worldName?: string, paperId?: string): string[] | null {
     const name = worldName
-      ?? (worldId  ? this.worldNameMap.get(worldId)  : undefined)
-      ?? (paperId  ? this.paperWorldMap.get(paperId)  : undefined);
+      ?? (worldId ? this.worldNameMap.get(worldId)  : undefined)
+      ?? (paperId ? this.paperWorldMap.get(paperId) : undefined);
     return name ? ['/read', name] : null;
   }
 
   // ── Cross-section helpers (O(1) Set lookups) ─────────────────────────────
-  isChapterFavorite(chapterId: string): boolean {
-    return this.favoriteChapterIdsSet.has(chapterId);
-  }
-
-  hasChapterAnnotation(chapterId: string): boolean {
-    return this.annotatedChapterIdsSet.has(chapterId);
-  }
+  isChapterFavorite(chapterId: string):    boolean { return this.favoriteChapterIdsSet.has(chapterId); }
+  hasChapterAnnotation(chapterId: string): boolean { return this.annotatedChapterIdsSet.has(chapterId); }
 }

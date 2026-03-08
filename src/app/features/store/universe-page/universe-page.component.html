@@ -1,6 +1,31 @@
 <app-ads></app-ads>
 
-<div class="universe-container" *ngIf="universeData">
+<!-- Skeleton while loading -->
+<div *ngIf="loading" class="universe-container sk-universe-page" aria-hidden="true">
+  <div class="universe-header">
+    <div class="sk-univ-left">
+      <div class="sk-u-line sk-u-line--title"></div>
+      <div class="sk-u-line"></div>
+      <div class="sk-u-line sk-u-line--short"></div>
+      <div class="sk-u-meta">
+        <div class="sk-u-tag" *ngFor="let i of [1,2,3]"></div>
+      </div>
+      <div class="sk-u-btn"></div>
+    </div>
+    <div class="sk-univ-cover"></div>
+  </div>
+  <div class="books-section">
+    <div class="books-grid">
+      <div class="sk-u-book-card" *ngFor="let i of [1,2,3,4,5,6]">
+        <div class="sk-u-book-cover"></div>
+        <div class="sk-u-line sk-u-line--short"></div>
+        <div class="sk-u-line sk-u-line--shorter"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="universe-container" *ngIf="!loading && universeData">
   <div class="universe-header">
     <div class="left-info">
       <div class="header-row">
@@ -50,8 +75,10 @@
     </div>
 
     <div class="cover-wrapper" *ngIf="universeData.CoverURLs?.[0]">
-      <img [src]="optimizeImage(universeData.CoverURLs[0] || DEFAULT_COVER)" alt="Capa do universo"
-        class="universe-cover" />
+      <img [src]="(universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:280:420"
+           [srcset]="((universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:280:420) + ' 1x, ' + ((universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:560:840) + ' 2x'"
+           alt="Capa do universo" class="universe-cover"
+           width="280" height="420" loading="eager" fetchpriority="high" decoding="async" />
     </div>
   </div>
 
@@ -64,7 +91,10 @@
           <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span>
           </div>
 
-          <img [src]="optimizeImage(book.cover_url || DEFAULT_COVER)" alt="{{ book.name }}" class="book-cover cover" />
+          <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:160:240"
+               [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:160:240) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:320:480) + ' 2x'"
+               [alt]="book.name" class="book-cover cover"
+               width="160" height="240" loading="lazy" decoding="async" />
         </div>
 
 

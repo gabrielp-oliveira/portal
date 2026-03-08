@@ -4,8 +4,10 @@
   <div class="cover-wrapper">
     <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
 
-    <img [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ book.name }}"
-      class="paper-img" />
+    <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:280:420"
+         [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:280:420) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:560:840) + ' 2x'"
+         [alt]="book.name" class="paper-img"
+         width="280" height="420" loading="eager" fetchpriority="high" decoding="async" />
   </div>
 
   <!-- 📚 Detalhes + Card do universo -->

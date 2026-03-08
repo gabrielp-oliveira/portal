@@ -14,6 +14,7 @@ export class BodyStoreComponent implements OnInit {
   pagedPapers: paper[] = [];
   pagedWorlds: world[] = [];
   totalElements = 0;
+  loading = false;
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
 
   pageSize = 15;
@@ -59,11 +60,9 @@ export class BodyStoreComponent implements OnInit {
         quantity: this.pageSize
       });
 
-      console.log('1', params['searchType'])
     });
 
     this.storeService.filter$.subscribe((filter) => {
-      console.log('2', filter['searchType'])
       this.filter = {
         searchType: filter.searchType,
         query: filter.query ?? '',
@@ -79,8 +78,6 @@ export class BodyStoreComponent implements OnInit {
 
       this.pageSize = this.filter.quantity;
       this.pageIndex = Math.floor((this.filter.startIndex || 0) / this.pageSize);
-
-      console.log(this.filter)
 
       if (this.filter.searchType === 'books') {
         this.fetchBooks();
@@ -111,16 +108,20 @@ export class BodyStoreComponent implements OnInit {
   }
 
   fetchBooks(): void {
+    this.loading = true;
     this.storeService.getBooks(this.filter).subscribe((res) => {
       this.pagedPapers = res.papers;
       this.totalElements = res.total;
+      this.loading = false;
     });
   }
 
   fetchUniverse(): void {
+    this.loading = true;
     this.storeService.getUniverses(this.filter).subscribe((res) => {
       this.pagedWorlds = res.worlds;
       this.totalElements = res.total;
+      this.loading = false;
     });
   }
 

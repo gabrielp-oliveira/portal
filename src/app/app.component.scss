@@ -1,4 +1,82 @@
 #root {
-    width: 100%;
-    height: 100vh;
+  width: 100%;
+  height: 100vh;
+}
+
+// ── Navigation skeleton (shown while lazy module is loading) ──────────────────
+@keyframes nav-shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position:  800px 0; }
+}
+
+@mixin nav-sk-block {
+  background: linear-gradient(90deg, var(--sk-block) 25%, var(--sk-shine) 50%, var(--sk-block) 75%);
+  background-size: 1600px 100%;
+  animation: nav-shimmer 1.5s infinite linear;
+  border-radius: 10px;
+}
+
+.nav-skeleton {
+  --sk-bg:    #F4F4F0;
+  --sk-block: #E5E3DC;
+  --sk-shine: #F0EFEB;
+
+  &.dark {
+    --sk-bg:    #111110;
+    --sk-block: #2E2C2A;
+    --sk-shine: #242320;
   }
+
+  min-height: calc(100vh - 120px);
+  background: var(--sk-bg);
+  padding: 0;
+}
+
+.nav-sk__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+
+  @media (max-width: 640px) { padding: 14px 12px 36px; }
+}
+
+.nav-sk__head {
+  @include nav-sk-block;
+  height: 68px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.nav-sk__stats {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 600px)  { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+}
+
+.nav-sk__grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 14px;
+
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+}
+
+.nav-sk__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &--narrow { @media (max-width: 1024px) { display: none; } }
+}
+
+.nav-sk__block {
+  @include nav-sk-block;
+  height: 60px;
+
+  &--tall     { height: 260px; }
+  &--activity { height: 140px; }
+}

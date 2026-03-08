@@ -3,8 +3,13 @@
 
     <!-- BOOKS TAB -->
     <mat-tab label="Books">
-      <div *ngIf="loadingBooks" class="spinner-wrapper">
-        <mat-spinner diameter="40"></mat-spinner>
+      <div *ngIf="loadingBooks" class="sk-books-grid" aria-hidden="true">
+        <div class="sk-book-card" *ngFor="let i of [1,2,3,4,5,6]">
+          <div class="sk-cover"></div>
+          <div class="sk-line sk-line--title"></div>
+          <div class="sk-line sk-line--meta"></div>
+          <div class="sk-line sk-line--short"></div>
+        </div>
       </div>
 
       <div *ngIf="!loadingBooks && paperCardList.length > 0" class="paper-cards-wrapper">
@@ -22,8 +27,14 @@
 
     <!-- UNIVERSOS TAB -->
     <mat-tab label="Universes">
-      <div *ngIf="loadingWorlds" class="spinner-wrapper">
-        <mat-spinner diameter="40"></mat-spinner>
+      <div *ngIf="loadingWorlds" class="sk-universe-list" aria-hidden="true">
+        <div class="sk-universe-card" *ngFor="let i of [1,2,3]">
+          <div class="sk-line sk-line--title"></div>
+          <div class="sk-line sk-line--meta"></div>
+          <div class="sk-universe-books">
+            <div class="sk-mini-cover" *ngFor="let j of [1,2,3,4]"></div>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="!loadingWorlds && worlds.length > 0" class="universe-grid">
@@ -42,8 +53,10 @@
             <div class="book-list">
               <div class="book-card" *ngFor="let pp of world.papers">
                 <div class="book-icon-wrapper">
-                  <img [src]="optimizeImage(pp.cover_url || '') || optimizeImage(DEFAULT_COVER)" alt="{{ pp.name }}"
-                    class="book-cover" />
+                  <img [src]="(pp.cover_url || DEFAULT_COVER) | cloudinary:100:150"
+                       [srcset]="((pp.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((pp.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
+                       [alt]="pp.name" class="book-cover"
+                       width="100" height="150" loading="lazy" decoding="async" />
                   <div class="icon-badges">
                     <ng-container *ngIf="pp.completed">
                       <span class="icon completed-icon" title="Completado">✔️</span>

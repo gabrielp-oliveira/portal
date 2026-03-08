@@ -13,6 +13,7 @@ export class BooksByAuthorComponent implements OnInit, OnDestroy, OnChanges {
   @Input() authorId: string = '';
   @Input() excludeBookId: string = ''; // ← caso você use para filtrar o mesmo livro
   books: SimplePaper[] = [];
+  loading = false;
 
   private subscription: Subscription | null = null;
 
@@ -32,22 +33,18 @@ export class BooksByAuthorComponent implements OnInit, OnDestroy, OnChanges {
     if (this.subscription) this.subscription.unsubscribe();
 
     if (this.authorId) {
+      this.loading = true;
       this.subscription = this.storeService.getBooksByAuthor(this.authorId)
         .subscribe(data => {
           this.books = this.excludeBookId
             ? data.filter(book => book.id !== this.excludeBookId)
             : data;
+          this.loading = false;
         });
     }
   }
 
-  optimizeImage(url: string): string {
-    if (!url) return this.storeService.DEFAULT_COVER;
-
-    return url.includes('/upload/')
-      ? url.replace('/upload/', '/upload/w_100,h_150,c_fill,f_auto,q_auto/')
-      : url;
-  }
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
 
   ngOnDestroy(): void {
     if (this.subscription) this.subscription.unsubscribe();

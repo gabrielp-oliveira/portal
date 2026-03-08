@@ -3,35 +3,30 @@
 <div class="covers-container">
   <!-- Quando há 3 ou mais capas -->
   <ng-container *ngIf="(world?.CoverURLs?.length || 0) >= 3; else twoCovers">
-    <img
-      [src]="optimizeImage(world.CoverURLs[0] || DEFAULT_COVER)"
-      class="cover cover-0"
-    />
-    <img
-      [src]="optimizeImage(world.CoverURLs[1] || DEFAULT_COVER)"
-      class="cover cover-1"
-    />
-    <img
-      [src]="optimizeImage(world.CoverURLs[2] || DEFAULT_COVER)"
-      class="cover cover-2"
-    />
+    <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225"
+         [srcset]="((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+         class="cover cover-0" width="150" height="225" loading="lazy" decoding="async" alt="" />
+    <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225"
+         [srcset]="((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+         class="cover cover-1" width="150" height="225" loading="lazy" decoding="async" alt="" />
+    <img [src]="(world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:150:225"
+         [srcset]="((world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+         class="cover cover-2" width="150" height="225" loading="lazy" decoding="async" alt="" />
   </ng-container>
 
   <!-- Quando há apenas 2 capas -->
   <ng-template #twoCovers>
-    <img
-      [src]="optimizeImage(world.CoverURLs[0] || DEFAULT_COVER)"
-      class="cover cover-1-center"
-    />
-    <img
-      [src]="optimizeImage(world.CoverURLs[1] || DEFAULT_COVER)"
-      class="cover cover-2-center"
-    />
+    <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225"
+         [srcset]="((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+         class="cover cover-1-center" width="150" height="225" loading="lazy" decoding="async" alt="" />
+    <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225"
+         [srcset]="((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+         class="cover cover-2-center" width="150" height="225" loading="lazy" decoding="async" alt="" />
   </ng-template>
 
   <!-- Logo central -->
   <div class="logo-overlay">
-    <img src="assets/homeLightIcon.png" alt="logo" />
+    <img src="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp" alt="" aria-hidden="true" width="48" height="48" />
   </div>
 </div>
 

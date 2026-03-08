@@ -1,3 +1,67 @@
+// ── Skeleton ─────────────────────────────────────────────────────────────────
+%sk-p {
+  background: linear-gradient(90deg, #e8e8e4 25%, #f0f0ec 50%, #e8e8e4 75%);
+  background-size: 1600px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 8px;
+}
+
+.sk-paper-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+.sk-paper-info { display: flex; gap: 24px; flex-wrap: wrap; }
+
+.sk-paper-cover {
+  @extend %sk-p;
+  width: 280px;
+  height: 420px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.sk-paper-details {
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.sk-p-line {
+  @extend %sk-p;
+  height: 14px;
+  border-radius: 6px;
+  &--title  { height: 26px; width: 65%; }
+  &--author { height: 18px; width: 45%; }
+  &--short  { width: 40%; }
+}
+
+.sk-p-btn {
+  @extend %sk-p;
+  height: 40px;
+  width: 160px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.sk-paper-desc { display: flex; flex-direction: column; gap: 8px; }
+
+.sk-paper-reco { display: flex; gap: 16px; overflow: hidden; }
+
+.sk-reco-card  { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+
+.sk-reco-cover {
+  @extend %sk-p;
+  width: 100px;
+  height: 150px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 .book-detail-page {
   display: flex;
   flex-direction: column;

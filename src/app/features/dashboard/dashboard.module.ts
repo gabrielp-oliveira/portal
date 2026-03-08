@@ -6,13 +6,12 @@ import { Title } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
-import { ApiService } from '../../core/api.service';
-import { ErrorService } from '../../core/error.service';
 import { LoadingComponent } from '../../shared/loading/loading.component';
 
 import { DashboardDataService } from './dashboard.data.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { HighlightPipe } from './highlight.pipe';
+import { CloudinaryPipe } from './pipes/cloudinary.pipe';
 import { ProgressPipe } from './pipes/progress.pipe';
 import { TimeAgoPipe } from './pipes/time-ago.pipe';
 import { StatsStripComponent } from './components/stats-strip/stats-strip.component';
@@ -30,8 +29,6 @@ const routes: Routes = [{ path: '', component: DashboardComponent }];
     PanelShellComponent,
   ],
   providers: [
-    ApiService,
-    ErrorService,
     DashboardDataService,
     Title,
   ],
@@ -41,6 +38,7 @@ const routes: Routes = [{ path: '', component: DashboardComponent }];
     MatIconModule,
     MatButtonModule,
     LoadingComponent,
+    CloudinaryPipe,
     RouterModule.forChild(routes),
   ]
 })

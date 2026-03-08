@@ -6,11 +6,27 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://apis.google.com/js/picker.js"></script>
+
+  <!-- Preconnect para origens críticas — reduz DNS/TLS overhead -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://res.cloudinary.com">
+
+  <!-- Fontes: carregamento não-bloqueante -->
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  </noscript>
+
+  <!-- Material Icons: carregamento não-bloqueante -->
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  </noscript>
 
   <!-- Tema aplicado antes do Angular carregar — evita flash de fundo -->
   <script>
@@ -20,6 +36,47 @@
       if (saved === 'dark' || (!saved && prefersDark)) {
         document.documentElement.classList.add('dark-theme');
       }
+    })();
+  </script>
+
+  <!-- LCP preload: injeta <link rel="preload"> para a capa do "continue reading"
+       ANTES do Angular bootar, usando o hero cache do localStorage.
+       Elimina uma roundtrip completa de descoberta da imagem no Critical Path. -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('db-hero-cache');
+        if (!raw) return;
+        var hero = JSON.parse(raw);
+        var url = hero && hero.continue_reading && hero.continue_reading.cover_url;
+        if (!url || typeof url !== 'string') return;
+
+        // Replica a lógica do CloudinaryPipe
+        var UPLOAD = '/upload/';
+        var idx = url.indexOf(UPLOAD);
+        if (idx < 0) return;
+
+        var base = url.substring(0, idx + UPLOAD.length);
+        var rest = url.substring(idx + UPLOAD.length);
+        var slashIdx = rest.indexOf('/');
+        var firstSeg = slashIdx >= 0 ? rest.substring(0, slashIdx) : '';
+        var hasTransforms = firstSeg.length > 0 && /^[a-z]+_/.test(firstSeg);
+        var assetPath = (hasTransforms && slashIdx >= 0) ? rest.substring(slashIdx + 1) : rest;
+
+        function cl(w, h) {
+          return base + 'f_auto,q_auto,w_' + w + ',h_' + h + ',c_fill/' + assetPath;
+        }
+
+        var link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = cl(320, 480);
+        // imagesrcset replica o srcset do <img> — o browser escolhe a resolução
+        // correta (1x=160×240 / 2x=320×480) e evita double-fetch.
+        link.setAttribute('imagesrcset', cl(160, 240) + ' 1x, ' + cl(320, 480) + ' 2x');
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+      } catch (e) { /* ignora erros de parse/storage */ }
     })();
   </script>
 </head>

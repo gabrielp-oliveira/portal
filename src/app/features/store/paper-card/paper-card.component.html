@@ -1,11 +1,10 @@
 <mat-card class="book-card">
   <div class="cover-wrapper">
           <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
-    <img
-      [src]="optimizeImage(book.cover_url || '') || optimizeImage(DEFAULT_COVER)"
-      alt="{{ book.name }}"
-      class="paper-img"
-    />
+    <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:200:300"
+         [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:400:600) + ' 2x'"
+         [alt]="book.name" class="paper-img"
+         width="200" height="300" loading="lazy" decoding="async" />
   </div>
 
   <div class="book-info">

@@ -5,21 +5,27 @@
       <div class="hdr__bar">
 
         <button class="hdr__brand" (click)="GoTo('/')" aria-label="Ir para o início">
-          <img class="hdr__logo"
-               [src]="!settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'"
-               alt="Narratus" />
+          <picture>
+            <source type="image/avif"
+                    [srcset]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_efk1t3.avif' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_opxauw.avif'" />
+            <source type="image/webp"
+                    [srcset]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'" />
+            <img class="hdr__logo"
+                 [src]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'"
+                 alt="Narratus" />
+          </picture>
           <span class="hdr__brand-name">Narratus</span>
         </button>
 
         <nav class="hdr__nav" aria-label="Navegação principal">
           <button class="hdr__nav-link" (click)="GoTo('/store')">
-            <mat-icon aria-hidden="true">shopping_cart</mat-icon><span>Store</span>
+            <span class="material-icons" aria-hidden="true">shopping_cart</span><span>Store</span>
           </button>
           <button class="hdr__nav-link" (click)="GoTo('/library')">
-            <mat-icon aria-hidden="true">library_books</mat-icon><span>Biblioteca</span>
+            <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
           </button>
           <button class="hdr__nav-link" (click)="shareStore()">
-            <mat-icon aria-hidden="true">share</mat-icon><span>Compartilhar</span>
+            <span class="material-icons" aria-hidden="true">share</span><span>Compartilhar</span>
           </button>
         </nav>
 
@@ -27,69 +33,70 @@
           <button class="hdr__icon-btn hdr__theme-btn"
                   (click)="toggleTheme(settings)"
                   [title]="settings.theme ? 'Modo claro' : 'Modo escuro'">
-            <mat-icon aria-hidden="true">{{ settings.theme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+            <span class="material-icons" aria-hidden="true">{{ settings.theme ? 'light_mode' : 'dark_mode' }}</span>
           </button>
-          <button class="hdr__icon-btn" [matMenuTriggerFor]="userMenu" aria-label="Menu do usuário">
-            <mat-icon aria-hidden="true">account_circle</mat-icon>
-          </button>
+          <div class="hdr__user-menu-wrap">
+            <button class="hdr__icon-btn" (click)="toggleUserMenu($event)" [attr.aria-expanded]="userMenuOpen" aria-label="Menu do usuário">
+              <span class="material-icons" aria-hidden="true">account_circle</span>
+            </button>
+            <div class="hdr__user-menu" [class.open]="userMenuOpen" role="menu">
+              <ng-container *ngIf="isLogged; else loginOption">
+                <button class="hdr__user-menu-item" (click)="GoTo('/profile'); userMenuOpen=false" role="menuitem">
+                  <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
+                </button>
+                <button class="hdr__user-menu-item hdr__user-menu-item--danger" (click)="logout(); userMenuOpen=false" role="menuitem">
+                  <span class="material-icons" aria-hidden="true">logout</span><span>Sair</span>
+                </button>
+              </ng-container>
+              <ng-template #loginOption>
+                <button class="hdr__user-menu-item" (click)="GoTo('/login'); userMenuOpen=false" role="menuitem">
+                  <span class="material-icons" aria-hidden="true">login</span><span>Entrar</span>
+                </button>
+              </ng-template>
+            </div>
+          </div>
           <button class="hdr__icon-btn hdr__burger"
                   (click)="menuOpen = !menuOpen"
                   [attr.aria-expanded]="menuOpen"
                   aria-label="Abrir menu">
-            <mat-icon aria-hidden="true">{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+            <span class="material-icons" aria-hidden="true">{{ menuOpen ? 'close' : 'menu' }}</span>
           </button>
         </div>
-
-        <mat-menu #userMenu="matMenu">
-          <ng-container *ngIf="isLogged; else loginOption">
-            <button mat-menu-item (click)="GoTo('/profile')">
-              <mat-icon>person</mat-icon><span>Perfil</span>
-            </button>
-            <button mat-menu-item (click)="logout()">
-              <mat-icon>logout</mat-icon><span>Sair</span>
-            </button>
-          </ng-container>
-          <ng-template #loginOption>
-            <button mat-menu-item (click)="GoTo('/login')">
-              <mat-icon>login</mat-icon><span>Entrar</span>
-            </button>
-          </ng-template>
-        </mat-menu>
       </div>
 
       <!-- Mobile drawer -->
       <nav class="hdr__drawer" [class.open]="menuOpen" aria-label="Menu mobile">
         <div class="hdr__drawer-nav">
           <button class="hdr__drawer-link" (click)="GoTo('/store'); menuOpen=false">
-            <mat-icon aria-hidden="true">shopping_cart</mat-icon><span>Store</span>
+            <span class="material-icons" aria-hidden="true">shopping_cart</span><span>Store</span>
           </button>
           <button class="hdr__drawer-link" (click)="GoTo('/library'); menuOpen=false">
-            <mat-icon aria-hidden="true">library_books</mat-icon><span>Biblioteca</span>
+            <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
           </button>
           <button class="hdr__drawer-link" (click)="shareStore(); menuOpen=false">
-            <mat-icon aria-hidden="true">share</mat-icon><span>Compartilhar</span>
+            <span class="material-icons" aria-hidden="true">share</span><span>Compartilhar</span>
           </button>
         </div>
         <div class="hdr__drawer-footer">
           <button class="hdr__drawer-link hdr__drawer-link--muted"
                   (click)="toggleTheme(settings); menuOpen=false">
-            <mat-icon aria-hidden="true">{{ settings.theme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+            <span class="material-icons" aria-hidden="true">{{ settings.theme ? 'light_mode' : 'dark_mode' }}</span>
             <span>{{ settings.theme ? 'Modo claro' : 'Modo escuro' }}</span>
           </button>
           <ng-container *ngIf="isLogged; else drawerLogin">
             <button class="hdr__drawer-link hdr__drawer-link--muted"
                     (click)="GoTo('/profile'); menuOpen=false">
-              <mat-icon aria-hidden="true">person</mat-icon><span>Perfil</span>
+              <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
             </button>
             <button class="hdr__drawer-link hdr__drawer-link--danger"
                     (click)="logout(); menuOpen=false">
-              <mat-icon aria-hidden="true">logout</mat-icon><span>Sair</span>
+              <span class="material-icons" aria-hidden="true">logout</span><span>Sair</span>
             </button>
           </ng-container>
           <ng-template #drawerLogin>
             <button class="hdr__drawer-link hdr__drawer-link--muted"
                     (click)="GoTo('/login'); menuOpen=false">
-              <mat-icon aria-hidden="true">login</mat-icon><span>Entrar</span>
+              <span class="material-icons" aria-hidden="true">login</span><span>Entrar</span>
             </button>
           </ng-template>
         </div>
@@ -104,21 +111,27 @@
     <div class="hdr__bar">
 
       <button class="hdr__brand" (click)="GoTo('/')" aria-label="Ir para o início">
-        <img class="hdr__logo"
-             [src]="theme.isDark ? 'assets/homeLightIcon.png' : 'assets/homeDarkIcon.png'"
-             alt="Narratus" />
+          <picture>
+            <source type="image/avif"
+                    [srcset]="theme.isDark ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_efk1t3.avif' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_opxauw.avif'" />
+            <source type="image/webp"
+                    [srcset]="theme.isDark ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'" />
+            <img class="hdr__logo"
+                 [src]="theme.isDark ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'"
+                 alt="Narratus" />
+          </picture>
         <span class="hdr__brand-name">Narratus</span>
       </button>
 
       <nav class="hdr__nav" aria-label="Navegação principal">
         <button class="hdr__nav-link" (click)="GoTo('/store')">
-          <mat-icon aria-hidden="true">shopping_cart</mat-icon><span>Store</span>
+          <span class="material-icons" aria-hidden="true">shopping_cart</span><span>Store</span>
         </button>
         <button class="hdr__nav-link" (click)="GoTo('/library')">
-          <mat-icon aria-hidden="true">library_books</mat-icon><span>Biblioteca</span>
+          <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
         </button>
         <button class="hdr__nav-link" (click)="shareStore()">
-          <mat-icon aria-hidden="true">share</mat-icon><span>Compartilhar</span>
+          <span class="material-icons" aria-hidden="true">share</span><span>Compartilhar</span>
         </button>
       </nav>
 
@@ -126,76 +139,77 @@
         <button class="hdr__icon-btn hdr__theme-btn"
                 (click)="theme.toggle()"
                 [title]="theme.isDark ? 'Modo claro' : 'Modo escuro'">
-          <mat-icon aria-hidden="true">{{ theme.isDark ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          <span class="material-icons" aria-hidden="true">{{ theme.isDark ? 'light_mode' : 'dark_mode' }}</span>
         </button>
-        <button class="hdr__icon-btn" [matMenuTriggerFor]="userMenuDefault" aria-label="Menu do usuário">
-          <mat-icon aria-hidden="true">account_circle</mat-icon>
-        </button>
+        <div class="hdr__user-menu-wrap">
+          <button class="hdr__icon-btn" (click)="toggleUserMenu($event)" [attr.aria-expanded]="userMenuOpen" aria-label="Menu do usuário">
+            <span class="material-icons" aria-hidden="true">account_circle</span>
+          </button>
+          <div class="hdr__user-menu" [class.open]="userMenuOpen" role="menu">
+            <ng-container *ngIf="isLogged; else loginOptionDefault">
+              <button class="hdr__user-menu-item" (click)="navigateIfLogged('/profile'); userMenuOpen=false" role="menuitem">
+                <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
+              </button>
+              <button class="hdr__user-menu-item hdr__user-menu-item--danger" (click)="logout(); userMenuOpen=false" role="menuitem">
+                <span class="material-icons" aria-hidden="true">logout</span><span>Sair</span>
+              </button>
+            </ng-container>
+            <ng-template #loginOptionDefault>
+              <button class="hdr__user-menu-item" (click)="GoTo('/login'); userMenuOpen=false" role="menuitem">
+                <span class="material-icons" aria-hidden="true">login</span><span>Entrar</span>
+              </button>
+              <button class="hdr__user-menu-item" (click)="GoTo('/signup'); userMenuOpen=false" role="menuitem">
+                <span class="material-icons" aria-hidden="true">person_add</span><span>Criar conta</span>
+              </button>
+            </ng-template>
+          </div>
+        </div>
         <button class="hdr__icon-btn hdr__burger"
                 (click)="menuOpen = !menuOpen"
                 [attr.aria-expanded]="menuOpen"
                 aria-label="Abrir menu">
-          <mat-icon aria-hidden="true">{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+          <span class="material-icons" aria-hidden="true">{{ menuOpen ? 'close' : 'menu' }}</span>
         </button>
       </div>
-
-      <mat-menu #userMenuDefault="matMenu">
-        <ng-container *ngIf="isLogged; else loginOptionDefault">
-          <button mat-menu-item (click)="navigateIfLogged('/profile')">
-            <mat-icon>person</mat-icon><span>Perfil</span>
-          </button>
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon><span>Sair</span>
-          </button>
-        </ng-container>
-        <ng-template #loginOptionDefault>
-          <button mat-menu-item (click)="GoTo('/login')">
-            <mat-icon>login</mat-icon><span>Entrar</span>
-          </button>
-          <button mat-menu-item (click)="GoTo('/signup')">
-            <mat-icon>person_add</mat-icon><span>Criar conta</span>
-          </button>
-        </ng-template>
-      </mat-menu>
     </div>
 
     <!-- Mobile drawer -->
     <nav class="hdr__drawer" [class.open]="menuOpen" aria-label="Menu mobile">
       <div class="hdr__drawer-nav">
         <button class="hdr__drawer-link" (click)="GoTo('/store'); menuOpen=false">
-          <mat-icon aria-hidden="true">shopping_cart</mat-icon><span>Store</span>
+          <span class="material-icons" aria-hidden="true">shopping_cart</span><span>Store</span>
         </button>
         <button class="hdr__drawer-link" (click)="GoTo('/library'); menuOpen=false">
-          <mat-icon aria-hidden="true">library_books</mat-icon><span>Biblioteca</span>
+          <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
         </button>
         <button class="hdr__drawer-link" (click)="shareStore(); menuOpen=false">
-          <mat-icon aria-hidden="true">share</mat-icon><span>Compartilhar</span>
+          <span class="material-icons" aria-hidden="true">share</span><span>Compartilhar</span>
         </button>
       </div>
       <div class="hdr__drawer-footer">
         <button class="hdr__drawer-link hdr__drawer-link--muted"
                 (click)="theme.toggle(); menuOpen=false">
-          <mat-icon aria-hidden="true">{{ theme.isDark ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          <span class="material-icons" aria-hidden="true">{{ theme.isDark ? 'light_mode' : 'dark_mode' }}</span>
           <span>{{ theme.isDark ? 'Modo claro' : 'Modo escuro' }}</span>
         </button>
         <ng-container *ngIf="isLogged; else drawerLoginDefault">
           <button class="hdr__drawer-link hdr__drawer-link--muted"
                   (click)="navigateIfLogged('/profile'); menuOpen=false">
-            <mat-icon aria-hidden="true">person</mat-icon><span>Perfil</span>
+            <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
           </button>
           <button class="hdr__drawer-link hdr__drawer-link--danger"
                   (click)="logout(); menuOpen=false">
-            <mat-icon aria-hidden="true">logout</mat-icon><span>Sair</span>
+            <span class="material-icons" aria-hidden="true">logout</span><span>Sair</span>
           </button>
         </ng-container>
         <ng-template #drawerLoginDefault>
           <button class="hdr__drawer-link hdr__drawer-link--muted"
                   (click)="GoTo('/login'); menuOpen=false">
-            <mat-icon aria-hidden="true">login</mat-icon><span>Entrar</span>
+            <span class="material-icons" aria-hidden="true">login</span><span>Entrar</span>
           </button>
           <button class="hdr__drawer-link hdr__drawer-link--muted"
                   (click)="GoTo('/signup'); menuOpen=false">
-            <mat-icon aria-hidden="true">person_add</mat-icon><span>Criar conta</span>
+            <span class="material-icons" aria-hidden="true">person_add</span><span>Criar conta</span>
           </button>
         </ng-template>
       </div>

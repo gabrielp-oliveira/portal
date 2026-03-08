@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 type LoginResponse = {
   accessToken: string;
@@ -25,8 +26,8 @@ export class AuthService {
   private isLoggedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
   public isLogged$ = this.isLoggedSubject.asObservable();
 
-  private readonly AUTH_BASE = 'http://localhost:8080';
-  private readonly REFRESH_URL = '/api/auth/refresh-token';
+  private readonly AUTH_BASE = environment.authUrl;
+  private readonly REFRESH_URL = `${environment.authUrl}/api/auth/refresh-token`;
 
   constructor(private http: HttpClient, private router: Router) {}
 

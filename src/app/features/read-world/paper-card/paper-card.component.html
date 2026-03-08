@@ -3,8 +3,12 @@
     <!-- CAPA -->
     <div class="cover-container">
 
-      <img class="book-cover" [src]="optimizeImage(paperCard.paper.cover_url || '') || optimizeImage(DEFAULT_COVER)" height="200px"
-        alt="{{ paperCard.paper.name }}" class="paper-img" />
+      <img class="paper-img"
+           [src]="(paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:130:195"
+           [srcset]="((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:130:195) + ' 1x, ' + ((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:260:390) + ' 2x'"
+           [alt]="paperCard.paper.name"
+           width="130" height="195"
+           loading="lazy" decoding="async" />
 
     </div>
 

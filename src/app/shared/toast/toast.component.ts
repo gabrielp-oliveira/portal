@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
 import { ToastService, Toast } from '../../core/toast.service';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './toast.component.html',
   styleUrl: './toast.component.scss'
 })

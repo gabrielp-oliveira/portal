@@ -9,7 +9,9 @@
   <!-- Lista de livros ainda não comprados (universo) -->
   <div *ngIf="booksToBuy.length" class="books-grid">
     <div *ngFor="let b of booksToBuy" class="book-card">
-      <img [src]="b.cover_url || DEFAULT_COVER" alt="Capa do livro {{ b.name }}" />
+      <img [src]="(b.cover_url || DEFAULT_COVER) | cloudinary:100:150"
+           [srcset]="((b.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((b.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
+           [alt]="'Capa: ' + b.name" width="100" height="150" loading="lazy" decoding="async" />
       <p class="book-title">{{ b.name }}</p>
     </div>
   </div>

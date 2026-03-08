@@ -1,11 +1,5 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, HostListener, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
 import { Subway_Settings } from '../../models/paperTrailTypes';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -18,15 +12,7 @@ import { ThemeService } from '../../core/theme.service';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule
-  ],
+  imports: [CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -40,8 +26,17 @@ export class HeaderComponent implements OnInit {
   theme = inject(ThemeService);
 
   settings$?: Observable<Subway_Settings>;
-  isLogged = false;
-  menuOpen = false;
+  isLogged    = false;
+  menuOpen    = false;
+  userMenuOpen = false;
+
+  @HostListener('document:click')
+  closeUserMenu(): void { this.userMenuOpen = false; }
+
+  toggleUserMenu(e: MouseEvent): void {
+    e.stopPropagation();
+    this.userMenuOpen = !this.userMenuOpen;
+  }
 
   constructor() {
     this.auth.isLogged$

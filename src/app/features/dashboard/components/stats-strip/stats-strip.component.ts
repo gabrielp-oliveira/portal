@@ -9,4 +9,6 @@ import { StatCard } from '../../dashboard.data.service';
 })
 export class StatsStripComponent {
   @Input() cards: StatCard[] = [];
+
+  trackByLabel(_: number, card: StatCard): string { return card.label; }
 }

@@ -13,12 +13,7 @@ export class PaperCardComponent {
 
   @Input() book: paper;
 
-  defaultCover = 'assets/defaultCover.png'; // ou o caminho que você estiver usando
-  DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
-
-  optimizeImage(url: string, width: number = 300): string {
-    return url?.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
-  }
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
 
   goToBookPage() {
     this.router.navigate(['/store/book', this.book.id])

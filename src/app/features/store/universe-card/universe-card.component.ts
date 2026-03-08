@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { world } from '../../../models/paperTrailTypes';
+import { CloudinaryPipe } from '../../dashboard/pipes/cloudinary.pipe';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -16,7 +17,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatCardModule
+    MatCardModule,
+    CloudinaryPipe,
   ],
   templateUrl: './universe-card.component.html',
   styleUrls: ['./universe-card.component.scss']

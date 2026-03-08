@@ -23,11 +23,6 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'world/:id',
-    loadChildren: () => import('./features/world/world.module').then(c => c.worldModule),
-    canActivate: [authGuard]
-  },
-  {
     path: 'library',
     loadChildren: () => import('./features/library/library.module').then(c => c.LibraryModule),
     canActivate: [authGuard]
@@ -35,11 +30,6 @@ export const routes: Routes = [
   {
     path: 'store',
     loadChildren: () => import('./features/store/store.module').then(c => c.StoreModule),
-  },
-  {
-    path: 'world/:id/chapter/:chapterId',
-    loadChildren: () => import('./features/docx/docx.module').then(c => c.DocxModule),
-    canActivate: [authGuard]
   },
   {
     path: 'read/book/:paperId/chapter/:chapterOrder',

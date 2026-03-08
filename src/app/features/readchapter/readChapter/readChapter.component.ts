@@ -2,7 +2,6 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../../core/auth/auth.service';
-import { DialogService } from '../../../dialog/dialog.service';
 import { ApiService } from '../../../core/api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
 import { ErrorService } from '../../../core/error.service';
@@ -33,7 +32,6 @@ export class ReadChapterComponent implements OnInit {
     private api: ApiService,
     private route: ActivatedRoute,
     private auth: AuthService,
-    private dialog: DialogService,
     private wd: WorldDataService,
     private router: Router,
     private sanitizer: DomSanitizer,

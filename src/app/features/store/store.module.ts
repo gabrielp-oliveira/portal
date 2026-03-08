@@ -38,6 +38,7 @@ import { BookCheckoutComponent } from './book-checkout/book-checkout.component';
 import { authGuard } from '../../guards/auth.guard';
 import { FooterComponent } from '../read-world/footer/footer.component';
 import { TruncatePipe } from "../../truncate.pipe";
+import { CloudinaryPipe } from '../dashboard/pipes/cloudinary.pipe';
 
 const routes: Routes = [
   {
@@ -90,7 +91,8 @@ const routes: Routes = [
     MatRadioModule, // ✅ Adicionado aqui
     AdsComponent,
     HeaderComponent,
-    TruncatePipe
+    TruncatePipe,
+    CloudinaryPipe,
 ]
 })
 export class StoreModule {}

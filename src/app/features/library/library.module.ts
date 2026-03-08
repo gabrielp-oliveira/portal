@@ -19,6 +19,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { PaperCardComponent } from '../read-world/paper-card/paper-card.component';
 import { UniverseCardComponent } from '../store/universe-card/universe-card.component';
 import { TruncatePipe } from '../../truncate.pipe';
+import { CloudinaryPipe } from '../dashboard/pipes/cloudinary.pipe';
 
 const routes: Routes = [
   {
@@ -44,7 +45,8 @@ const routes: Routes = [
     MatIconModule,
     UniverseCardComponent,
     MatPaginatorModule,
-    TruncatePipe
+    TruncatePipe,
+    CloudinaryPipe,
 ]
 })
 export class LibraryModule { }

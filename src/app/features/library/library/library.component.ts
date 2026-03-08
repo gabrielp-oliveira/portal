@@ -94,10 +94,6 @@ fetchBooks(): void {
       this.fetchWorlds();
     }
   }
-    DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_100,f_auto,q_auto/defaultCover_lublod';
-
-    optimizeImage(url: string, width: number = 100): string {
-    return url?.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
-  }
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/defaultCover_lublod';
 
 }

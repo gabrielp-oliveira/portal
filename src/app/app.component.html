@@ -1,5 +1,26 @@
 <app-header *ngIf="showHeaderFooter" [default]="true"></app-header>
 
+<div *ngIf="isNavigating && showHeaderFooter" class="nav-skeleton" [class.dark]="theme.isDark" aria-hidden="true">
+  <div class="nav-sk__inner">
+    <div class="nav-sk__head"></div>
+    <div class="nav-sk__stats">
+      <div class="nav-sk__block" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+    </div>
+    <div class="nav-sk__grid">
+      <div class="nav-sk__col">
+        <div class="nav-sk__block nav-sk__block--tall"></div>
+        <div class="nav-sk__block"></div>
+        <div class="nav-sk__block"></div>
+      </div>
+      <div class="nav-sk__col nav-sk__col--narrow">
+        <div class="nav-sk__block nav-sk__block--activity"></div>
+        <div class="nav-sk__block"></div>
+        <div class="nav-sk__block"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <router-outlet />
 
 <app-footer *ngIf="showHeaderFooter"></app-footer>

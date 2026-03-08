@@ -1,6 +1,17 @@
 <div class="store-container">
+
+  <!-- Skeleton grid while loading -->
+  <div *ngIf="loading" class="book-grid sk-grid-wrap" aria-hidden="true">
+    <div class="sk-store-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]">
+      <div class="sk-store-cover"></div>
+      <div class="sk-store-line sk-store-line--title"></div>
+      <div class="sk-store-line sk-store-line--author"></div>
+      <div class="sk-store-line sk-store-line--price"></div>
+    </div>
+  </div>
+
   <!-- Grid -->
-  <div class="book-grid">
+  <div class="book-grid" *ngIf="!loading">
 
     <!-- 🟦 Livros -->
 <ng-container *ngIf="filter.searchType === 'books'">

@@ -1,4 +1,29 @@
 <app-ads></app-ads>
+
+<!-- Skeleton while loading -->
+<div *ngIf="loading" class="sk-paper-page" aria-hidden="true">
+  <div class="sk-paper-info">
+    <div class="sk-paper-cover"></div>
+    <div class="sk-paper-details">
+      <div class="sk-p-line sk-p-line--title"></div>
+      <div class="sk-p-line sk-p-line--author"></div>
+      <div class="sk-p-line"></div>
+      <div class="sk-p-line sk-p-line--short"></div>
+      <div class="sk-p-line sk-p-line--short"></div>
+      <div class="sk-p-btn"></div>
+    </div>
+  </div>
+  <div class="sk-paper-desc">
+    <div class="sk-p-line" *ngFor="let i of [1,2,3,4,5]"></div>
+  </div>
+  <div class="sk-paper-reco">
+    <div class="sk-reco-card" *ngFor="let i of [1,2,3,4,5]">
+      <div class="sk-reco-cover"></div>
+      <div class="sk-p-line sk-p-line--short"></div>
+    </div>
+  </div>
+</div>
+
 <div *ngIf="paper$ | async as paper" class="book-detail-page">
 
   <app-book-info [book]="paper" [PaperCount]="PaperCount" [worldDescription]="worldDescription" [isPurchased]="isPurchased" [isInWishlist]="isInWishlist"></app-book-info>
