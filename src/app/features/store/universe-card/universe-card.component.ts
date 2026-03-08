@@ -1,12 +1,9 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { world } from '../../../models/paperTrailTypes';
 import { CloudinaryPipe } from '../../dashboard/pipes/cloudinary.pipe';
-import { MatCardModule } from '@angular/material/card';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-universe-card',
@@ -14,10 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [
     CommonModule,
     RouterModule,
-    MatButtonModule,
     MatIconModule,
-    MatTooltipModule,
-    MatCardModule,
     CloudinaryPipe,
   ],
   templateUrl: './universe-card.component.html',
@@ -27,19 +21,22 @@ export class UniverseCardComponent {
   @Input() world: world;
   @Input() library: boolean = false;
 
+  readonly DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
+
   private router = inject(Router);
 
-  defaultCover = 'assets/defaultCover.png';
-  DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
-
-  optimizeImage(url: string): string {
-    if (!url) return this.defaultCover;
-    return url.includes('/upload/')
-      ? url.replace('/upload/', '/upload/w_300,f_auto,q_auto/')
-      : url;
+  get coversCount(): number {
+    return this.world?.CoverURLs?.length || 0;
   }
 
-  goToStoreUniverse() {
-    this.router.navigate(['/store/universe', this.world.id]);
+  formatPrice(value: number | undefined, currency: string = 'USD'): string {
+    if (value == null) return '';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+  }
+
+  navigate(): void {
+    if (!this.library) {
+      this.router.navigate(['/store/universe', this.world.id]);
+    }
   }
 }

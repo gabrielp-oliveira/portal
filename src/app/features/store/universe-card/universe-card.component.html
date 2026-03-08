@@ -1,61 +1,70 @@
-<mat-card class="universe-card">
-  <!-- Capas agrupadas -->
-<div class="covers-container">
-  <!-- Quando há 3 ou mais capas -->
-  <ng-container *ngIf="(world?.CoverURLs?.length || 0) >= 3; else twoCovers">
-    <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225"
-         [srcset]="((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
-         class="cover cover-0" width="150" height="225" loading="lazy" decoding="async" alt="" />
-    <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225"
-         [srcset]="((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
-         class="cover cover-1" width="150" height="225" loading="lazy" decoding="async" alt="" />
-    <img [src]="(world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:150:225"
-         [srcset]="((world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
-         class="cover cover-2" width="150" height="225" loading="lazy" decoding="async" alt="" />
-  </ng-container>
+<div class="universe-card" [class.clickable]="!library"
+  (click)="navigate()"
+  (keyup.enter)="navigate()"
+  [attr.role]="!library ? 'button' : null"
+  [attr.tabindex]="!library ? 0 : null"
+  [attr.aria-label]="!library ? (world.name + ', ' + world.PaperCount + ' book' + (world.PaperCount !== 1 ? 's' : '') + (world.Genres.length ? ', ' + world.Genres.slice(0,2).join(', ') : '') + (world.price != null ? ', ' + formatPrice(world.price, world.price_currency) : '') + '. Press Enter to explore.') : null">
 
-  <!-- Quando há apenas 2 capas -->
-  <ng-template #twoCovers>
-    <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225"
-         [srcset]="((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
-         class="cover cover-1-center" width="150" height="225" loading="lazy" decoding="async" alt="" />
-    <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225"
-         [srcset]="((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
-         class="cover cover-2-center" width="150" height="225" loading="lazy" decoding="async" alt="" />
-  </ng-template>
+  <!-- Cover mosaic -->
+  <div class="cover-section">
 
-  <!-- Logo central -->
-  <div class="logo-overlay">
-    <img src="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp" alt="" aria-hidden="true" width="48" height="48" />
+    <!-- 3+ covers: main left + stacked right -->
+    <ng-container *ngIf="coversCount >= 3">
+      <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:240:300"
+           class="cover cover--main" loading="lazy" decoding="async" alt="" />
+      <div class="cover-stack">
+        <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:160:150"
+             class="cover cover--stack-item" loading="lazy" decoding="async" alt="" />
+        <img [src]="(world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:160:150"
+             class="cover cover--stack-item" loading="lazy" decoding="async" alt="" />
+      </div>
+    </ng-container>
+
+    <!-- 2 covers: side by side -->
+    <ng-container *ngIf="coversCount === 2">
+      <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:200:300"
+           class="cover cover--half" loading="lazy" decoding="async" alt="" />
+      <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:200:300"
+           class="cover cover--half" loading="lazy" decoding="async" alt="" />
+    </ng-container>
+
+    <!-- 1 or 0 covers -->
+    <ng-container *ngIf="coversCount <= 1">
+      <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:400:300"
+           class="cover cover--full" loading="lazy" decoding="async" alt="" />
+    </ng-container>
+
+    <div class="cover-gradient"></div>
+
+    <div class="book-pill">
+      {{ world.PaperCount }} {{ world.PaperCount === 1 ? 'book' : 'books' }}
+    </div>
+
+    <div class="explore-overlay" *ngIf="!library" aria-hidden="true">
+      <span>Explore</span>
+      <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+    </div>
+
   </div>
+
+  <!-- Card body -->
+  <div class="card-body">
+    <h3 class="title">{{ world.name }}</h3>
+
+    <div class="genres" *ngIf="world.Genres.length">
+      <span class="chip" *ngFor="let g of world.Genres.slice(0, 3)">{{ g }}</span>
+    </div>
+
+    <p class="authors" *ngIf="world.Authors.length">
+      {{ world.Authors.slice(0, 2).join(' · ') }}<span *ngIf="world.Authors.length > 2"> +{{ world.Authors.length - 2 }}</span>
+    </p>
+
+    <div class="price-row" *ngIf="world.price != null && !library">
+      <span class="price">{{ formatPrice(world.price, world.price_currency) }}</span>
+      <span class="original-price" *ngIf="world.original_price && world.original_price > world.price">
+        {{ formatPrice(world.original_price, world.price_currency) }}
+      </span>
+    </div>
+  </div>
+
 </div>
-
-
-
-  <!-- Nome do universo -->
-  <h2 class="title">{{ world.name || "" }}</h2>
-  <p class="count">{{ world.PaperCount }} book{{ world.PaperCount > 1 ? 's' : '' }}</p>
-
-  <!-- Descrição curta -->
-
-  <!-- Autores -->
-  <div *ngIf="world.Authors?.length" class="meta-line">
-    <strong>Authors:</strong>
-    <span class="meta-list" matTooltip="{{ world.Authors.join(', ') }}">
-      {{ world.Authors.slice(0, 2).join(', ') }}<span *ngIf="world.Authors.length > 2"> and other(s).</span>
-    </span>
-  </div>
-
-  <!-- Gêneros -->
-  <div *ngIf="world.Genres?.length" class="meta-line">
-    <strong>Genres:</strong>
-    <span class="meta-list" matTooltip="{{ world.Genres.join(', ') }}">
-      {{ world.Genres.slice(0, 2).join(', ') }}<span *ngIf="world.Genres.length > 2"> and more.</span>
-    </span>
-  </div>
-
-  <!-- Botão de ação -->
-  <button mat-raised-button color="accent" class="universe-button" (click)="goToStoreUniverse()" *ngIf="!library">
-    Universe Details
-  </button>
-</mat-card>

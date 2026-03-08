@@ -1,8 +1,16 @@
-import { Component, OnInit } from '@angular/core';
-import { StoreService } from '../../store.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { StoreService, CatalogBooksResponse, CatalogUniversesResponse } from '../../store.service';
 import { paper, StoreFilter, world } from '../../../../models/paperTrailTypes';
 import { PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
+
+// Limites máximos por tipo para controlar peso de imagens:
+// books:     15 por página × 1 imagem  = 15 imagens
+// universes:  6 por página × 3 imagens = 18 imagens
+const LIMIT_BOOKS     = 15;
+const LIMIT_UNIVERSES = 6;
 
 @Component({
   standalone: false,
@@ -10,122 +18,114 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './body-store.component.html',
   styleUrls: ['./body-store.component.scss']
 })
-export class BodyStoreComponent implements OnInit {
+export class BodyStoreComponent implements OnInit, OnDestroy {
   pagedPapers: paper[] = [];
   pagedWorlds: world[] = [];
   totalElements = 0;
   loading = false;
-  DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
+  loadError = false;
 
-  pageSize = 15;
+  pageSize  = LIMIT_BOOKS;
   pageIndex = 0;
 
   filter: StoreFilter = {
     searchType: 'books',
-    quantity: 15,
-    startIndex: 0,
-    sort: 'title',
+    page:  1,
+    limit: LIMIT_BOOKS,
+    sort:  'name',
     order: 'asc',
-    query: '',
-    status: undefined,
   };
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private storeService: StoreService,
     private route: ActivatedRoute,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const page = parseInt(params['page'], 10) || 1;
-      const startIndex = (page - 1) * this.pageSize;
+    // filter$ é a única fonte de verdade. switchMap cancela requests anteriores automaticamente.
+    this.storeService.filter$.pipe(
+      takeUntil(this.destroy$),
+      switchMap(filter => {
+        const typeChanged = filter.searchType !== this.filter.searchType;
 
-      this.pageIndex = page - 1;
+        this.pageSize = filter.searchType === 'universes' ? LIMIT_UNIVERSES : LIMIT_BOOKS;
+        this.filter = { ...filter, limit: this.pageSize, page: filter.page ?? 1 };
 
-      // ⚠️ Não alteramos os outros filtros aqui, apenas o índice
+        if (typeChanged) {
+          this.pageIndex   = 0;
+          this.filter.page = 1;
+          this.pagedPapers = [];
+          this.pagedWorlds = [];
+        } else {
+          this.pageIndex = (this.filter.page ?? 1) - 1;
+        }
 
-      this.filter.searchType = params['searchType'] || 'books';
-      this.filter.query = params['query'] || '';
-      this.filter.genre = params['genre'] || '';
-      this.filter.author = params['author'] || '';
-      this.filter.universe = params['universe'] || '';
-      this.filter.sort = params['sort'] || 'title';
-      this.filter.order = params['order'] || 'asc';
-      this.filter.status = params['status'] || '';
+        this.totalElements = 0;
+        this.loadError     = false;
+        this.loading       = true;
 
-      this.storeService.setFilter({
-        ...this.filter,
-        startIndex,
-        quantity: this.pageSize
-      });
-
-    });
-
-    this.storeService.filter$.subscribe((filter) => {
-      this.filter = {
-        searchType: filter.searchType,
-        query: filter.query ?? '',
-        genre: filter.genre ?? '',
-        author: filter.author ?? '',
-        universe: filter.universe ?? '',
-        sort: filter.sort,
-        order: filter.order,
-        quantity: filter.quantity ?? 15,
-        startIndex: filter.startIndex ?? 0,
-        status: filter.status ?? undefined
-      };
-
-      this.pageSize = this.filter.quantity;
-      this.pageIndex = Math.floor((this.filter.startIndex || 0) / this.pageSize);
-
-      if (this.filter.searchType === 'books') {
-        this.fetchBooks();
-      } else {
-        this.fetchUniverse();
-      }
+        return this.storeService.getCatalog(this.filter);
+      })
+    ).subscribe({
+      next: res => this.applyResult(res),
+      error: () => { this.loading = false; this.loadError = true; }
     });
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get skeletonItems(): number[] {
+    return Array.from({ length: this.pageSize }, (_, i) => i);
+  }
+
+  trackById(_: number, item: { id: string }): string { return item.id; }
 
   onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+    this.pageIndex    = event.pageIndex;
+    this.filter.page  = this.pageIndex + 1;
+    this.filter.limit = this.pageSize;
 
-    const updatedFilter: StoreFilter = {
-      ...this.filter,
-      startIndex: this.pageIndex * this.pageSize,
-      quantity: this.pageSize
-    };
-
-    this.storeService.setFilter(updatedFilter);
-
-    // Atualiza URL com novo page
+    // Atualiza a URL sem mexer no filter$ (evita reset de página pelo topPanel)
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page: this.pageIndex + 1 },
+      queryParams: { page: this.filter.page },
       queryParamsHandling: 'merge'
     });
-  }
 
-  fetchBooks(): void {
-    this.loading = true;
-    this.storeService.getBooks(this.filter).subscribe((res) => {
-      this.pagedPapers = res.papers;
-      this.totalElements = res.total;
-      this.loading = false;
+    // Fetch direto sem passar pelo setFilter para não disparar novo ciclo no switchMap
+    this.loading   = true;
+    this.loadError = false;
+    this.storeService.getCatalog(this.filter).pipe(takeUntil(this.destroy$)).subscribe({
+      next: res => this.applyResult(res),
+      error: () => { this.loading = false; this.loadError = true; }
     });
   }
 
-  fetchUniverse(): void {
-    this.loading = true;
-    this.storeService.getUniverses(this.filter).subscribe((res) => {
-      this.pagedWorlds = res.worlds;
-      this.totalElements = res.total;
-      this.loading = false;
-    });
+  private applyResult(res: CatalogBooksResponse | CatalogUniversesResponse): void {
+    if (res.type === 'books') {
+      this.pagedPapers = (res as CatalogBooksResponse).papers;
+      this.pagedWorlds = [];
+    } else {
+      this.pagedWorlds = (res as CatalogUniversesResponse).worlds;
+      this.pagedPapers = [];
+    }
+    this.totalElements = res.total;
+    this.loading       = false;
+    this.loadError     = false;
   }
 
-  optimizeImage(url: string, width: number = 300): string {
-    return url?.replace('/upload/', `/upload/w_${width},f_auto,q_auto/`);
+  retry(): void {
+    this.loadError = false;
+    this.loading   = true;
+    this.storeService.getCatalog(this.filter).pipe(takeUntil(this.destroy$)).subscribe({
+      next: res => this.applyResult(res),
+      error: () => { this.loading = false; this.loadError = true; }
+    });
   }
 }

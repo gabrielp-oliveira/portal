@@ -1,38 +1,91 @@
-<mat-card class="book-card">
+<div class="book-card"
+  (click)="goToBookPage()"
+  (keyup.enter)="goToBookPage()"
+  role="button"
+  tabindex="0"
+  [attr.aria-label]="book.name + ' by ' + book.author_name + (book.price ? ', ' + formatPrice(book.price, book.priceCurrency) : ', Free') + (book.already_purchased ? ', already in your library' : '')">
+
+  <!-- Cover -->
   <div class="cover-wrapper">
-          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
-    <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:200:300"
-         [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:400:600) + ' 2x'"
-         [alt]="book.name" class="paper-img"
-         width="200" height="300" loading="lazy" decoding="async" />
+    <img
+      [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:200:300"
+      [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:400:600) + ' 2x'"
+      sizes="(max-width: 640px) 140px, 158px"
+      [alt]="book.name + ' by ' + book.author_name + ' — book cover'"
+      class="paper-img"
+      width="200" height="300"
+      loading="lazy" decoding="async"
+    />
+
+    <!-- Status badge -->
+    <div class="status-badge" *ngIf="book.status !== 'available'"
+      [class.in-progress]="book.status === 'in_progress'"
+      aria-hidden="true">
+      {{ book.status === 'in_progress' ? 'In Progress' : 'Unavailable' }}
+    </div>
+
+    <!-- Owned badge -->
+    <div class="owned-badge" *ngIf="book.already_purchased" aria-hidden="true">
+      <mat-icon aria-hidden="true">check_circle</mat-icon> Owned
+    </div>
+
+    <!-- Maturity badge -->
+    <div class="maturity-badge" *ngIf="book.maturity === 'MATURE'" aria-label="Mature content — 18+" aria-hidden="false">18+</div>
+
+    <!-- Wishlist button -->
+    <button
+      class="wishlist-btn"
+      *ngIf="isLogged && !book.already_purchased"
+      [class.active]="isInWishlist"
+      [class.loading]="wishlistLoading"
+      (click)="toggleWishlist($event)"
+      [attr.aria-label]="isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'"
+      [disabled]="wishlistLoading"
+    >
+      <mat-icon>{{ isInWishlist ? 'favorite' : 'favorite_border' }}</mat-icon>
+    </button>
+
+    <!-- Hover overlay (decorativo, ignorado por screen readers) -->
+    <div class="hover-overlay" aria-hidden="true">
+      <span class="view-label">View details</span>
+    </div>
   </div>
 
+  <!-- Info -->
   <div class="book-info">
     <h3 class="book-title">{{ book.name }}</h3>
     <p class="book-author">{{ book.author_name }}</p>
+    <p class="book-universe" *ngIf="book.world_name">{{ book.world_name }}</p>
 
-    <p
-      class="book-genre"
-      *ngIf="book.genre?.length; else emptyGenre"
-    >
-      {{ book.genre }}
-    </p>
-    <ng-template #emptyGenre>
-      <p class="book-genre">&nbsp;</p>
-    </ng-template>
-
-    <p
-      class="book-maturity"
-      [ngClass]="{ mature: book.maturity === 'MATURE' }"
-    >
-      {{ book.maturity || ' ' }}
-      
-    </p>
+    <div class="book-meta-row">
+      <span class="genre-chip" *ngIf="book.genre?.length" [attr.aria-label]="'Genre: ' + book.genre[0]">{{ book.genre[0] }}</span>
+      <span class="pages-chip" *ngIf="book.total_pages">{{ book.total_pages | number }} pp.</span>
+    </div>
   </div>
 
-  <p class="book-price" *ngIf="book.status == 'available'">{{book.price}}</p>
+  <!-- Footer -->
+  <div class="book-footer">
+    <ng-container *ngIf="book.already_purchased; else priceBlock">
+      <span class="owned-label">
+        <mat-icon aria-hidden="true">library_books</mat-icon> In your library
+      </span>
+    </ng-container>
 
-  <button mat-raised-button color="primary" class="buy-button" (click)="goToBookPage()">
-    Details
-  </button>
-</mat-card>
+    <ng-template #priceBlock>
+      <ng-container *ngIf="book.status === 'available'">
+        <div class="price-group">
+          <span class="book-price" *ngIf="book.price">{{ formatPrice(book.price, book.priceCurrency) }}</span>
+          <span class="book-price free" *ngIf="!book.price">Free</span>
+          <span class="original-price" *ngIf="book.original_price && book.original_price > book.price">
+            {{ formatPrice(book.original_price, book.priceCurrency) }}
+          </span>
+        </div>
+        <span class="discount-badge" *ngIf="book.discount_pct">-{{ book.discount_pct | number:'1.0-0' }}%</span>
+      </ng-container>
+      <span class="not-available" *ngIf="book.status !== 'available'">
+        {{ book.status === 'in_progress' ? 'Coming soon' : 'Unavailable' }}
+      </span>
+    </ng-template>
+  </div>
+
+</div>

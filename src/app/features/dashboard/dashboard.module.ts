@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
 import { LoadingComponent } from '../../shared/loading/loading.component';
+import { BackToTopComponent } from '../../shared/back-to-top/back-to-top.component';
 
 import { DashboardDataService } from './dashboard.data.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -39,6 +40,7 @@ const routes: Routes = [{ path: '', component: DashboardComponent }];
     MatButtonModule,
     LoadingComponent,
     CloudinaryPipe,
+    BackToTopComponent,
     RouterModule.forChild(routes),
   ]
 })

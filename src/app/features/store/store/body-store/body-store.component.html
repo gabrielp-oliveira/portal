@@ -1,44 +1,84 @@
-<div class="store-container">
+<div class="store-body">
 
-  <!-- Skeleton grid while loading -->
-  <div *ngIf="loading" class="book-grid sk-grid-wrap" aria-hidden="true">
-    <div class="sk-store-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]">
-      <div class="sk-store-cover"></div>
-      <div class="sk-store-line sk-store-line--title"></div>
-      <div class="sk-store-line sk-store-line--author"></div>
-      <div class="sk-store-line sk-store-line--price"></div>
+  <!-- ── Skeleton ── -->
+  <div *ngIf="loading" aria-busy="true" aria-label="Loading results" role="status">
+    <div class="result-grid" [class.universe-grid]="filter.searchType === 'universes'" aria-hidden="true">
+      <div class="sk-card" *ngFor="let i of skeletonItems">
+        <div class="sk-cover"></div>
+        <div class="sk-lines">
+          <div class="sk-line sk-line--title"></div>
+          <div class="sk-line sk-line--author"></div>
+          <div class="sk-line sk-line--genre"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Grid -->
-  <div class="book-grid" *ngIf="!loading">
+  <ng-container *ngIf="!loading">
 
-    <!-- 🟦 Livros -->
-<ng-container *ngIf="filter.searchType === 'books'">
-  <app-paper-card
-    *ngFor="let book of pagedPapers"
-     [book]="book"    
-  >
-  </app-paper-card>
-</ng-container>
+    <!-- ── Error ── -->
+    <div class="error-state" role="alert" *ngIf="loadError">
+      <mat-icon aria-hidden="true">cloud_off</mat-icon>
+      <p>Couldn't load results.</p>
+      <button class="retry-btn" (click)="retry()">
+        <mat-icon aria-hidden="true">refresh</mat-icon> Try again
+      </button>
+    </div>
 
+    <ng-container *ngIf="!loadError">
 
+      <!-- ── Result header ── -->
+      <div class="results-header" *ngIf="totalElements > 0 || filter.searchType === 'universes'" role="status" aria-live="polite">
+        <p class="results-count" *ngIf="totalElements > 0">
+          <strong>{{ totalElements }}</strong>
+          {{ filter.searchType === 'books' ? (totalElements === 1 ? 'book' : 'books') : (totalElements === 1 ? 'universe' : 'universes') }} found
+        </p>
+        <a class="back-to-browse"
+          *ngIf="filter.searchType === 'universes'"
+          routerLink="/store"
+          [queryParams]="{ page: 1 }"
+          queryParamsHandling=""
+          aria-label="Back to browse">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon> Back to Browse
+        </a>
+      </div>
 
-    <!-- 🌌 Universos -->
-    <ng-container *ngIf="filter.searchType === 'universes'">
-      <ng-container *ngIf="filter.searchType === 'universes'">
-        <app-universe-card *ngFor="let world of pagedWorlds"
-          [world]="world"
-          >
-        </app-universe-card>
-      </ng-container>
+      <!-- ── Books grid ── -->
+      <ul class="result-grid" role="list" aria-label="Books" *ngIf="filter.searchType === 'books' && pagedPapers.length > 0">
+        <li *ngFor="let book of pagedPapers; trackBy: trackById" role="listitem">
+          <app-paper-card [book]="book"></app-paper-card>
+        </li>
+      </ul>
+
+      <!-- ── Universes grid ── -->
+      <ul class="result-grid universe-grid" role="list" aria-label="Universes" *ngIf="filter.searchType === 'universes' && pagedWorlds.length > 0">
+        <li *ngFor="let world of pagedWorlds; trackBy: trackById" role="listitem">
+          <app-universe-card [world]="world"></app-universe-card>
+        </li>
+      </ul>
+
+      <!-- ── Empty state ── -->
+      <div class="empty-state" role="status"
+        *ngIf="(filter.searchType === 'books' && pagedPapers.length === 0) ||
+               (filter.searchType === 'universes' && pagedWorlds.length === 0)">
+        <mat-icon aria-hidden="true">search_off</mat-icon>
+        <p>No {{ filter.searchType }} found.</p>
+        <span>Try adjusting your search or filters.</span>
+      </div>
 
     </ng-container>
 
-  </div>
+  </ng-container>
 
-  <!-- Paginação -->
-  <mat-paginator [length]="totalElements" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[15, 30, 45]"
-    (page)="onPageChange($event)">
+  <!-- ── Pagination ── -->
+  <mat-paginator
+    *ngIf="!loadError && totalElements > pageSize"
+    [length]="totalElements"
+    [pageSize]="pageSize"
+    [pageIndex]="pageIndex"
+    [pageSizeOptions]="[]"
+    (page)="onPageChange($event)"
+    aria-label="Pagination">
   </mat-paginator>
+
 </div>

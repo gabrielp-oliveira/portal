@@ -1,83 +1,152 @@
-<ng-container style="display: flex; flex-direction: column; align-items: center; border: 2px solid red;">
+<aside class="sidebar">
 
-  <div class="header-container">
-
-    <!-- 🔍 Tipo + busca principal -->
-    <div class="search-row">
-      <mat-form-field appearance="outline">
-        <mat-label>Search Type</mat-label>
-        <mat-select [(ngModel)]="searchType" (selectionChange)="emitFilters()">
-          <mat-option value="books">Books</mat-option>
-          <mat-option value="universes">Universes</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ searchType === 'books' ? 'Search books...' : 'Search universes...' }}</mat-label>
-        <input matInput [(ngModel)]="query" (keyup.enter)="emitFilters()" />
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" (click)="applyFilters()">Filter</button>
-      <button mat-stroked-button color="warn" (click)="resetFilters()">Clear</button>
-    </div>
-
-    <!-- 📚 Filtros adicionais -->
-    <div class="filter-row">
-
-      <!-- 🎭 Genre -->
-      <mat-form-field appearance="outline">
-        <mat-label>Genre</mat-label>
-        <mat-select [(ngModel)]="genre">
-          <mat-option>
-            <input matInput placeholder="Search genres..." [(ngModel)]="genreSearch" />
-          </mat-option>
-          <mat-option *ngFor="let g of filteredGenres" [value]="g">{{ g }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- 🧠 Author -->
-      <mat-form-field appearance="outline">
-        <mat-label>Author</mat-label>
-        <mat-select [(ngModel)]="author">
-          <mat-option>
-            <input matInput placeholder="Search authors..." [(ngModel)]="authorSearch" />
-          </mat-option>
-          <mat-option *ngFor="let a of filteredAuthors" [value]="a">{{ a }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- 📦 Status -->
-      <mat-form-field appearance="outline">
-        <mat-label>Status</mat-label>
-        <mat-select [(ngModel)]="status">
-          <mat-option value="">All</mat-option>
-          <mat-option value="available">Available</mat-option>
-          <mat-option value="not_available">Not Available</mat-option>
-          <mat-option value="in_progress">In Progress</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- 🔃 Sort -->
-      <mat-form-field appearance="outline">
-        <mat-label>Sort By</mat-label>
-        <mat-select [(ngModel)]="sort">
-          <mat-option value="name">Name</mat-option>
-          <mat-option value="created_at">Created Date</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- ↕ Order -->
-      <mat-form-field appearance="outline">
-        <mat-label>Order</mat-label>
-        <mat-select [(ngModel)]="order">
-          <mat-option value="asc">ASC</mat-option>
-          <mat-option value="desc">DESC</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-    </div>
-
+  <!-- Header -->
+  <div class="sidebar-header">
+    <mat-icon class="sidebar-icon">storefront</mat-icon>
+    <span class="sidebar-title">Store</span>
+    <span class="result-count" *ngIf="activeFilterCount > 0">
+      {{ activeFilterCount }} filter{{ activeFilterCount > 1 ? 's' : '' }}
+    </span>
   </div>
-  <div class="header-divider"></div>
 
-</ng-container>
+  <!-- Type toggle -->
+  <div class="type-toggle" role="group" aria-label="Search type">
+    <button class="toggle-btn" [class.active]="searchType === 'books'" (click)="setSearchType('books')">
+      <mat-icon>menu_book</mat-icon> Books
+    </button>
+    <button class="toggle-btn" [class.active]="searchType === 'universes'" (click)="setSearchType('universes')">
+      <mat-icon>public</mat-icon> Universes
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-box">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      class="search-input"
+      [placeholder]="searchType === 'books' ? 'Books, authors...' : 'Universes...'"
+      [(ngModel)]="query"
+      (input)="onSearchInput()"
+      (keyup.enter)="emitFilters()"
+    />
+    <button class="clear-btn" *ngIf="query" (click)="clearQuery()" aria-label="Clear">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Sort -->
+  <div class="filter-section">
+    <p class="filter-label">Sort by</p>
+    <div class="sort-grid">
+      <button
+        class="sort-btn"
+        *ngFor="let s of sortOptions"
+        [class.active]="sort === s.value"
+        (click)="sort = s.value; emitFilters()">
+        {{ s.label }}
+      </button>
+    </div>
+    <div class="order-row">
+      <button class="order-btn" [class.active]="order === 'asc'" (click)="order = 'asc'; emitFilters()">
+        <mat-icon>arrow_upward</mat-icon> Asc
+      </button>
+      <button class="order-btn" [class.active]="order === 'desc'" (click)="order = 'desc'; emitFilters()">
+        <mat-icon>arrow_downward</mat-icon> Desc
+      </button>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Genre -->
+  <div class="filter-section">
+    <p class="filter-label">Genre</p>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="genre" (selectionChange)="emitFilters()">
+        <mat-option value="">All genres</mat-option>
+        <mat-option>
+          <input matInput placeholder="Search genres..." [(ngModel)]="genreSearch" (click)="$event.stopPropagation()" />
+        </mat-option>
+        <mat-option *ngFor="let g of filteredGenres" [value]="g">{{ g }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Author (books only) -->
+  <div class="filter-section" *ngIf="searchType === 'books'">
+    <p class="filter-label">Author</p>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="author" (selectionChange)="emitFilters()">
+        <mat-option value="">All authors</mat-option>
+        <mat-option>
+          <input matInput placeholder="Search authors..." [(ngModel)]="authorSearch" (click)="$event.stopPropagation()" />
+        </mat-option>
+        <mat-option *ngFor="let a of filteredAuthors" [value]="a">{{ a }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Availability (books only) -->
+  <div class="filter-section" *ngIf="searchType === 'books'">
+    <p class="filter-label">Availability</p>
+    <div class="status-btns">
+      <button class="status-btn"
+        [class.active]="status === '' && price_max !== 0"
+        (click)="status = ''; price_max = null; emitFilters()">All</button>
+      <button class="status-btn"
+        [class.active]="status === 'available'"
+        (click)="status = 'available'; price_max = null; emitFilters()">Available</button>
+      <button class="status-btn"
+        [class.active]="status === 'in_progress'"
+        (click)="status = 'in_progress'; price_max = null; emitFilters()">In Progress</button>
+      <button class="status-btn"
+        [class.active]="status === 'not_available'"
+        (click)="status = 'not_available'; price_max = null; emitFilters()">Unavailable</button>
+      <button class="status-btn"
+        [class.active]="price_max === 0"
+        [attr.aria-pressed]="price_max === 0"
+        (click)="price_max = (price_max === 0 ? null : 0); status = ''; emitFilters()">Free only</button>
+    </div>
+  </div>
+
+  <!-- Language (books only) -->
+  <div class="filter-section" *ngIf="searchType === 'books' && languages.length > 0">
+    <p class="filter-label">Language</p>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="language" (selectionChange)="emitFilters()">
+        <mat-option value="">All languages</mat-option>
+        <mat-option *ngFor="let l of languages" [value]="l">{{ l }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Maturity (books only) -->
+  <div class="filter-section" *ngIf="searchType === 'books'">
+    <p class="filter-label">Maturity</p>
+    <div class="status-btns">
+      <button class="status-btn" [class.active]="maturity === ''" (click)="maturity = ''; emitFilters()">All</button>
+      <button class="status-btn" *ngFor="let m of MATURITIES" [class.active]="maturity === m.value" (click)="maturity = m.value; emitFilters()">{{ m.label }}</button>
+    </div>
+  </div>
+
+  <!-- Active chips -->
+  <div class="active-chips" *ngIf="hasActiveFilters">
+    <span class="chip" *ngIf="genre">{{ genre }}<button (click)="genre = ''; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="author">{{ author }}<button (click)="author = ''; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="status">{{ status.replace('_', ' ') }}<button (click)="status = ''; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="language">{{ language }}<button (click)="language = ''; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="maturity">{{ maturity }}<button (click)="maturity = ''; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="year">{{ year }}<button (click)="year = null; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="price_max === 0">Free only<button (click)="price_max = null; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="sort !== 'name'">{{ sort }}<button (click)="sort = 'name'; emitFilters()">×</button></span>
+    <span class="chip" *ngIf="order !== 'asc'">DESC<button (click)="order = 'asc'; emitFilters()">×</button></span>
+  </div>
+
+  <!-- Reset -->
+  <button class="reset-btn" *ngIf="hasActiveFilters" (click)="resetFilters()">
+    <mat-icon>restart_alt</mat-icon> Clear all filters
+  </button>
+
+</aside>

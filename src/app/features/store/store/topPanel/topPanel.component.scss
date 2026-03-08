@@ -1,165 +1,380 @@
-.search-section {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-
-  select, input {
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
-
-  button {
-    background-color: #2563eb; // azul
-    color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-
-    &:hover {
-      background-color: #1d4ed8;
-    }
-  }
+// ─── CSS variables ────────────────────────────────────────────────────────────
+:host {
+  --surface:    #ffffff;
+  --bg:         #F4F4F0;
+  --border:     #E5E3DC;
+  --text:       #1C1917;
+  --muted:      #78716C;
+  --primary:    #B8732A;
+  --primary-dk: #9E5F1E;
+  --primary-bg: rgba(184, 115, 42, 0.10);
+  --chip-bg:    rgba(184, 115, 42, 0.10);
+  --chip-fg:    #9E5F1E;
 }
 
-.header-divider {
-  width: 100%;
-  height: 5px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #ff7e3f, #ffb347);
+:host-context(.dark-theme) {
+  --surface:    #1C1B1A;
+  --bg:         #111110;
+  --border:     #2E2C2A;
+  --text:       #F5F4F0;
+  --muted:      #A8A29E;
+  --primary:    #F0A830;
+  --primary-dk: #D4901A;
+  --primary-bg: rgba(240, 168, 48, 0.12);
+  --chip-bg:    rgba(240, 168, 48, 0.12);
+  --chip-fg:    #F0A830;
 }
 
-.header-container {
+$radius: 10px;
+$transition: 0.18s ease;
+
+// ─── Sidebar container ────────────────────────────────────────────────────────
+.sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  background: rgb(251, 251, 251);
+  gap: 14px;
+  // teal top accent line
+  border-top: 3px solid var(--primary);
+}
+
+// ─── Header ──────────────────────────────────────────────────────────────────
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-icon {
+  color: var(--primary);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.result-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: 12px;
-  // box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 20px;
+  background: var(--primary-bg);
+  color: var(--primary);
 }
 
-.search-row,
-.filter-row {
+// ─── Type toggle ──────────────────────────────────────────────────────────────
+.type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggle-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.full-width {
-  flex: 1;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 24px;
-  border-bottom: 1px solid #ddd;
-  font-family: "Segoe UI", sans-serif;
-  background-color: #fefefe;
-  color: #333;
-  flex-wrap: wrap;
-  gap: 12px;
-
-  &.dark {
-    background-color: #1e1e1e;
-    color: #f4f4f4;
-    border-bottom: 1px solid #444;
-
-    .btn-flat {
-      color: #ddd;
-
-      &:hover {
-        opacity: 0.7;
-      }
-    }
-
-    .user-icon {
-      background-color: #444;
-      color: #fff;
-    }
-
-    .icon {
-      color: #ccc;
-    }
-  }
-}
-
-.header-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.middle-group {
-  flex: 1;
   justify-content: center;
-  display: flex;
-  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: background $transition, color $transition, box-shadow $transition;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+  &.active {
+    background: var(--surface);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  }
+
+  &:not(.active):hover { color: var(--text); }
 }
 
-.btn-flat {
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: #444;
+// ─── Search box ───────────────────────────────────────────────────────────────
+.search-box {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: opacity 0.2s;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  transition: border-color $transition;
 
-  &:hover {
-    opacity: 0.7;
+  &:focus-within { border-color: var(--primary); }
+
+  .search-icon {
+    color: var(--muted);
+    font-size: 18px;
+    flex-shrink: 0;
   }
 }
 
-.user-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #ddd;
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  color: var(--text);
+  padding: 9px 0;
+  outline: none;
+
+  &::placeholder { color: var(--muted); }
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color $transition;
+
+  mat-icon { font-size: 16px; }
+  &:hover { color: var(--text); }
+}
+
+// ─── Divider ─────────────────────────────────────────────────────────────────
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+// ─── Filter sections ──────────────────────────────────────────────────────────
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+// ─── Sort grid ────────────────────────────────────────────────────────────────
+.sort-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.sort-btn {
+  padding: 4px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color $transition, color $transition, background $transition;
+
+  &.active {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  &:not(.active):hover { border-color: var(--primary); color: var(--text); }
+}
+
+// ─── Order row ────────────────────────────────────────────────────────────────
+.order-row {
+  display: flex;
+  gap: 5px;
+}
+
+.order-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.home-icon {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  border-radius: 30px;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
   cursor: pointer;
+  transition: border-color $transition, color $transition, background $transition;
 
-  // Efeito de botão interativo
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
 
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: scale(0.95);
+  &.active {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-weight: 600;
   }
 }
 
-// Tema escuro: sombra mais sutil
-.header.dark .home-icon:hover {
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
+// ─── Material form fields (compact) ───────────────────────────────────────────
+.filter-field {
+  width: 100%;
+
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+  ::ng-deep .mat-mdc-text-field-wrapper { padding-bottom: 0; }
+  ::ng-deep .mdc-text-field { background: var(--bg) !important; }
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: var(--border) !important;
+  }
+  ::ng-deep .mat-mdc-select-value { color: var(--text); font-size: 0.85rem; }
+  ::ng-deep .mat-mdc-form-field-label { color: var(--muted); }
 }
-.headerButtons {
-  align-self: center;
-  align-items: center;
+
+// ─── Status / maturity button group ───────────────────────────────────────────
+.status-btns {
   display: flex;
-  height: 100%;
-  button {
-    margin: 3px;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.status-btn {
+  padding: 4px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color $transition, color $transition, background $transition;
+
+  &.active {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-weight: 600;
   }
+
+  &:not(.active):hover { border-color: var(--primary); color: var(--text); }
+}
+
+// ─── Price row ────────────────────────────────────────────────────────────────
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.price-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0 8px;
+  gap: 3px;
+  transition: border-color $transition;
+
+  &:focus-within { border-color: var(--primary); }
+}
+
+.price-sym {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.price-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 7px 0;
+  font-size: 0.82rem;
+  color: var(--text);
+  outline: none;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button { opacity: 0.4; }
+}
+
+.price-sep {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+// ─── Active chips ─────────────────────────────────────────────────────────────
+.active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  background: var(--chip-bg);
+  border-radius: 20px;
+  font-size: 0.72rem;
+  color: var(--chip-fg);
+  font-weight: 600;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--chip-fg);
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0 0 0 1px;
+    opacity: 0.7;
+    &:hover { opacity: 1; }
+  }
+}
+
+// ─── Reset button ─────────────────────────────────────────────────────────────
+.reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color $transition, color $transition;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+  &:hover { border-color: #dc2626; color: #dc2626; }
 }

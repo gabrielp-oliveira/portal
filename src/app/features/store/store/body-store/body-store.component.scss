@@ -1,102 +1,219 @@
-.store-container {
-  padding: 32px 16px;
+// ─── CSS variables ────────────────────────────────────────────────────────────
+:host {
+  --surface:    #ffffff;
+  --bg:         #F4F4F0;
+  --border:     #E5E3DC;
+  --text:       #1C1917;
+  --muted:      #78716C;
+  --primary:    #B8732A;
+  --sk-base:    #E5E3DC;
+  --sk-shine:   #F4F4F0;
+}
+
+:host-context(.dark-theme) {
+  --surface:    #1C1B1A;
+  --bg:         #111110;
+  --border:     #2E2C2A;
+  --text:       #F5F4F0;
+  --muted:      #A8A29E;
+  --primary:    #F0A830;
+  --sk-base:    #2E2C2A;
+  --sk-shine:   #3A3836;
+}
+
+$radius: 10px;
+
+// ─── Body wrapper ─────────────────────────────────────────────────────────────
+.store-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+// ─── Result header ────────────────────────────────────────────────────────────
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.back-to-browse {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+  margin-left: auto;
+
+  mat-icon { font-size: 15px; width: 15px; height: 15px; }
+  &:hover { background: var(--border); color: var(--text); }
+}
+
+.results-count {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+
+  strong { color: var(--text); }
+}
+
+// ─── Grids ────────────────────────────────────────────────────────────────────
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 16px;
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  // universos têm card mais largo
+  &.universe-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+// ─── Error state ──────────────────────────────────────────────────────────────
+.error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--muted);
+    opacity: 0.4;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
 }
 
-.book-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 24px;
-  width: 100%;
-  max-width: 1280px;
+.retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+  &:hover { background: #9E5F1E; }
 }
 
-.book-card {
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.empty-state {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 80px 24px;
+  width: 100%;
+  text-align: center;
 
-  img.paperImg {
-    height: 260px;
-    width: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--muted);
+    opacity: 0.35;
   }
 
-  mat-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-top: 10px;
-  }
+  p   { margin: 0; font-size: 1rem; font-weight: 600; color: var(--text); }
+  span { font-size: 0.875rem; color: var(--muted); }
+}
 
-  mat-card-subtitle {
-    font-size: 0.9rem;
-    color: #777;
-    margin-bottom: 4px;
-  }
+// ─── Paginator ────────────────────────────────────────────────────────────────
+mat-paginator {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: $radius;
+  background: var(--surface);
+}
 
-  .genre-price {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    padding: 0 4px;
-    margin: 10px 0;
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+%shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--sk-base)  25%,
+    var(--sk-shine) 50%,
+    var(--sk-base)  75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
 
-    .price {
-      font-weight: bold;
-      color: #222;
+.sk-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.sk-cover {
+  @extend %shimmer;
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  border-radius: 0;
+}
+
+.sk-lines {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk-line {
+  @extend %shimmer;
+  height: 12px;
+
+  &--title  { width: 80%; height: 14px; }
+  &--author { width: 55%; }
+  &--genre  { width: 40%; height: 10px; }
+}
+
+@keyframes shimmer {
+  from { background-position: -800px 0; }
+  to   { background-position:  800px 0; }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .result-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+
+    &.universe-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
   }
-
-  .buy-button {
-    width: 100%;
-    margin-top: auto;
-  }
-}
-
-mat-paginator {
-  margin-top: 32px;
-  width: 100%;
-  max-width: 1280px;
-  display: flex;
-  justify-content: center;
-}
-
-
-// ── Skeleton ─────────────────────────────────────────────────────────────────
-%sk-store {
-  background: linear-gradient(90deg, #e8e8e4 25%, #f0f0ec 50%, #e8e8e4 75%);
-  background-size: 1600px 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 8px;
-}
-
-.sk-store-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: #fff;
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.05);
-}
-
-.sk-store-cover {
-  @extend %sk-store;
-  height: 260px;
-  border-radius: 8px;
-}
-
-.sk-store-line {
-  @extend %sk-store;
-  height: 13px;
-  border-radius: 6px;
-  &--title  { height: 16px; width: 75%; }
-  &--author { width: 55%; }
-  &--price  { width: 40%; }
 }

@@ -1,8 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
-import { fromEvent } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ThemeService } from '../../../core/theme.service';
 import { DashboardDataService } from '../dashboard.data.service';
@@ -20,9 +18,6 @@ export class DashboardComponent implements OnInit {
 
   isDark        = this.theme.isDark;
   statsCollapsed = true;
-  showBackToTop  = false;
-
-  scrollToTop(): void { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   constructor(
     private auth:         AuthService,
@@ -30,7 +25,6 @@ export class DashboardComponent implements OnInit {
     public  ds:           DashboardDataService,
     private titleService: Title,
     private meta:         Meta,
-    private ngZone:       NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -47,18 +41,6 @@ export class DashboardComponent implements OnInit {
     this.ds.stateChanged$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.cdr.markForCheck());
-
-    // Scroll fora da zona — só entra na zona quando o valor muda
-    this.ngZone.runOutsideAngular(() => {
-      fromEvent(window, 'scroll', { passive: true })
-        .pipe(throttleTime(150), takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => {
-          const next = window.scrollY > 300;
-          if (next !== this.showBackToTop) {
-            this.ngZone.run(() => { this.showBackToTop = next; this.cdr.markForCheck(); });
-          }
-        });
-    });
 
     this.ds.load(this.destroyRef);
   }

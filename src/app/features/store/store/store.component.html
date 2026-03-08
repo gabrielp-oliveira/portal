@@ -1,5 +1,299 @@
-<div class="store-container">
-    <app-top-panel ></app-top-panel>
-    <app-ads></app-ads>
-    <app-store-body ></app-store-body>
+<div class="st" [class.sidebar-open]="sidebarOpen">
+
+  <!-- ── Mobile filter toggle ── -->
+  <button class="filter-fab"
+    (click)="toggleSidebar()"
+    [attr.aria-expanded]="sidebarOpen"
+    aria-controls="store-sidebar"
+    aria-label="Toggle filters">
+    <mat-icon aria-hidden="true">{{ sidebarOpen ? 'close' : 'tune' }}</mat-icon>
+    <span class="filter-fab__label">{{ sidebarOpen ? 'Close' : 'Filters' }}</span>
+  </button>
+
+  <!-- ── Sidebar backdrop (mobile) ── -->
+  <div class="sidebar-backdrop" aria-hidden="true" (click)="closeSidebar()"></div>
+
+  <!-- ── Sidebar ── -->
+  <aside id="store-sidebar"
+    class="st__sidebar"
+    [class.search-active]="isSearchMode"
+    [class.is-open]="sidebarOpen"
+    aria-label="Store filters">
+    <app-top-panel></app-top-panel>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="st__main" aria-label="Store catalog">
+
+    <h1 class="sr-only">Book Store — Discover Books &amp; Universes</h1>
+
+    <!-- ══════════ BROWSE MODE ══════════ -->
+    <ng-container *ngIf="!isSearchMode">
+
+      <!-- ── Skeleton ── -->
+      <ng-container *ngIf="loadingSections">
+        <div aria-busy="true" aria-label="Loading store content" role="status" class="sk-root">
+
+          <div class="sk-hero" aria-hidden="true">
+            <div class="sk-hero__cover"></div>
+            <div class="sk-hero__body">
+              <div class="sk-line sk-line--sm"></div>
+              <div class="sk-line sk-line--lg"></div>
+              <div class="sk-line sk-line--md"></div>
+              <div class="sk-line sk-line--desc"></div>
+              <div class="sk-line sk-line--desc"></div>
+            </div>
+          </div>
+
+          <div class="sk-stats" aria-hidden="true">
+            <div class="sk-stat" *ngFor="let s of [1,2,3]"></div>
+          </div>
+
+          <div class="sk-section" *ngFor="let s of [1,2,3]" aria-hidden="true">
+            <div class="sk-line sk-line--md" style="width:140px; margin-bottom:4px"></div>
+            <div class="sk-shelf">
+              <div class="sk-card" *ngFor="let i of [1,2,3,4]">
+                <div class="sk-card__cover"></div>
+                <div class="sk-card__foot">
+                  <div class="sk-line sk-line--md"></div>
+                  <div class="sk-line sk-line--sm"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── Error ── -->
+      <div class="store-error" role="alert" *ngIf="!loadingSections && loadError">
+        <mat-icon class="store-error__icon" aria-hidden="true">cloud_off</mat-icon>
+        <h2 class="store-error__title">Couldn't load the store</h2>
+        <p class="store-error__desc">Something went wrong while fetching content. Check your connection and try again.</p>
+        <button class="btn-primary" (click)="retry()">
+          <mat-icon aria-hidden="true">refresh</mat-icon> Try again
+        </button>
+      </div>
+
+      <!-- ── Content ── -->
+      <ng-container *ngIf="!loadingSections && !loadError">
+
+        <!-- ── Hero ── -->
+        <article class="hero panel" *ngIf="heroBook"
+          (click)="goToBook(heroBook)"
+          (keyup.enter)="goToBook(heroBook)"
+          tabindex="0"
+          role="link"
+          [attr.aria-label]="heroBook.name + ' by ' + heroBook.author_name + ' — ' + (heroBook.price ? formatPrice(heroBook.price, heroBook.priceCurrency) : 'Free') + '. Featured book. Press Enter to view.'">
+
+          <div class="hero__backdrop" aria-hidden="true"
+            [style.background-image]="'url(' + (heroBook.cover_url | cloudinary:40:60) + ')'">
+          </div>
+
+          <div class="hero__badge" aria-hidden="true">
+            <mat-icon aria-hidden="true">star</mat-icon> Featured
+          </div>
+
+          <!-- Wishlist hero -->
+          <button class="hero__wishlist"
+            *ngIf="isLogged && !heroBook.already_purchased"
+            [class.active]="heroIsInWishlist"
+            [class.loading]="heroWishlistLoading"
+            [disabled]="heroWishlistLoading"
+            (click)="toggleHeroWishlist($event)"
+            [attr.aria-label]="heroIsInWishlist ? 'Remove from wishlist' : 'Add to wishlist'">
+            <mat-icon>{{ heroIsInWishlist ? 'favorite' : 'favorite_border' }}</mat-icon>
+          </button>
+
+          <div class="hero__inner">
+            <img class="hero__cover"
+              [src]="heroBook.cover_url | cloudinary:310:465"
+              [srcset]="(heroBook.cover_url | cloudinary:155:233) + ' 1x, ' + (heroBook.cover_url | cloudinary:310:465) + ' 2x'"
+              sizes="(max-width: 640px) 96px, 155px"
+              [alt]="heroBook.name + ' — book cover'"
+              width="155" height="233"
+              loading="eager"
+              fetchpriority="high" />
+
+            <div class="hero__info">
+              <h2 class="hero__title">{{ heroBook.name }}</h2>
+              <p class="hero__author">by {{ heroBook.author_name }}</p>
+
+              <p class="hero__universe" *ngIf="heroBook.world_name">
+                <mat-icon aria-hidden="true">public</mat-icon>{{ heroBook.world_name }}
+              </p>
+
+              <div class="hero__tags" aria-label="Genres">
+                <span class="hero__tag" *ngFor="let g of heroBook.genre">{{ g }}</span>
+              </div>
+
+              <p class="hero__desc">{{ truncate(heroBook.description, 220) }}</p>
+
+              <div class="hero__footer">
+                <span class="hero__price" aria-label="Price">
+                  {{ heroBook.price ? formatPrice(heroBook.price, heroBook.priceCurrency) : 'Free' }}
+                </span>
+                <div class="hero__actions" (click)="$event.stopPropagation()">
+                  <a class="btn-primary"
+                    [routerLink]="['/store/book', heroBook.id]"
+                    [attr.aria-label]="'View ' + heroBook.name">
+                    View Book <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                  </a>
+                  <a class="btn-secondary"
+                    *ngIf="heroBook.world_id"
+                    [routerLink]="['/store/universe', heroBook.world_id]"
+                    [attr.aria-label]="'View universe ' + heroBook.world_name">
+                    <mat-icon aria-hidden="true">public</mat-icon> Universe
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- ── Stats strip ── -->
+        <div class="stats-strip" *ngIf="stats.availableBooks > 0">
+
+          <!-- Métricas -->
+          <div class="stats-metrics" aria-label="Store statistics">
+            <div class="stats-item">
+              <mat-icon aria-hidden="true">menu_book</mat-icon>
+              <div class="stats-text">
+                <span class="stats-num">{{ stats.availableBooks }}</span>
+                <span class="stats-label">Available</span>
+              </div>
+            </div>
+            <div class="stats-divider" aria-hidden="true"></div>
+            <div class="stats-item">
+              <mat-icon aria-hidden="true">public</mat-icon>
+              <div class="stats-text">
+                <span class="stats-num">{{ stats.totalUniverses }}</span>
+                <span class="stats-label">Universes</span>
+              </div>
+            </div>
+            <div class="stats-divider" aria-hidden="true"></div>
+            <div class="stats-item">
+              <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+              <div class="stats-text">
+                <span class="stats-num">{{ stats.newAvailableThisMonth }}</span>
+                <span class="stats-label">New</span>
+              </div>
+            </div>
+            <div class="stats-divider" aria-hidden="true"></div>
+            <div class="stats-item">
+              <mat-icon aria-hidden="true">schedule</mat-icon>
+              <div class="stats-text">
+                <span class="stats-num">{{ stats.comingSoonBooks }}</span>
+                <span class="stats-label">Coming soon</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick nav -->
+          <nav class="stats-nav" aria-label="My account shortcuts">
+            <a class="stats-nav__btn" routerLink="/library" aria-label="My library">
+              <mat-icon aria-hidden="true">local_library</mat-icon>
+              <span>Library</span>
+            </a>
+            <a class="stats-nav__btn" routerLink="/library" [queryParams]="{ tab: 'purchases' }" aria-label="Purchase history">
+              <mat-icon aria-hidden="true">receipt_long</mat-icon>
+              <span>History</span>
+            </a>
+            <a class="stats-nav__btn" [routerLink]="['/store']" [queryParams]="{ purchased: false }" aria-label="Wishlist">
+              <mat-icon aria-hidden="true">favorite</mat-icon>
+              <span>Wishlist</span>
+            </a>
+          </nav>
+
+        </div>
+
+        <!-- ── Trending Now ── -->
+        <section class="store-section" *ngIf="trendingBooks.length > 0" aria-labelledby="trending-title">
+          <header class="section-hd">
+            <div class="section-label">
+              <span class="section-accent accent-fire" aria-hidden="true"></span>
+              <mat-icon class="section-icon icon-fire" aria-hidden="true">local_fire_department</mat-icon>
+              <h2 class="section-title" id="trending-title">Trending Now</h2>
+            </div>
+            <button class="see-all" (click)="seeAll({ sort: 'purchases', order: 'desc', status: 'available' })" aria-label="See all trending books">
+              See all <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </header>
+          <ul class="shelf" role="list" aria-label="Trending books">
+            <li class="shelf-slot" *ngFor="let book of trendingBooks; trackBy: trackById" role="listitem">
+              <app-paper-card [book]="book"></app-paper-card>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ── New Releases ── -->
+        <section class="store-section" *ngIf="newReleases.length > 0" aria-labelledby="releases-title">
+          <header class="section-hd">
+            <div class="section-label">
+              <span class="section-accent accent-new" aria-hidden="true"></span>
+              <mat-icon class="section-icon icon-new" aria-hidden="true">auto_awesome</mat-icon>
+              <h2 class="section-title" id="releases-title">New Releases</h2>
+            </div>
+            <button class="see-all" (click)="seeAll({ sort: 'created_at', order: 'desc', status: 'available' })" aria-label="See all new releases">
+              See all <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </header>
+          <ul class="shelf" role="list" aria-label="New releases">
+            <li class="shelf-slot" *ngFor="let book of newReleases; trackBy: trackById" role="listitem">
+              <app-paper-card [book]="book"></app-paper-card>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ── Recommended for You ── -->
+        <section class="store-section" *ngIf="recommendedBooks.length > 0" aria-labelledby="reco-title">
+          <header class="section-hd">
+            <div class="section-label">
+              <span class="section-accent accent-reco" aria-hidden="true"></span>
+              <mat-icon class="section-icon icon-reco" aria-hidden="true">recommend</mat-icon>
+              <h2 class="section-title" id="reco-title">Recommended for You</h2>
+            </div>
+          </header>
+          <ul class="shelf" role="list" aria-label="Recommended books">
+            <li class="shelf-slot" *ngFor="let book of recommendedBooks; trackBy: trackById" role="listitem">
+              <app-paper-card [book]="book"></app-paper-card>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ── Browse Universes (lazy) ── -->
+        <section class="store-section" aria-labelledby="universes-title">
+          <header class="section-hd">
+            <div class="section-label">
+              <span class="section-accent accent-universe" aria-hidden="true"></span>
+              <mat-icon class="section-icon icon-universe" aria-hidden="true">public</mat-icon>
+              <h2 class="section-title" id="universes-title">Browse Universes</h2>
+            </div>
+          </header>
+
+          <!-- Sentinel para o IntersectionObserver -->
+          <div #universeAnchor></div>
+
+          <!-- Skeleton enquanto carrega -->
+          <div class="universe-grid" *ngIf="universesLoading" aria-hidden="true">
+            <div class="sk-universe-card" *ngFor="let i of [1,2,3,4]"></div>
+          </div>
+
+          <!-- Conteúdo -->
+          <ul class="universe-grid" role="list" aria-label="Featured universes"
+            *ngIf="!universesLoading && topUniverses.length > 0">
+            <li *ngFor="let world of topUniverses; trackBy: trackById" role="listitem">
+              <app-universe-card [world]="world"></app-universe-card>
+            </li>
+          </ul>
+        </section>
+
+      </ng-container>
+    </ng-container>
+
+    <!-- ══════════ SEARCH MODE ══════════ -->
+    <app-store-body *ngIf="isSearchMode"></app-store-body>
+
+  </main>
 </div>
+
+<app-back-to-top></app-back-to-top>

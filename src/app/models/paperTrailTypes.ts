@@ -3,6 +3,8 @@ export type world = {
     name: string,
     description: string,
     created_at?: string,
+    language?: string,
+    main_genre?: string[],
     chapters: Chapter[],
     events: Event[],
     connections: Connection[],
@@ -11,10 +13,14 @@ export type world = {
     storyLines: StoryLine[]
     groupConnections: GroupConnection[],
     subway_settings: Subway_Settings,
-    CoverURLs: string[], // ✅ NOVO
-    PaperCount: number      // ✅ NOVO
+    CoverURLs: string[],
+    PaperCount: number,
     Genres: string[],
-    Authors: string[]
+    Authors: string[],
+    price?: number,
+    original_price?: number,
+    price_currency?: string,
+    price_country?: string,
 }
 
 export type info<t> = {
@@ -71,6 +77,14 @@ export type paper = {
 
     total_pages: number;
 
+    original_price?: number;
+    discount_pct?: number;
+    already_purchased?: boolean;
+    is_in_wishlist?: boolean;
+    price_currency?: string;
+    price_country?: string;
+    subscription_price?: number;
+
     // Campos extras opcionais usados no front
     chapter?: Chapter[];
     focus?: boolean;
@@ -78,22 +92,29 @@ export type paper = {
     isPurchased?: boolean;
     favorite?: boolean;
     completed?: boolean;
-    
 };
 
 
 
 export interface StoreFilter {
     searchType: 'books' | 'universes';
-    query?: string; // agora pode ser omitido
+    query?: string;
     genre?: string;
     author?: string;
     universe?: string;
     sort?: string;
     order?: 'asc' | 'desc';
-    quantity: number;
-    startIndex?: number;
-    status?: 'available' | 'not_available' | 'in_progress'
+    page?: number;
+    limit?: number;
+    status?: 'available' | 'not_available' | 'in_progress';
+    language?: string;
+    maturity?: string;
+    year?: number;
+    price_min?: number;
+    price_max?: number;
+    country?: string;
+    currency?: string;
+    purchased?: boolean;
 }
 
 export interface chapterDetailsModal {
