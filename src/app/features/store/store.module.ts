@@ -38,6 +38,7 @@ import { BookCheckoutComponent } from './book-checkout/book-checkout.component';
 import { authGuard } from '../../guards/auth.guard';
 import { FooterComponent } from '../read-world/footer/footer.component';
 import { BackToTopComponent } from '../../shared/back-to-top/back-to-top.component';
+import { PageLayoutComponent } from '../../shared/page-layout/page-layout.component';
 import { TruncatePipe } from "../../truncate.pipe";
 import { CloudinaryPipe } from '../dashboard/pipes/cloudinary.pipe';
 
@@ -95,6 +96,7 @@ const routes: Routes = [
     TruncatePipe,
     CloudinaryPipe,
     BackToTopComponent,
+    PageLayoutComponent,
 ]
 })
 export class StoreModule {}

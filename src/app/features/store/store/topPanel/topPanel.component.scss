@@ -25,7 +25,7 @@
   --chip-fg:    #F0A830;
 }
 
-$radius: 10px;
+$radius: 12px;
 $transition: 0.18s ease;
 
 // ─── Sidebar container ────────────────────────────────────────────────────────
@@ -37,8 +37,8 @@ $transition: 0.18s ease;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  // teal top accent line
-  border-top: 3px solid var(--primary);
+  // accent left line (matches dashboard panel style)
+  border-left: 4px solid var(--primary);
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────────

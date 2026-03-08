@@ -13,14 +13,83 @@
   <!-- ── Sidebar backdrop (mobile) ── -->
   <div class="sidebar-backdrop" aria-hidden="true" (click)="closeSidebar()"></div>
 
-  <!-- ── Sidebar ── -->
-  <aside id="store-sidebar"
-    class="st__sidebar"
-    [class.search-active]="isSearchMode"
-    [class.is-open]="sidebarOpen"
-    aria-label="Store filters">
-    <app-top-panel></app-top-panel>
-  </aside>
+  <!-- ══════════ HEAD PANEL — full width, spans both columns ══════════ -->
+
+  <!-- Skeleton head -->
+  <div class="st__head st__head--sk" aria-hidden="true" *ngIf="loadingSections && !isSearchMode">
+    <div class="st__head-left">
+      <div class="sk-line sk-line--sm" style="width:80px"></div>
+      <div class="sk-line sk-line--lg" style="width:220px; margin-top:4px"></div>
+    </div>
+    <div class="sk-head-stats">
+      <div class="sk-stat" *ngFor="let s of [1,2,3,4]"></div>
+    </div>
+    <div class="sk-head-nav">
+      <div class="sk-stat" *ngFor="let s of [1,2,3]"></div>
+    </div>
+  </div>
+
+  <!-- Real head panel -->
+  <div class="st__head" *ngIf="!loadingSections && !loadError && stats.availableBooks > 0 && !isSearchMode">
+
+    <!-- Left: title + metrics -->
+    <div class="st__head-left">
+      <div class="st__head-title">
+        <mat-icon aria-hidden="true">storefront</mat-icon>
+        <span>Store</span>
+      </div>
+      <div class="stats-metrics" aria-label="Store statistics">
+        <div class="stats-item">
+          <mat-icon aria-hidden="true">menu_book</mat-icon>
+          <div class="stats-text">
+            <span class="stats-num">{{ stats.availableBooks }}</span>
+            <span class="stats-label">Available</span>
+          </div>
+        </div>
+        <div class="stats-divider" aria-hidden="true"></div>
+        <div class="stats-item">
+          <mat-icon aria-hidden="true">public</mat-icon>
+          <div class="stats-text">
+            <span class="stats-num">{{ stats.totalUniverses }}</span>
+            <span class="stats-label">Universes</span>
+          </div>
+        </div>
+        <div class="stats-divider" aria-hidden="true"></div>
+        <div class="stats-item">
+          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          <div class="stats-text">
+            <span class="stats-num">{{ stats.newAvailableThisMonth }}</span>
+            <span class="stats-label">New</span>
+          </div>
+        </div>
+        <div class="stats-divider" aria-hidden="true"></div>
+        <div class="stats-item">
+          <mat-icon aria-hidden="true">schedule</mat-icon>
+          <div class="stats-text">
+            <span class="stats-num">{{ stats.comingSoonBooks }}</span>
+            <span class="stats-label">Coming soon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: quick nav -->
+    <nav class="stats-nav" aria-label="My account shortcuts">
+      <a class="stats-nav__btn" routerLink="/library" aria-label="My library">
+        <mat-icon aria-hidden="true">local_library</mat-icon>
+        <span>Library</span>
+      </a>
+      <a class="stats-nav__btn" routerLink="/library" [queryParams]="{ tab: 'purchases' }" aria-label="Purchase history">
+        <mat-icon aria-hidden="true">receipt_long</mat-icon>
+        <span>History</span>
+      </a>
+      <a class="stats-nav__btn" [routerLink]="['/store']" [queryParams]="{ purchased: false }" aria-label="Wishlist">
+        <mat-icon aria-hidden="true">favorite</mat-icon>
+        <span>Wishlist</span>
+      </a>
+    </nav>
+
+  </div>
 
   <!-- ── Main ── -->
   <main class="st__main" aria-label="Store catalog">
@@ -30,7 +99,7 @@
     <!-- ══════════ BROWSE MODE ══════════ -->
     <ng-container *ngIf="!isSearchMode">
 
-      <!-- ── Skeleton ── -->
+      <!-- ── Skeleton (main area) ── -->
       <ng-container *ngIf="loadingSections">
         <div aria-busy="true" aria-label="Loading store content" role="status" class="sk-root">
 
@@ -43,10 +112,6 @@
               <div class="sk-line sk-line--desc"></div>
               <div class="sk-line sk-line--desc"></div>
             </div>
-          </div>
-
-          <div class="sk-stats" aria-hidden="true">
-            <div class="sk-stat" *ngFor="let s of [1,2,3]"></div>
           </div>
 
           <div class="sk-section" *ngFor="let s of [1,2,3]" aria-hidden="true">
@@ -150,61 +215,7 @@
           </div>
         </article>
 
-        <!-- ── Stats strip ── -->
-        <div class="stats-strip" *ngIf="stats.availableBooks > 0">
 
-          <!-- Métricas -->
-          <div class="stats-metrics" aria-label="Store statistics">
-            <div class="stats-item">
-              <mat-icon aria-hidden="true">menu_book</mat-icon>
-              <div class="stats-text">
-                <span class="stats-num">{{ stats.availableBooks }}</span>
-                <span class="stats-label">Available</span>
-              </div>
-            </div>
-            <div class="stats-divider" aria-hidden="true"></div>
-            <div class="stats-item">
-              <mat-icon aria-hidden="true">public</mat-icon>
-              <div class="stats-text">
-                <span class="stats-num">{{ stats.totalUniverses }}</span>
-                <span class="stats-label">Universes</span>
-              </div>
-            </div>
-            <div class="stats-divider" aria-hidden="true"></div>
-            <div class="stats-item">
-              <mat-icon aria-hidden="true">auto_awesome</mat-icon>
-              <div class="stats-text">
-                <span class="stats-num">{{ stats.newAvailableThisMonth }}</span>
-                <span class="stats-label">New</span>
-              </div>
-            </div>
-            <div class="stats-divider" aria-hidden="true"></div>
-            <div class="stats-item">
-              <mat-icon aria-hidden="true">schedule</mat-icon>
-              <div class="stats-text">
-                <span class="stats-num">{{ stats.comingSoonBooks }}</span>
-                <span class="stats-label">Coming soon</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick nav -->
-          <nav class="stats-nav" aria-label="My account shortcuts">
-            <a class="stats-nav__btn" routerLink="/library" aria-label="My library">
-              <mat-icon aria-hidden="true">local_library</mat-icon>
-              <span>Library</span>
-            </a>
-            <a class="stats-nav__btn" routerLink="/library" [queryParams]="{ tab: 'purchases' }" aria-label="Purchase history">
-              <mat-icon aria-hidden="true">receipt_long</mat-icon>
-              <span>History</span>
-            </a>
-            <a class="stats-nav__btn" [routerLink]="['/store']" [queryParams]="{ purchased: false }" aria-label="Wishlist">
-              <mat-icon aria-hidden="true">favorite</mat-icon>
-              <span>Wishlist</span>
-            </a>
-          </nav>
-
-        </div>
 
         <!-- ── Trending Now ── -->
         <section class="store-section" *ngIf="trendingBooks.length > 0" aria-labelledby="trending-title">
@@ -294,6 +305,16 @@
     <app-store-body *ngIf="isSearchMode"></app-store-body>
 
   </main>
+
+  <!-- ── Sidebar ── -->
+  <aside id="store-sidebar"
+    class="st__sidebar"
+    [class.search-active]="isSearchMode"
+    [class.is-open]="sidebarOpen"
+    aria-label="Store filters">
+    <app-top-panel></app-top-panel>
+  </aside>
+
 </div>
 
 <app-back-to-top></app-back-to-top>

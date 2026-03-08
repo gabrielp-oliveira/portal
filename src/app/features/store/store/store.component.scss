@@ -33,10 +33,15 @@
 // ── Layout ────────────────────────────────────────────────────────────────────
 .st {
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 24px;
-  padding: 24px;
-  max-width: 1440px;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "head head"
+    "main sidebar";
+  column-gap: 16px;
+  row-gap: 20px;
+  padding: 24px 24px 48px;
+  max-width: 1280px;
   margin: 0 auto;
   align-items: start;
   box-sizing: border-box;
@@ -46,11 +51,71 @@
   font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
+// ── Head panel (full width) ────────────────────────────────────────────────────
+.st__head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  animation: fadeInUp .2s ease;
+
+  &--sk { animation: none; }
+}
+
+.st__head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.st__head-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+  margin: 0;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: var(--teal);
+  }
+}
+
+// Skeleton head stats + nav
+.sk-head-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.sk-head-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 .st__sidebar {
+  grid-area: sidebar;
   position: sticky;
   top: 24px;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 44px);
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
@@ -58,6 +123,7 @@
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 .st__main {
+  grid-area: main;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -291,24 +357,11 @@
   &:hover { background: rgba(255,255,255,.22); transform: translateX(2px); }
 }
 
-// ── Stats strip ───────────────────────────────────────────────────────────────
-.stats-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 20px;
-  box-shadow: var(--shadow);
-}
-
+// ── Stats metrics (used inside st__head) ────────────────────────────────────
 .stats-metrics {
   display: flex;
   align-items: center;
   gap: 0;
-  flex: 1;
 }
 
 .stats-item {
@@ -693,8 +746,9 @@
   @extend %shimmer;
   flex: 1;
   height: 32px;
+  min-width: 60px;
   border-radius: 8px;
-  margin: 0 8px;
+  margin: 0 4px;
 }
 
 .sk-section { display: flex; flex-direction: column; gap: 10px; }
@@ -784,30 +838,33 @@
 
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 1100px) {
-  .st { grid-template-columns: 220px 1fr; }
+  .st { grid-template-columns: 1fr 240px; }
 }
 
 @media (max-width: 900px) {
   .st {
     grid-template-columns: 1fr;
-    padding: 16px;
-    gap: 16px;
+    grid-template-areas:
+      "head"
+      "main";
+    padding: 14px 14px 36px;
+    row-gap: 14px;
   }
 
   // sidebar vira drawer lateral em mobile
   .st__sidebar {
     position: fixed;
     top: 0;
-    left: 0;
+    right: 0;
     bottom: 0;
     width: 280px;
     max-height: 100dvh;
     overflow-y: auto;
     z-index: 200;
-    transform: translateX(-100%);
+    transform: translateX(100%);
     transition: transform .25s ease;
     border-radius: 0;
-    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+    box-shadow: -4px 0 24px rgba(0,0,0,.18);
 
     &.is-open {
       transform: translateX(0);
@@ -880,17 +937,18 @@
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 
-  .stats-strip {
-    padding: 10px 14px;
-    border-radius: 10px;
+  .st__head {
     flex-wrap: wrap;
-    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    gap: 12px;
   }
-
-  .stats-metrics { gap: 0; flex: 1; min-width: 0; }
+  .st__head-title { font-size: 0.88rem; }
+  .stats-metrics { gap: 0; }
   .stats-label   { display: none; }
-  .stats-num     { font-size: 0.95rem; }
-  .stats-item mat-icon { @include icon(14px); }
+  .stats-num     { font-size: 0.9rem; }
+  .stats-item mat-icon { @include icon(13px); }
+  .stats-item { gap: 6px; }
 
   .stats-nav {
     padding-left: 10px;

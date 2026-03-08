@@ -1,0 +1,69 @@
+// ─── Shared page grid ────────────────────────────────────────────────────────
+// Provides a consistent 2-column layout used by store, dashboard, and other
+// full-page views.  Structure:
+//   ┌─────────────────────────────────┐
+//   │           pg__head              │  ← full-width head panel
+//   ├──────────────────┬──────────────┤
+//   │    pg__main      │ pg__sidebar  │
+//   └──────────────────┴──────────────┘
+
+:host {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "head head"
+    "main sidebar";
+  column-gap: 16px;
+  row-gap: 20px;
+  padding: 24px 24px 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+// ── Grid areas ────────────────────────────────────────────────────────────────
+.pg__head    { grid-area: head; }
+.pg__main    { grid-area: main; }
+.pg__sidebar { grid-area: sidebar; position: sticky; top: 24px; max-height: calc(100vh - 44px); overflow-y: auto; }
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 1100px) {
+  :host { grid-template-columns: 1fr 240px; }
+}
+
+@media (max-width: 900px) {
+  :host {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "main";
+    padding: 16px 12px 48px;
+  }
+
+  .pg__sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-height: 100vh;
+    transform: translateX(100%);
+    transition: transform 0.26s cubic-bezier(.4,0,.2,1);
+    z-index: 200;
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  // Consumer adds [class.sidebar-open] on the host or a parent to slide in
+  :host(.sidebar-open) .pg__sidebar,
+  :host-context(.sidebar-open) .pg__sidebar {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 600px) {
+  :host { padding: 12px 8px 40px; }
+}
