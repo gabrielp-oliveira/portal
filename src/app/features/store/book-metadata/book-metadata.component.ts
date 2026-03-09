@@ -8,6 +8,14 @@ import { paper } from '../../../models/paperTrailTypes';
   styleUrl: './book-metadata.component.scss'
 })
 export class BookMetadataComponent {
- @Input() book: paper;
+  @Input() book!: paper;
 
+  get maturityLabel(): string {
+    switch (this.book?.maturity) {
+      case 'MATURE':     return '18+';
+      case 'NOT_MATURE': return 'All ages';
+      case 'TEEN':       return 'Teen';
+      default:           return 'Unrated';
+    }
+  }
 }

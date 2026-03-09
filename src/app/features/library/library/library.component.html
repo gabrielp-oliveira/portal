@@ -1,82 +1,450 @@
-<div class="library-container light">
-  <mat-tab-group [(selectedIndex)]="activeTabIndex" (selectedTabChange)="onTabChange($event.index)">
+<div class="lib">
 
-    <!-- BOOKS TAB -->
-    <mat-tab label="Books">
-      <div *ngIf="loadingBooks" class="sk-books-grid" aria-hidden="true">
-        <div class="sk-book-card" *ngFor="let i of [1,2,3,4,5,6]">
+  <!-- ── Header ── -->
+  <header class="lib__head" [class.lib__head--scrolled]="isScrolled">
+    <div class="lib__head-inner">
+
+      <div class="lib__head-row lib__head-row--title">
+        <h1 class="lib__title">
+          <mat-icon aria-hidden="true">local_library</mat-icon>
+          My Library
+        </h1>
+      </div>
+
+      <!-- Stat chips -->
+      <div class="lib__stats" *ngIf="!loading && totalBooks > 0" aria-label="Your reading stats">
+
+        <div class="lib__stat-chip">
+          <mat-icon aria-hidden="true">menu_book</mat-icon>
+          <span class="lib__stat-value">{{ totalBooks }}</span>
+          <span class="lib__stat-label">{{ totalBooks === 1 ? 'Book' : 'Books' }}</span>
+        </div>
+
+        <div class="lib__stat-chip lib__stat-chip--amber" *ngIf="totalChaptersRead > 0">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          <span class="lib__stat-value">{{ totalChaptersRead }}</span>
+          <span class="lib__stat-label">Read</span>
+        </div>
+
+        <div class="lib__stat-chip lib__stat-chip--heart" *ngIf="totalFavorites > 0">
+          <mat-icon aria-hidden="true">favorite</mat-icon>
+          <span class="lib__stat-value">{{ totalFavorites }}</span>
+          <span class="lib__stat-label">{{ totalFavorites === 1 ? 'Favourite' : 'Favourites' }}</span>
+        </div>
+
+        <div class="lib__stat-chip lib__stat-chip--note" *ngIf="totalAnnotations > 0">
+          <mat-icon aria-hidden="true">sticky_note_2</mat-icon>
+          <span class="lib__stat-value">{{ totalAnnotations }}</span>
+          <span class="lib__stat-label">{{ totalAnnotations === 1 ? 'Note' : 'Notes' }}</span>
+        </div>
+
+        <div class="lib__stat-chip" *ngIf="universes.length > 0">
+          <mat-icon aria-hidden="true">public</mat-icon>
+          <span class="lib__stat-value">{{ universes.length }}</span>
+          <span class="lib__stat-label">{{ universes.length === 1 ? 'Universe' : 'Universes' }}</span>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <div class="lib__body">
+
+    <!-- ══════════ RESUME BANNER ══════════ -->
+    <section class="lib__resume"
+      *ngIf="!loading && resumeBook"
+      [style.--bg-cover]="'url(' + (resumeBook.paper.cover_url || DEFAULT_COVER) + ')'"
+      aria-label="Continue reading">
+
+      <div class="lib__resume-cover-wrap" aria-hidden="true">
+        <img class="lib__resume-cover"
+          [src]="(resumeBook.paper.cover_url || DEFAULT_COVER) | cloudinary:300:450"
+          [srcset]="((resumeBook.paper.cover_url || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((resumeBook.paper.cover_url || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+          sizes="110px"
+          [alt]="resumeBook.paper.name + ' cover'"
+          width="110" height="165"
+          loading="eager" fetchpriority="high" />
+      </div>
+
+      <div class="lib__resume-info">
+        <p class="lib__resume-eyebrow">
+          <mat-icon aria-hidden="true">{{ resumeBook.completedCount > 0 ? 'play_circle' : 'auto_stories' }}</mat-icon>
+          {{ resumeBook.completedCount > 0 ? 'Continue reading' : 'Start reading' }}
+        </p>
+        <h2 class="lib__resume-title">{{ resumeBook.paper.name }}</h2>
+        <p class="lib__resume-author" *ngIf="resumeBook.paper.author_name">by {{ resumeBook.paper.author_name }}</p>
+
+        <div class="lib__resume-progress" *ngIf="resumeBook.totalChapters > 0"
+          [attr.aria-label]="resumeBook.completedCount + ' of ' + resumeBook.totalChapters + ' chapters read'">
+          <div class="lib__resume-bar-track" aria-hidden="true">
+            <div class="lib__resume-bar-fill" [style.width.%]="progressPct(resumeBook)"></div>
+          </div>
+          <span class="lib__resume-bar-label">
+            {{ progressPct(resumeBook) }}% · {{ resumeBook.completedCount }}/{{ resumeBook.totalChapters }} ch.
+          </span>
+        </div>
+
+        <div class="lib__resume-meta">
+          <span *ngIf="resumeBook.favoritesCount > 0" class="lib__resume-chip lib__resume-chip--heart">
+            <mat-icon aria-hidden="true">favorite</mat-icon>{{ resumeBook.favoritesCount }}
+          </span>
+          <span *ngIf="resumeBook.annotationsCount > 0" class="lib__resume-chip lib__resume-chip--note">
+            <mat-icon aria-hidden="true">sticky_note_2</mat-icon>{{ resumeBook.annotationsCount }}
+          </span>
+          <span *ngIf="resumeBook.paper.world_name" class="lib__resume-chip">
+            <mat-icon aria-hidden="true">public</mat-icon>{{ resumeBook.paper.world_name }}
+          </span>
+        </div>
+      </div>
+
+      <button class="lib__resume-btn"
+        (click)="continueReading(resumeBook)"
+        [attr.aria-label]="(resumeBook.completedCount > 0 ? 'Continue reading ' : 'Start reading ') + resumeBook.paper.name">
+        <mat-icon aria-hidden="true">{{ resumeBook.completedCount > 0 ? 'play_arrow' : 'auto_stories' }}</mat-icon>
+        <span>{{ resumeBook.completedCount > 0 ? 'Continue' : 'Start' }}</span>
+      </button>
+    </section>
+
+    <!-- ══════════ BOOKS SECTION ══════════ -->
+    <section class="lib__section" aria-labelledby="books-title">
+
+      <div class="lib__section-head">
+        <div class="lib__section-left">
+          <h2 class="lib__section-title" id="books-title">Books</h2>
+          <span class="lib__section-count" *ngIf="!loading && totalBooks > 0">{{ totalBooks }}</span>
+        </div>
+
+        <!-- Sort controls -->
+        <div class="lib__sort" role="group" aria-label="Sort books by" *ngIf="!loading && books.length > 1">
+          <button class="lib__sort-btn" [class.lib__sort-btn--active]="sortKey === 'default'"
+            (click)="setSort('default')">Default</button>
+          <button class="lib__sort-btn" [class.lib__sort-btn--active]="sortKey === 'title'"
+            (click)="setSort('title')">A–Z</button>
+          <button class="lib__sort-btn" [class.lib__sort-btn--active]="sortKey === 'progress'"
+            (click)="setSort('progress')">Progress</button>
+          <button class="lib__sort-btn" [class.lib__sort-btn--active]="sortKey === 'favorites'"
+            (click)="setSort('favorites')">
+            <mat-icon aria-hidden="true">favorite</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Skeleton -->
+      <ul class="lib__books-grid" *ngIf="loading" aria-busy="true" aria-label="Loading books" role="status">
+        <li class="lib__book-sk" *ngFor="let i of [1,2,3,4,5,6,7,8]" aria-hidden="true">
+          <div class="sk-cover"></div>
+          <div class="lib__book-sk-info">
+            <div class="sk-line sk-line--title"></div>
+            <div class="sk-line sk-line--meta"></div>
+            <div class="sk-line sk-line--bar"></div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Empty -->
+      <div class="lib__empty" *ngIf="!loading && books.length === 0">
+        <mat-icon>bookmark_border</mat-icon>
+        <p>No books in your library yet.</p>
+        <a class="lib__empty-cta" routerLink="/store">
+          <mat-icon aria-hidden="true">storefront</mat-icon>
+          Browse the store
+        </a>
+      </div>
+
+      <!-- Grid -->
+      <ul class="lib__books-grid" role="list" aria-label="Your books" *ngIf="!loading && books.length > 0">
+        <li *ngFor="let b of books; trackBy: trackByPaper" role="listitem">
+          <article class="lib__book-card"
+            (click)="continueReading(b)"
+            (keyup.enter)="continueReading(b)"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="b.paper.name + (progressPct(b) > 0 ? ', ' + progressPct(b) + '% read' : '') + '. Press Enter to read.'">
+
+            <!-- Cover -->
+            <div class="lib__book-cover-wrap">
+              <img class="lib__book-cover"
+                [src]="(b.paper.cover_url || DEFAULT_COVER) | cloudinary:300:450"
+                [srcset]="((b.paper.cover_url || DEFAULT_COVER) | cloudinary:150:225) + ' 1x, ' + ((b.paper.cover_url || DEFAULT_COVER) | cloudinary:300:450) + ' 2x'"
+                sizes="(max-width: 480px) 45vw, 180px"
+                [alt]="b.paper.name + ' cover'"
+                width="150" height="225"
+                loading="lazy" decoding="async" />
+
+              <!-- Top-left: reading dot -->
+              <span class="lib__book-reading-dot"
+                *ngIf="b.completedCount > 0 && b.completedCount < b.totalChapters"
+                title="Currently reading" aria-hidden="true"></span>
+
+              <!-- Top-right: finished badge -->
+              <span class="lib__book-done"
+                *ngIf="b.totalChapters > 0 && b.completedCount === b.totalChapters"
+                title="Finished">
+                <mat-icon aria-hidden="true">check</mat-icon>
+              </span>
+
+              <!-- Bottom-left: indicators -->
+              <div class="lib__book-indicators" aria-hidden="true"
+                *ngIf="b.favoritesCount > 0 || b.annotationsCount > 0">
+                <span class="lib__book-ind lib__book-ind--heart" *ngIf="b.favoritesCount > 0">
+                  <mat-icon>favorite</mat-icon>{{ b.favoritesCount }}
+                </span>
+                <span class="lib__book-ind lib__book-ind--note" *ngIf="b.annotationsCount > 0">
+                  <mat-icon>sticky_note_2</mat-icon>{{ b.annotationsCount }}
+                </span>
+              </div>
+
+              <!-- Hover overlay -->
+              <div class="lib__book-overlay" aria-hidden="true">
+                <div class="lib__book-overlay-btn">
+                  <mat-icon>play_arrow</mat-icon>
+                </div>
+                <span class="lib__book-overlay-label">{{ b.completedCount > 0 ? 'Continue' : 'Start' }}</span>
+                <span class="lib__book-overlay-pct" *ngIf="b.totalChapters > 0 && b.completedCount > 0">
+                  {{ progressPct(b) }}%
+                </span>
+              </div>
+            </div>
+
+            <!-- Info below cover -->
+            <div class="lib__book-info">
+              <p class="lib__book-title">{{ b.paper.name }}</p>
+              <p class="lib__book-author" *ngIf="b.paper.author_name">{{ b.paper.author_name }}</p>
+
+              <a class="lib__book-universe"
+                *ngIf="b.paper.world_name"
+                [routerLink]="['/read', b.paper.world_name]"
+                (click)="$event.stopPropagation()"
+                [attr.aria-label]="'Open universe ' + b.paper.world_name">
+                <mat-icon aria-hidden="true">auto_stories</mat-icon>
+                {{ b.paper.world_name }}
+              </a>
+
+              <div class="lib__book-genres" *ngIf="b.paper.genre?.length">
+                <span class="lib__genre-chip" *ngFor="let g of b.paper.genre.slice(0, 2)">{{ g }}</span>
+              </div>
+
+              <div class="lib__book-progress" *ngIf="b.totalChapters > 0"
+                [attr.aria-label]="b.completedCount + ' of ' + b.totalChapters + ' chapters read'">
+                <div class="lib__book-progress-track" aria-hidden="true">
+                  <div class="lib__book-progress-fill"
+                    [style.width.%]="progressPct(b)"
+                    [class.lib__book-progress-fill--done]="b.completedCount === b.totalChapters">
+                  </div>
+                </div>
+                <span class="lib__book-progress-label">{{ b.completedCount }}/{{ b.totalChapters }}</span>
+              </div>
+              <p class="lib__book-nochapters" *ngIf="b.totalChapters === 0">No chapters yet</p>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <!-- Pagination -->
+      <nav class="lib__pagination" aria-label="Book pages"
+        *ngIf="!loading && pages.length > 1">
+        <button class="lib__page-btn" [disabled]="page === 1"
+          (click)="onPageChange(page - 1)" aria-label="Previous page">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button class="lib__page-btn"
+          *ngFor="let p of pages"
+          [class.lib__page-btn--active]="p === page"
+          [attr.aria-current]="p === page ? 'page' : null"
+          (click)="onPageChange(p)">{{ p }}</button>
+        <button class="lib__page-btn" [disabled]="page === pages.length"
+          (click)="onPageChange(page + 1)" aria-label="Next page">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </nav>
+    </section>
+
+    <!-- ══════════ UNIVERSES SECTION ══════════ -->
+    <section class="lib__section lib__section--flush" aria-labelledby="universes-title"
+      *ngIf="!loading && universes.length > 0">
+      <div class="lib__section-head">
+        <div class="lib__section-left">
+          <h2 class="lib__section-title" id="universes-title">Universes</h2>
+          <span class="lib__section-count">{{ universes.length }}</span>
+        </div>
+      </div>
+
+      <ul class="lib__scroll-row" role="list" aria-label="Your universes">
+        <li *ngFor="let u of universes; trackBy: trackById" role="listitem">
+          <article class="lib__universe-card"
+            [routerLink]="['/read', u.name]"
+            tabindex="0"
+            role="link"
+            [attr.aria-label]="u.name + ', ' + u.count + ' books. Press Enter to open universe.'">
+
+            <!-- Mosaic covers -->
+            <div class="lib__universe-mosaic" aria-hidden="true">
+              <ng-container *ngIf="u.covers.length >= 3">
+                <img class="lib__mosaic-main"
+                  [src]="(u.covers[0] || DEFAULT_COVER) | cloudinary:300:450"
+                  alt="" width="120" height="180" loading="lazy" decoding="async" />
+                <div class="lib__mosaic-side">
+                  <img [src]="(u.covers[1] || DEFAULT_COVER) | cloudinary:200:300"
+                    alt="" loading="lazy" decoding="async" />
+                  <img [src]="(u.covers[2] || DEFAULT_COVER) | cloudinary:200:300"
+                    alt="" loading="lazy" decoding="async" />
+                </div>
+              </ng-container>
+              <ng-container *ngIf="u.covers.length === 2">
+                <img class="lib__mosaic-half"
+                  [src]="(u.covers[0] || DEFAULT_COVER) | cloudinary:300:450"
+                  alt="" loading="lazy" decoding="async" />
+                <img class="lib__mosaic-half"
+                  [src]="(u.covers[1] || DEFAULT_COVER) | cloudinary:300:450"
+                  alt="" loading="lazy" decoding="async" />
+              </ng-container>
+              <ng-container *ngIf="u.covers.length <= 1">
+                <img class="lib__mosaic-full"
+                  [src]="(u.covers[0] || DEFAULT_COVER) | cloudinary:400:300"
+                  alt="" loading="lazy" decoding="async" />
+              </ng-container>
+              <div class="lib__mosaic-overlay"></div>
+              <span class="lib__mosaic-pill">{{ u.count }} {{ u.count === 1 ? 'book' : 'books' }}</span>
+            </div>
+
+            <!-- Info -->
+            <div class="lib__universe-info">
+              <h3 class="lib__universe-name">{{ u.name }}</h3>
+              <p class="lib__universe-authors" *ngIf="u.authors.length">
+                {{ u.authors.slice(0, 2).join(' · ') }}<ng-container *ngIf="u.authors.length > 2"> +{{ u.authors.length - 2 }}</ng-container>
+              </p>
+              <div class="lib__book-genres" *ngIf="u.genres.length">
+                <span class="lib__genre-chip" *ngFor="let g of u.genres.slice(0, 3)">{{ g }}</span>
+              </div>
+              <div class="lib__universe-cta" aria-hidden="true">
+                <span>Open universe</span>
+                <mat-icon>chevron_right</mat-icon>
+              </div>
+            </div>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ══════════ WISHLIST ══════════ -->
+    <section class="lib__section lib__section--flush" aria-labelledby="wishlist-title"
+      *ngIf="wishlistLoading || wishlist.length > 0">
+      <div class="lib__section-head">
+        <div class="lib__section-left">
+          <h2 class="lib__section-title" id="wishlist-title">Saved for later</h2>
+          <span class="lib__section-count" *ngIf="!wishlistLoading && wishlist.length > 0">{{ wishlist.length }}</span>
+        </div>
+      </div>
+
+      <!-- Skeleton -->
+      <ul class="lib__scroll-row lib__scroll-row--recs" *ngIf="wishlistLoading" aria-busy="true" aria-label="Loading wishlist">
+        <li class="lib__rec-sk" *ngFor="let i of [1,2,3,4,5]" aria-hidden="true">
           <div class="sk-cover"></div>
           <div class="sk-line sk-line--title"></div>
           <div class="sk-line sk-line--meta"></div>
-          <div class="sk-line sk-line--short"></div>
-        </div>
-      </div>
+        </li>
+      </ul>
 
-      <div *ngIf="!loadingBooks && paperCardList.length > 0" class="paper-cards-wrapper">
-        <app-paper-card *ngFor="let card of paperCardList" [paperCard]="card" [theme]="true"></app-paper-card>
-      </div>
+      <!-- Cards -->
+      <ul class="lib__scroll-row lib__scroll-row--recs" role="list" aria-label="Your wishlist"
+        *ngIf="!wishlistLoading && wishlist.length > 0">
+        <li *ngFor="let w of wishlist; trackBy: trackByWishlist" role="listitem">
+          <article class="lib__wl-card">
 
-      <div *ngIf="!loadingBooks && paperCardList.length === 0" class="empty-message">
-        Nenhum livro encontrado na sua biblioteca.
-      </div>
-
-      <mat-paginator [length]="totalBooks" [pageSize]="limit" [pageSizeOptions]="[6, 12, 24]"
-        (page)="onPageChange($event.pageIndex)">
-      </mat-paginator>
-    </mat-tab>
-
-    <!-- UNIVERSOS TAB -->
-    <mat-tab label="Universes">
-      <div *ngIf="loadingWorlds" class="sk-universe-list" aria-hidden="true">
-        <div class="sk-universe-card" *ngFor="let i of [1,2,3]">
-          <div class="sk-line sk-line--title"></div>
-          <div class="sk-line sk-line--meta"></div>
-          <div class="sk-universe-books">
-            <div class="sk-mini-cover" *ngFor="let j of [1,2,3,4]"></div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="!loadingWorlds && worlds.length > 0" class="universe-grid">
-        <div *ngFor="let world of worlds" class="universe-card">
-          <div style="display: flex; flex-direction: column;">
-
-            <a [routerLink]="['/read', world.name]" style="width: 100%;"><button mat-button style="width: 100%;">Go to</button></a>
-
-
-            <app-universe-card [library]="true" [world]="world"></app-universe-card>
-          </div>
-
-          <div class="universe-details">
-            <p class="universe-description">{{ world.description }}</p>
-
-            <div class="book-list">
-              <div class="book-card" *ngFor="let pp of world.papers">
-                <div class="book-icon-wrapper">
-                  <img [src]="(pp.cover_url || DEFAULT_COVER) | cloudinary:100:150"
-                       [srcset]="((pp.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((pp.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
-                       [alt]="pp.name" class="book-cover"
-                       width="100" height="150" loading="lazy" decoding="async" />
-                  <div class="icon-badges">
-                    <ng-container *ngIf="pp.completed">
-                      <span class="icon completed-icon" title="Completado">✔️</span>
-                    </ng-container>
-                  </div>
-                </div>
-                <div class="book-meta">
-                  <h3>{{ pp.name | truncate: 16 }}</h3>
-                </div>
+            <div class="lib__rec-cover-wrap" [routerLink]="['/store/book', w.id]" tabindex="-1">
+              <img class="lib__rec-cover"
+                [src]="(w.cover_url || DEFAULT_COVER) | cloudinary:280:420"
+                [alt]="w.name + ' cover'"
+                width="140" height="210"
+                loading="lazy" decoding="async" />
+              <div class="lib__rec-overlay" aria-hidden="true">
+                <mat-icon>open_in_new</mat-icon>
               </div>
             </div>
-          </div>
 
+            <div class="lib__rec-info">
+              <p class="lib__book-title">
+                <a [routerLink]="['/store/book', w.id]" class="lib__wl-title-link">{{ w.name }}</a>
+              </p>
+              <p class="lib__book-author" *ngIf="w.author_name">{{ w.author_name }}</p>
+              <div class="lib__book-genres" *ngIf="w.genre?.length">
+                <span class="lib__genre-chip">{{ w.genre[0] }}</span>
+              </div>
+              <button class="lib__wl-remove"
+                (click)="removeFromWishlist(w)"
+                [attr.aria-label]="'Remove ' + w.name + ' from wishlist'">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ══════════ RECOMMENDATIONS ══════════ -->
+    <!-- Anchor: IntersectionObserver watches this element to lazy-load recommendations -->
+    <div #recsAnchor></div>
+    <section class="lib__section lib__section--flush" aria-labelledby="recs-title"
+      *ngIf="recommendationsLoading || recommendations.length > 0">
+      <div class="lib__section-head">
+        <div class="lib__section-left">
+          <h2 class="lib__section-title" id="recs-title">You might like</h2>
         </div>
       </div>
 
-      <div *ngIf="!loadingWorlds && worlds.length === 0" class="empty-message">
-        Nenhum universo disponível.
-      </div>
-    </mat-tab>
+      <!-- Skeleton -->
+      <ul class="lib__scroll-row lib__scroll-row--recs" *ngIf="recommendationsLoading" aria-busy="true" aria-label="Loading recommendations">
+        <li class="lib__rec-sk" *ngFor="let i of [1,2,3,4,5,6]" aria-hidden="true">
+          <div class="sk-cover"></div>
+          <div class="sk-line sk-line--title"></div>
+          <div class="sk-line sk-line--meta"></div>
+        </li>
+      </ul>
 
-  </mat-tab-group>
+      <!-- Cards -->
+      <ul class="lib__scroll-row lib__scroll-row--recs" role="list" aria-label="Recommended books"
+        *ngIf="!recommendationsLoading && recommendations.length > 0">
+        <li *ngFor="let r of recommendations; trackBy: trackByRec" role="listitem">
+          <article class="lib__rec-card"
+            [routerLink]="['/store/book', r.id]"
+            tabindex="0"
+            role="link"
+            [attr.aria-label]="r.name + ' — recommended. Press Enter to view.'">
+
+            <div class="lib__rec-cover-wrap">
+              <img class="lib__rec-cover"
+                [src]="(r.cover_url || DEFAULT_COVER) | cloudinary:280:420"
+                [srcset]="((r.cover_url || DEFAULT_COVER) | cloudinary:140:210) + ' 1x, ' + ((r.cover_url || DEFAULT_COVER) | cloudinary:280:420) + ' 2x'"
+                sizes="140px"
+                [alt]="r.name + ' cover'"
+                width="140" height="210"
+                loading="lazy" decoding="async" />
+              <div class="lib__rec-overlay" aria-hidden="true">
+                <mat-icon>open_in_new</mat-icon>
+              </div>
+            </div>
+
+            <div class="lib__rec-info">
+              <p class="lib__book-title">{{ r.name }}</p>
+              <p class="lib__book-author" *ngIf="r.author_name">{{ r.author_name }}</p>
+              <div class="lib__book-genres" *ngIf="r.genre?.length">
+                <span class="lib__genre-chip">{{ r.genre[0] }}</span>
+              </div>
+            </div>
+          </article>
+        </li>
+      </ul>
+    </section>
+
+  </div>
 </div>
+
+<!-- Back to top -->
+<button
+  class="lib__back-to-top"
+  *ngIf="showBackToTop"
+  (click)="scrollToTop()"
+  aria-label="Back to top">
+  <mat-icon>arrow_upward</mat-icon>
+</button>

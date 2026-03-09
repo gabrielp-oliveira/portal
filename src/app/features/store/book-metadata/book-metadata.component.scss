@@ -1,37 +1,92 @@
-.mature-badge {
-  color: #d32f2f;
-  font-weight: bold;
+:host {
+  --c-text:    #111;
+  --c-text-2:  #666;
+  --c-border:  #e5e5ea;
+  --c-chip-bg: #f0f0f5;
+  --c-chip-tx: #444;
+
+  @media (prefers-color-scheme: dark) {
+    --c-text:    #f0f0f3;
+    --c-text-2:  #888;
+    --c-border:  #2a2a30;
+    --c-chip-bg: #26262e;
+    --c-chip-tx: #bbb;
+  }
 }
 
-.not-mature-badge {
-  color: #388e3c;
-  font-weight: bold;
+.metadata-section {
+  padding: 36px 0;
+  border-bottom: 1px solid var(--c-border);
 }
 
-.unrated-badge {
-  color: #999;
-  font-style: italic;
+.meta-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-text);
+  margin: 0 0 20px;
+  letter-spacing: -0.01em;
 }
 
-.metadataWrapper {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 32px;
-  padding: 20px 10px;
-  background-color: rgb(248, 248, 248);
-  border-radius: 5px;
-
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px 32px;
 }
 
-.meta-section {
+.meta-cell {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: 200px;
-  max-width: 280px;
+  gap: 6px;
 }
 
-.isbn-indent {
-  margin-left: 16px;
+.cell-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-text-2);
+}
+
+.cell-value {
+  font-size: 0.925rem;
+  color: var(--c-text);
+  font-weight: 500;
+
+  &--mono {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+  }
+}
+
+.cell-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.cell-chip {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--c-chip-bg);
+  color: var(--c-chip-tx);
+}
+
+.cell-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  &.mature   { background: #fee2e2; color: #991b1b; }
+  &.teen     { background: #fef3c7; color: #92400e; }
+  &.everyone { background: #d1fae5; color: #065f46; }
+
+  @media (prefers-color-scheme: dark) {
+    &.mature   { background: rgba(239,68,68,0.18); color: #fca5a5; }
+    &.teen     { background: rgba(251,191,36,0.18); color: #fcd34d; }
+    &.everyone { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+  }
 }

@@ -1,115 +1,282 @@
-<app-ads></app-ads>
-
-<!-- Skeleton while loading -->
-<div *ngIf="loading" class="universe-container sk-universe-page" aria-hidden="true">
-  <div class="universe-header">
-    <div class="sk-univ-left">
-      <div class="sk-u-line sk-u-line--title"></div>
-      <div class="sk-u-line"></div>
-      <div class="sk-u-line sk-u-line--short"></div>
-      <div class="sk-u-meta">
-        <div class="sk-u-tag" *ngFor="let i of [1,2,3]"></div>
+<!-- ── Skeleton ──────────────────────────────────────────────────────────────── -->
+<div *ngIf="loading" class="sk-page" aria-hidden="true">
+  <div class="sk-hero">
+    <div class="sk-details">
+      <div class="sk-line sk-line--sm"></div>
+      <div class="sk-line sk-line--title"></div>
+      <div class="sk-line sk-line--author"></div>
+      <div class="sk-chips">
+        <div class="sk-chip"></div><div class="sk-chip"></div><div class="sk-chip"></div>
       </div>
-      <div class="sk-u-btn"></div>
+      <div class="sk-stars">
+        <div class="sk-star" *ngFor="let i of STARS"></div>
+        <div class="sk-rating-count"></div>
+      </div>
+      <div class="sk-actions">
+        <div class="sk-btn sk-btn--primary"></div>
+        <div class="sk-btn sk-btn--ghost"></div>
+      </div>
     </div>
-    <div class="sk-univ-cover"></div>
+    <div class="sk-cover"></div>
   </div>
-  <div class="books-section">
-    <div class="books-grid">
-      <div class="sk-u-book-card" *ngFor="let i of [1,2,3,4,5,6]">
-        <div class="sk-u-book-cover"></div>
-        <div class="sk-u-line sk-u-line--short"></div>
-        <div class="sk-u-line sk-u-line--shorter"></div>
+  <div class="sk-body">
+    <div class="sk-section-title"></div>
+    <div class="sk-grid">
+      <div class="sk-book-card" *ngFor="let i of SKELETON_BOOKS">
+        <div class="sk-book-cover"></div>
+        <div class="sk-line sk-line--short"></div>
+        <div class="sk-line sk-line--shorter"></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="universe-container" *ngIf="!loading && universeData">
-  <div class="universe-header">
-    <div class="left-info">
-      <div class="header-row">
-        <h1>{{ universeData.name }}</h1>
+<!-- ── Content ───────────────────────────────────────────────────────────────── -->
+<div *ngIf="!loading && universe" class="univ-page">
 
-        <!-- Botão de compra da coleção -->
-        <button *ngIf="booksAvailableToBuy > 0" class="buy-button"
-          [routerLink]="['/store/universe', universeData.id, 'checkout']">
-          <span class="icon">💳</span>
-          Buy {{ booksAvailableToBuy }} book{{ booksAvailableToBuy > 1 ? 's' : '' }} for
-
-          <span *ngIf="alreadyPurchasedTotal > 0">
-            &nbsp;<s style="color: red;">
-              {{ fullUniversePrice | currency: priceCurrencysePrice : 'symbol-narrow' : '1.2-2' }}
-            </s>
-          </span>
-
-          &nbsp;<strong>
-            {{ universePrice | currency: priceCurrencysePrice : 'symbol-narrow' : '1.2-2' }}
-          </strong>
-        </button>
-
-        <!-- Botão para leitura -->
-        <button *ngIf="alreadyPurchasedTotal > 0" class="read-button" [routerLink]="['/read', universeData.name]">
-          📖 Go to your universe
-        </button>
-
-
-
-      </div>
-
-      <p class="description">{{ universeData.description }}</p>
-
-      <div class="meta">
-        <span *ngIf="universeData.papers[0]?.language">
-          🌍 Language: {{ universeData.papers[0].language.toUpperCase() }}
-        </span>
-
-        <span *ngIf="universeData.Genres?.length">
-          🎭 Genre: {{ universeData.Genres.join(', ') }}
-        </span>
-
-        <span *ngIf="universeData.papers.length">
-          📚 Books: {{ universeData.papers.length }}
-        </span>
-      </div>
+  <!-- Hero -->
+  <section class="univ-hero">
+    <div class="hero-backdrop"
+      *ngIf="backdropUrl"
+      [style.background-image]="'url(' + backdropUrl + ')'"
+      aria-hidden="true">
     </div>
+    <div class="hero-overlay" aria-hidden="true"></div>
 
-    <div class="cover-wrapper" *ngIf="universeData.CoverURLs?.[0]">
-      <img [src]="(universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:280:420"
-           [srcset]="((universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:280:420) + ' 1x, ' + ((universeData.CoverURLs[0] || DEFAULT_COVER) | cloudinary:560:840) + ' 2x'"
-           alt="Capa do universo" class="universe-cover"
-           width="280" height="420" loading="eager" fetchpriority="high" decoding="async" />
-    </div>
-  </div>
+    <div class="hero-content">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a class="breadcrumb-link" routerLink="/store">Store</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">{{ universe.name }}</span>
+      </nav>
 
-  <div class="books-section">
-    <div class="books-grid">
-      <a class="book-card" *ngFor="let book of universeData.papers" [routerLink]="['/store/book', book.id]">
+      <div class="hero-grid">
+        <!-- Cover -->
+        <div class="cover-col" *ngIf="universe.CoverURLs?.[0]">
+          <div class="cover-wrap">
+            <img
+              [src]="(universe.CoverURLs[0] || DEFAULT_COVER) | cloudinary:220:330"
+              [srcset]="((universe.CoverURLs[0] || DEFAULT_COVER) | cloudinary:160:240) + ' 160w, '
+                      + ((universe.CoverURLs[0] || DEFAULT_COVER) | cloudinary:220:330) + ' 220w, '
+                      + ((universe.CoverURLs[0] || DEFAULT_COVER) | cloudinary:440:660) + ' 440w'"
+              sizes="(max-width: 680px) 160px, 220px"
+              [alt]="universe.name + ' cover'"
+              class="cover-img"
+              width="220" height="330"
+              loading="eager" fetchpriority="high" decoding="sync" />
+          </div>
+        </div>
 
-
-        <div class="cover-wrapper">
-          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span>
+        <!-- Details -->
+        <div class="details-col">
+          <!-- Universe type badge -->
+          <div class="type-badge">
+            <mat-icon>collections_bookmark</mat-icon>
+            Universe · {{ universe.papers.length || 0 }} book{{ (universe.papers.length || 0) !== 1 ? 's' : '' }}
           </div>
 
-          <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:160:240"
-               [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:160:240) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:320:480) + ' 2x'"
-               [alt]="book.name" class="book-cover cover"
-               width="160" height="240" loading="lazy" decoding="async" />
+          <h1 class="univ-title">{{ universe.name }}</h1>
+
+          <!-- Authors -->
+          <p class="univ-authors" *ngIf="universe.Authors?.length">
+            by {{ universe.Authors?.join(', ') }}
+          </p>
+
+          <!-- Genre chips -->
+          <div class="genre-chips" *ngIf="universe.Genres?.length">
+            <a class="genre-chip"
+               *ngFor="let g of universe.Genres"
+               [routerLink]="['/store']"
+               [queryParams]="{ genre: g }">{{ g }}</a>
+          </div>
+
+          <!-- Meta row -->
+          <div class="meta-row">
+            <span class="meta-item" *ngIf="universe.papers?.length">
+              <mat-icon>library_books</mat-icon>{{ universe.papers.length }} book{{ universe.papers.length !== 1 ? 's' : '' }}
+            </span>
+            <span class="meta-item" *ngIf="universe.papers?.[0]?.language">
+              <mat-icon>translate</mat-icon>{{ universe.papers[0].language }}
+            </span>
+            <span class="meta-item" *ngIf="universe.papers?.[0]?.year">
+              <mat-icon>calendar_today</mat-icon>{{ universe.papers[0].year }}
+            </span>
+          </div>
+
+          <!-- Rating row -->
+          <div class="rating-row" aria-live="polite" aria-atomic="true">
+            <div class="stars"
+              [class.stars--interactive]="isLogged"
+              [class.stars--loading]="ratingLoading"
+              (mouseleave)="hoverRating = 0">
+              <button
+                class="star-btn"
+                *ngFor="let s of STARS"
+                [class.star-btn--active]="s <= (hoverRating || userRating || 0)"
+                (mouseenter)="isLogged && (hoverRating = s)"
+                (click)="rate(s)"
+                [disabled]="!isLogged || ratingLoading"
+                [attr.aria-label]="'Rate ' + s + ' stars'">
+                <mat-icon class="star-icon">{{ starIcon(s) }}</mat-icon>
+              </button>
+            </div>
+
+            <ng-container *ngIf="ratingCount > 0">
+              <span class="rating-avg">{{ ratingAvg | number:'1.1-1' }}</span>
+              <span class="rating-count">({{ ratingCount | number }})</span>
+            </ng-container>
+            <span class="rating-empty" *ngIf="!ratingCount">No ratings yet</span>
+            <span class="your-rating" *ngIf="userRating">· Your rating: {{ userRating }}★</span>
+          </div>
+
+          <div class="hero-divider"></div>
+
+          <!-- Price row -->
+          <div class="price-row" *ngIf="!isPurchased && booksAvailableToBuy > 0">
+            <span class="price" *ngIf="remainingPrice">
+              {{ remainingPrice | currency:currency:'symbol-narrow':'1.2-2' }}
+            </span>
+            <span class="price price--free" *ngIf="!remainingPrice">Free</span>
+            <div class="price-context">
+              <span class="price-label">for the full universe</span>
+              <span class="price-sublabel" *ngIf="totalPrice && totalPrice !== remainingPrice">
+                ({{ totalPrice | currency:currency:'symbol-narrow':'1.2-2' }} total · you already own {{ (universe.papers.length || 0) - booksAvailableToBuy }})
+              </span>
+            </div>
+          </div>
+
+          <!-- CTA row -->
+          <div class="cta-row">
+
+            <!-- All owned -->
+            <ng-container *ngIf="allOwned || isPurchased">
+              <a class="btn btn--read" [routerLink]="['/read', universe.name]">
+                <mat-icon>menu_book</mat-icon> Read universe
+              </a>
+            </ng-container>
+
+            <!-- Has books to buy -->
+            <ng-container *ngIf="!isPurchased && booksAvailableToBuy > 0">
+              <!-- Logged in -->
+              <ng-container *ngIf="isLogged">
+                <a class="btn btn--buy" *ngIf="remainingPrice"
+                   [routerLink]="['/store/universe', universe.id, 'checkout']">
+                  <mat-icon>collections_bookmark</mat-icon>
+                  Buy universe
+                </a>
+                <a class="btn btn--free" *ngIf="!remainingPrice"
+                   [routerLink]="['/store/universe', universe.id, 'checkout']">
+                  <mat-icon>collections_bookmark</mat-icon> Get universe for free
+                </a>
+              </ng-container>
+              <!-- Not logged in -->
+              <button class="btn btn--signin" *ngIf="!isLogged" (click)="goToLogin()">
+                <mat-icon>login</mat-icon>
+                {{ remainingPrice ? 'Sign in to buy universe' : 'Sign in to get for free' }}
+              </button>
+            </ng-container>
+
+            <!-- Wishlist -->
+            <button
+              class="btn btn--wishlist"
+              *ngIf="isLogged"
+              [class.active]="isInWishlist"
+              [disabled]="wishlistLoading"
+              (click)="toggleWishlist()"
+              [attr.aria-label]="wishlistLabel">
+              <mat-icon>{{ isInWishlist ? 'favorite' : 'favorite_border' }}</mat-icon>
+              {{ wishlistLabel }}
+            </button>
+
+          </div>
         </div>
+      </div>
 
-
-        <h3>{{ book.name }}</h3>
-        <div class="author">{{ book.author_name }}</div>
-
-        <div class="book-meta">
-          <span *ngIf="book.year">📅 Year: {{ book.year }}</span>
-          <span *ngIf="book.language">🌍 {{ book.language.toUpperCase() }}</span>
-          <br />
-          <span *ngIf="book.maturity">
-            🔞 {{ book.maturity === 'NOT_MATURE' ? 'not mature' : 'mature' }}
-          </span>
-        </div>
-      </a>
+      <!-- Description -->
+      <p class="univ-description" *ngIf="universe.description">{{ universe.description }}</p>
     </div>
+  </section>
+
+  <!-- Books grid -->
+  <div class="page-body">
+    <section class="books-section">
+      <h2 class="section-heading">
+        <mat-icon class="heading-icon" aria-hidden="true">auto_stories</mat-icon>
+        Books in this universe
+      </h2>
+
+      <div class="books-grid" role="list">
+        <a
+          class="book-card"
+          *ngFor="let book of universe.papers; let idx = index"
+          [routerLink]="['/store/book', book.id]"
+          role="listitem"
+          [attr.aria-label]="book.name + (book.order ? ', Book ' + book.order : '') + (book.AlreadyPurchased ? ', owned' : '')">
+
+          <div class="book-cover-wrap">
+            <img
+              [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:160:240"
+              [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:160:240) + ' 160w, '
+                      + ((book.cover_url || DEFAULT_COVER) | cloudinary:320:480) + ' 320w'"
+              sizes="160px"
+              [alt]="book.name"
+              class="book-cover"
+              width="160" height="240"
+              [loading]="idx < 4 ? 'eager' : 'lazy'"
+              decoding="async" />
+
+            <!-- Owned badge -->
+            <span class="badge badge--owned" *ngIf="book.AlreadyPurchased" aria-hidden="true">
+              <mat-icon>check_circle</mat-icon>
+            </span>
+
+            <!-- Order label -->
+            <span class="badge badge--order" *ngIf="book.order != null" aria-hidden="true">
+              #{{ book.order }}
+            </span>
+
+            <!-- Status overlay -->
+            <div class="book-status-overlay" *ngIf="book.status !== 'available'" aria-hidden="true">
+              {{ book.status === 'in_progress' ? 'Coming soon' : 'Unavailable' }}
+            </div>
+          </div>
+
+          <div class="book-info">
+            <p class="book-title">{{ book.name }}</p>
+            <p class="book-author" *ngIf="book.author_name">{{ book.author_name }}</p>
+
+            <div class="book-price" *ngIf="book.status === 'available' && !book.AlreadyPurchased">
+              <span class="price-tag" *ngIf="book.price">{{ book.price | currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}</span>
+              <span class="price-tag price-tag--free" *ngIf="!book.price">Free</span>
+            </div>
+            <div class="book-owned" *ngIf="book.AlreadyPurchased">
+              <mat-icon>library_books</mat-icon> In library
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Carousels -->
+    <div class="carousels">
+      <app-books-by-author
+        [books]="byAuthor"
+        [heading]="'More by ' + (universe.Authors?.[0] || 'this author')">
+      </app-books-by-author>
+      <app-recommended-books [books]="byGenre"   heading="Similar universes"></app-recommended-books>
+      <app-recommended-books [books]="byExplore" heading="Explore"></app-recommended-books>
+    </div>
+
   </div>
+
 </div>
+
+<!-- Back to top -->
+<button
+  class="back-to-top"
+  *ngIf="showBackToTop"
+  (click)="scrollToTop()"
+  aria-label="Back to top">
+  <mat-icon>arrow_upward</mat-icon>
+</button>

@@ -72,6 +72,15 @@ export class TopPanelComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Apply localStorage cache synchronously — filters appear instantly on revisit
+    const cached = this.storeService.cachedMeta;
+    if (cached) {
+      this.genres    = cached.genres    || [];
+      this.authors   = (cached.authors  || []).map(a => a.name);
+      this.languages = cached.languages || [];
+    }
+
+    // Subscribe to the pre-fired request (updates cache in background)
     this.storeService.getStoreMeta().subscribe((data) => {
       this.genres    = data.genres    || [];
       this.authors   = (data.authors  || []).map(a => a.name);

@@ -15,6 +15,13 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
   isSearchMode = false;
+  catalogTotal: number | null = null;
+  searchType     = 'books';
+  activeQuery    = '';
+  activeAuthor   = '';
+  activeGenre    = '';
+  activeStatus   = '';
+  activeMaturity = '';
   loadingSections = true;
   loadError = false;
   sidebarOpen = false;
@@ -26,6 +33,7 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
   topUniverses: world[] = [];
   universesLoading = false;
   universesLoaded = false;
+  newReleasesLoading = false;
 
   // Hero wishlist
   isLogged = false;
@@ -55,14 +63,45 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.titleService.setTitle('Store — Discover Books & Universes');
     this.metaService.updateTag({ name: 'description', content: 'Browse and purchase books and fictional universes. Discover trending stories, new releases and hand-picked recommendations.' });
+
+    // ── Phase 0: meta cache (1h TTL) — hero + stats available instantly ──────
+    // Even on first visit to /home, if user already visited store once,
+    // meta is cached and we can show the featured book + head panel immediately.
+    const cachedMeta = this.storeService.cachedMeta;
+    if (cachedMeta?.hero) {
+      this.heroBook         = cachedMeta.hero;
+      this.heroIsInWishlist = !!cachedMeta.hero.is_in_wishlist;
+      if (cachedMeta.stats) this.stats = cachedMeta.stats;
+      this.loadingSections  = false;
+    }
+
+    // ── Phase 1: home cache (5min TTL) — full sections (trending, releases…) ─
+    const cachedHome = this.storeService.cachedHome;
+    if (cachedHome) {
+      this.applyHome(cachedHome);
+      this.loadingSections = false;
+    }
+
     this.loadSections();
+    // When cache was used, DOM is ready after first CD cycle — set up observer
+    if (cachedMeta?.hero || cachedHome) setTimeout(() => this.setupUniverseObserver());
 
     this.authService.isLogged$.pipe(takeUntil(this.destroy$)).subscribe(logged => {
       this.isLogged = logged;
     });
 
     this.storeService.filter$.pipe(takeUntil(this.destroy$)).subscribe(filter => {
-      this.isSearchMode = this.hasActiveSearch(filter);
+      this.isSearchMode   = this.hasActiveSearch(filter);
+      this.searchType     = filter.searchType ?? 'books';
+      this.activeQuery    = filter.query    ?? '';
+      this.activeAuthor   = filter.author   ?? '';
+      this.activeGenre    = filter.genre    ?? '';
+      this.activeStatus   = filter.status   ?? '';
+      this.activeMaturity = filter.maturity ?? '';
+    });
+
+    this.storeService.catalogTotal$.pipe(takeUntil(this.destroy$)).subscribe(total => {
+      this.catalogTotal = total;
     });
   }
 
@@ -95,20 +134,30 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  private applyHome(home: import('../store.service').HomeSection): void {
+    if ((home as any).hero) {
+      this.heroBook         = (home as any).hero;
+      this.heroIsInWishlist = !!(home as any).hero.is_in_wishlist;
+    }
+    this.trendingBooks    = (home.trending    ?? []).slice(0, 5);
+    if (!this.newReleases.length) this.newReleases = home.newReleases ?? [];
+    this.recommendedBooks = home.recommended ?? [];
+    if ((home as any).stats) this.stats = (home as any).stats;
+  }
+
   private loadSections(): void {
     this.storeService.getHome().pipe(takeUntil(this.destroy$)).subscribe({
       next: (home) => {
-        this.heroBook            = home.hero ?? null;
-        this.heroIsInWishlist    = !!home.hero?.is_in_wishlist;
-        this.trendingBooks       = home.trending;
-        this.newReleases         = home.newReleases;
-        this.recommendedBooks    = home.recommended;
-        this.stats               = home.stats;
-        this.loadingSections     = false;
-        // Aguarda Angular renderizar o *ngIf antes de configurar o observer
-        setTimeout(() => this.setupUniverseObserver());
+        this.applyHome(home);
+        this.loadingSections = false;
+        this.loadNewReleases();
+        // Se sem cache, precisa aguardar *ngIf renderizar antes do observer
+        if (!this.universesLoaded) setTimeout(() => this.setupUniverseObserver());
       },
-      error: () => { this.loadingSections = false; this.loadError = true; }
+      error: () => {
+        this.loadingSections = false;
+        if (!this.heroBook) this.loadError = true; // only show error if nothing cached to show
+      }
     });
   }
 
@@ -126,6 +175,19 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.universeObserver.observe(this.universeAnchor.nativeElement);
+  }
+
+  private loadNewReleases(): void {
+    this.newReleasesLoading = true;
+    this.storeService.getCatalog({ searchType: 'books', sort: 'created_at', order: 'desc', limit: 10, status: 'available' })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.type === 'books') this.newReleases = res.papers;
+          this.newReleasesLoading = false;
+        },
+        error: () => { this.newReleasesLoading = false; }
+      });
   }
 
   private loadUniverses(): void {
@@ -175,6 +237,10 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
   closeSidebar(): void  { this.sidebarOpen = false; }
+
+  clearFilters(): void {
+    this.storeService.setFilter({ searchType: 'books', page: 1, limit: 15, sort: 'name', order: 'asc' });
+  }
 
   retry(): void {
     this.loadError = false;

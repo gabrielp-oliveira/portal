@@ -30,7 +30,7 @@
   </div>
 
   <!-- Real head panel -->
-  <div class="st__head" *ngIf="!loadingSections && !loadError && stats.availableBooks > 0 && !isSearchMode">
+  <div class="st__head" *ngIf="!loadingSections && !loadError && (stats.availableBooks > 0 || isSearchMode)">
 
     <!-- Left: title + metrics -->
     <div class="st__head-left">
@@ -38,7 +38,8 @@
         <mat-icon aria-hidden="true">storefront</mat-icon>
         <span>Store</span>
       </div>
-      <div class="stats-metrics" aria-label="Store statistics">
+      <!-- Global stats (browse mode) -->
+      <div class="stats-metrics" aria-label="Store statistics" *ngIf="!isSearchMode">
         <div class="stats-item">
           <mat-icon aria-hidden="true">menu_book</mat-icon>
           <div class="stats-text">
@@ -70,6 +71,31 @@
             <span class="stats-label">Coming soon</span>
           </div>
         </div>
+      </div>
+
+      <!-- Search result stats (search mode) -->
+      <div class="stats-metrics stats-metrics--search" aria-live="polite" *ngIf="isSearchMode">
+        <div class="stats-item">
+          <mat-icon aria-hidden="true">{{ searchType === 'universes' ? 'public' : 'menu_book' }}</mat-icon>
+          <div class="stats-text">
+            <span class="stats-num">{{ catalogTotal ?? '—' }}</span>
+            <span class="stats-label">{{ searchType === 'universes' ? 'Universe' : 'Book' }}{{ (catalogTotal ?? 0) !== 1 ? 's' : '' }} found</span>
+          </div>
+        </div>
+        <div class="search-context-chips">
+          <span class="search-ctx-chip" *ngIf="activeQuery">"{{ activeQuery }}"</span>
+          <span class="search-ctx-chip" *ngIf="activeAuthor">Author: {{ activeAuthor }}</span>
+          <span class="search-ctx-chip" *ngIf="activeGenre">Genre: {{ activeGenre }}</span>
+          <span class="search-ctx-chip search-ctx-chip--status" *ngIf="activeStatus">{{ activeStatus.replace('_', ' ') }}</span>
+          <span class="search-ctx-chip" *ngIf="activeMaturity">{{ activeMaturity }}</span>
+        </div>
+        <ng-container *ngIf="catalogTotal === 0">
+          <div class="stats-divider" aria-hidden="true"></div>
+          <button class="stats-clear-btn" (click)="clearFilters()" aria-label="Clear all filters">
+            <mat-icon>restart_alt</mat-icon>
+            Clear filters
+          </button>
+        </ng-container>
       </div>
     </div>
 
@@ -225,9 +251,6 @@
               <mat-icon class="section-icon icon-fire" aria-hidden="true">local_fire_department</mat-icon>
               <h2 class="section-title" id="trending-title">Trending Now</h2>
             </div>
-            <button class="see-all" (click)="seeAll({ sort: 'purchases', order: 'desc', status: 'available' })" aria-label="See all trending books">
-              See all <mat-icon aria-hidden="true">chevron_right</mat-icon>
-            </button>
           </header>
           <ul class="shelf" role="list" aria-label="Trending books">
             <li class="shelf-slot" *ngFor="let book of trendingBooks; trackBy: trackById" role="listitem">
@@ -237,18 +260,20 @@
         </section>
 
         <!-- ── New Releases ── -->
-        <section class="store-section" *ngIf="newReleases.length > 0" aria-labelledby="releases-title">
+        <section class="store-section" *ngIf="newReleases.length > 0 || newReleasesLoading" aria-labelledby="releases-title">
           <header class="section-hd">
             <div class="section-label">
               <span class="section-accent accent-new" aria-hidden="true"></span>
               <mat-icon class="section-icon icon-new" aria-hidden="true">auto_awesome</mat-icon>
               <h2 class="section-title" id="releases-title">New Releases</h2>
             </div>
-            <button class="see-all" (click)="seeAll({ sort: 'created_at', order: 'desc', status: 'available' })" aria-label="See all new releases">
-              See all <mat-icon aria-hidden="true">chevron_right</mat-icon>
-            </button>
           </header>
-          <ul class="shelf" role="list" aria-label="New releases">
+          <ul class="shelf" role="list" aria-label="New releases" [attr.aria-busy]="newReleasesLoading || null">
+            <ng-container *ngIf="newReleasesLoading">
+              <li class="shelf-slot" *ngFor="let i of [1,2,3,4]" role="listitem" aria-hidden="true">
+                <div class="sk-card"><div class="sk-card__cover"></div><div class="sk-card__foot"><div class="sk-line sk-line--md"></div><div class="sk-line sk-line--sm"></div></div></div>
+              </li>
+            </ng-container>
             <li class="shelf-slot" *ngFor="let book of newReleases; trackBy: trackById" role="listitem">
               <app-paper-card [book]="book"></app-paper-card>
             </li>

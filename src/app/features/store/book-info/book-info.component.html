@@ -1,127 +1,189 @@
-<div class="book-info-container">
-  <!-- 📘 Capa -->
+<section class="book-hero">
 
-  <div class="cover-wrapper">
-    <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
-
-    <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:280:420"
-         [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:280:420) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:560:840) + ' 2x'"
-         [alt]="book.name" class="paper-img"
-         width="280" height="420" loading="eager" fetchpriority="high" decoding="async" />
+  <!-- Blurred backdrop -->
+  <div class="hero-backdrop"
+    [style.background-image]="'url(' + (book.cover_url || DEFAULT_COVER) + ')'">
   </div>
+  <div class="hero-overlay"></div>
 
-  <!-- 📚 Detalhes + Card do universo -->
-  <div class="book-details-wrapper">
-    <!-- 📝 Detalhes -->
-    <div class="book-details">
-      <h1>{{ book.name }}</h1>
-      <h3>{{ book.author_name }}</h3>
+  <!-- Content -->
+  <div class="hero-content">
 
-      <!-- 🌌 Universo e ordem -->
-      <p *ngIf="book.world_id && PaperCount > 1">
-        Universe:
-        <a [routerLink]="['/store/universe/', book.world_id]">{{ book.world_name }}</a>
-      </p>
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a class="breadcrumb-link" routerLink="/store">Store</a>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <ng-container *ngIf="book.world_id && PaperCount > 1">
+        <a class="breadcrumb-link" [routerLink]="['/store/universe', book.world_id]">{{ book.world_name }}</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      </ng-container>
+      <span class="breadcrumb-current">{{ book.name }}</span>
+    </nav>
 
-      <!-- 📅 Publicação e idioma -->
-      <p *ngIf="book.year || book.language">
-        <span *ngIf="book.year">publish: <strong>{{ book.year }} {{ book.publisher }}</strong></span>
-        <span *ngIf="book.language" style="margin-left: 16px;">
-          Idioma: <strong>{{ book.language }}</strong>
-        </span>
-      </p>
+    <!-- Cover + details grid -->
+    <div class="hero-grid">
 
-      <!-- 🏷️ Gêneros -->
-      <div *ngIf="book.genre?.length" class="genre-list">
-        <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>
-      </div>
+      <!-- Cover -->
+      <div class="cover-col">
+        <div class="cover-wrap">
+          <img
+            [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:260:390"
+            [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:160:240) + ' 160w, '
+                    + ((book.cover_url || DEFAULT_COVER) | cloudinary:260:390) + ' 260w, '
+                    + ((book.cover_url || DEFAULT_COVER) | cloudinary:520:780) + ' 520w'"
+            sizes="(max-width: 680px) 160px, 260px"
+            [alt]="book.name + ' cover'"
+            class="cover-img"
+            width="260" height="390"
+            loading="eager" fetchpriority="high" decoding="sync" />
 
-      <!-- 📄 Total de páginas -->
-      <p *ngIf="book.total_pages">
-        pages: <strong>{{ book.total_pages }}</strong>
-      </p>
-      <p *ngIf="isLogged">
-        <button (click)="toggleWishlist()" mat-icon-button>
-          <mat-icon [ngStyle]="{ color: isInWishlist ? 'red' : '#999' }">
-            {{ isInWishlist ? 'favorite' : 'favorite_border' }}
-          </mat-icon>
-        </button>
-
-        
-      </p>
-
-
-
-
-
-
-
-      <!-- 💵 Botão de compra -->
-      <div class="btn-options">
-
-        <button mat-raised-button color="primary" class="buy-button" *ngIf="book.status == 'available' && !isPurchased"
-          [routerLink]="['/store/book', book.id, 'checkout']">
-          price {{ book.price| currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
-        </button>
-        <div *ngIf="isPurchased">
-          <!-- Botão para ler o livro -->
-          <button mat-raised-button color="primary" [routerLink]="['/read/book', book.id, 'chapter', 1]">
-            📖 Read book
-          </button>
-
-          <!-- Botão para ler o universo -->
-          <!-- http://localhost:4200/read/The%20Tarzan%20Saga -->
-          <button mat-raised-button color="primary" [routerLink]="['/read', book.world_name]">
-            🌌 Read universe
-          </button>
-
+          <span class="badge badge--mature" *ngIf="book.maturity === 'MATURE'" aria-label="18+ content">18+</span>
+          <span class="badge badge--owned" *ngIf="isPurchased">
+            <mat-icon>check_circle</mat-icon> Owned
+          </span>
         </div>
       </div>
 
-    </div>
+      <!-- Details -->
+      <div class="details-col">
 
-    <!-- 🌌 Card do Universo -->
-    <div *ngIf="book.world_id && PaperCount > 1" class="universe-card">
-      <h2 class="universe-title">{{ book.world_name }}</h2>
+        <span class="status-pill status-pill--progress"     *ngIf="book.status === 'in_progress'">In Progress</span>
+        <span class="status-pill status-pill--unavailable"  *ngIf="book.status === 'not_available'">Unavailable</span>
 
-      <div *ngIf="worldDescription" class="universe-description-block">
-        <ng-container *ngIf="worldDescription.length > 200; else fullUniverseDesc">
-          <p class="universe-description"
-            [innerText]="showFullUniverseDesc ? worldDescription : (worldDescription | truncate: 200)">
-          </p>
-          <button mat-button (click)="showFullUniverseDesc = !showFullUniverseDesc">
-            {{ showFullUniverseDesc ? 'Show less' : 'Show more' }}
-          </button>
+        <h1 class="book-title">{{ book.name }}</h1>
+        <p class="book-author">
+          by <a class="author-link" [routerLink]="['/store']" [queryParams]="{ author: book.author_name }">{{ book.author_name }}</a>
+        </p>
+
+        <!-- Genre chips -->
+        <div class="genre-chips" *ngIf="book.genre?.length">
+          <a class="genre-chip"
+             *ngFor="let g of book.genre"
+             [routerLink]="['/store']"
+             [queryParams]="{ genre: g }">{{ g }}</a>
+        </div>
+
+        <!-- Meta row -->
+        <div class="meta-row">
+          <span class="meta-item" *ngIf="book.total_pages">
+            <mat-icon>menu_book</mat-icon>{{ book.total_pages | number }} pages
+          </span>
+          <span class="meta-item" *ngIf="book.year">
+            <mat-icon>calendar_today</mat-icon>{{ book.year }}
+          </span>
+          <span class="meta-item" *ngIf="book.language">
+            <mat-icon>translate</mat-icon>{{ book.language }}
+          </span>
+          <span class="meta-item" *ngIf="book.maturity">
+            <mat-icon>shield</mat-icon>{{ maturityLabel }}
+          </span>
+        </div>
+
+        <!-- Star rating -->
+        <div class="rating-row" aria-live="polite" aria-atomic="true">
+          <div class="stars"
+            [class.stars--interactive]="isLogged"
+            [class.stars--loading]="ratingLoading"
+            (mouseleave)="hoverRating = 0">
+            <button
+              class="star-btn"
+              *ngFor="let s of STARS"
+              [class.star-btn--active]="s <= (hoverRating || userRating || 0)"
+              (mouseenter)="isLogged && (hoverRating = s)"
+              (click)="rate(s)"
+              [disabled]="!isLogged || ratingLoading"
+              [attr.aria-label]="'Rate ' + s + ' stars'">
+              <mat-icon class="star-icon">{{ starIcon(s) }}</mat-icon>
+            </button>
+          </div>
+
+          <ng-container *ngIf="ratingCount > 0">
+            <span class="rating-avg">{{ ratingAvg | number:'1.1-1' }}</span>
+            <span class="rating-count">({{ ratingCount | number }})</span>
+          </ng-container>
+          <span class="rating-empty" *ngIf="!ratingCount">No ratings yet</span>
+
+          <span class="your-rating" *ngIf="userRating">
+            · Your rating: {{ userRating }}★
+          </span>
+        </div>
+
+        <div class="hero-divider"></div>
+
+        <!-- Price -->
+        <ng-container *ngIf="!isPurchased && book.status === 'available'">
+          <div class="price-row">
+            <span class="price" *ngIf="book.price">{{ book.price | currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}</span>
+            <span class="price price--free" *ngIf="!book.price">Free</span>
+            <span class="price-original" *ngIf="book.original_price && book.original_price > book.price">
+              {{ book.original_price | currency:book.priceCurrency:'symbol-narrow':'1.2-2' }}
+            </span>
+            <span class="discount-badge" *ngIf="book.discount_pct">−{{ book.discount_pct | number:'1.0-0' }}%</span>
+          </div>
         </ng-container>
 
-        <ng-template #fullUniverseDesc>
-          <p class="universe-description">{{ worldDescription }}</p>
-        </ng-template>
+        <!-- CTA -->
+        <div class="cta-row">
+
+          <!-- Purchased -->
+          <ng-container *ngIf="isPurchased">
+            <a class="btn btn--read" [routerLink]="['/read/book', book.id, 'chapter', 1]">
+              <mat-icon>menu_book</mat-icon> Read book
+            </a>
+            <a class="btn btn--universe" *ngIf="book.world_id && PaperCount > 1"
+               [routerLink]="['/store/universe', book.world_id]">
+              <mat-icon>public</mat-icon> Universe
+            </a>
+          </ng-container>
+
+          <!-- Not purchased + available -->
+          <ng-container *ngIf="!isPurchased && book.status === 'available'">
+
+            <!-- Logged in -->
+            <ng-container *ngIf="isLogged">
+              <a class="btn btn--buy" *ngIf="book.price"
+                 [routerLink]="['/store/book', book.id, 'checkout']">
+                <mat-icon>shopping_cart</mat-icon> Buy now
+              </a>
+              <a class="btn btn--free" *ngIf="!book.price"
+                 [routerLink]="['/store/book', book.id, 'checkout']">
+                <mat-icon>download</mat-icon> Get for free
+              </a>
+            </ng-container>
+
+            <!-- Not logged in -->
+            <button class="btn btn--signin" *ngIf="!isLogged" (click)="goToLogin()">
+              <mat-icon>login</mat-icon>
+              {{ book.price ? 'Sign in to buy' : 'Sign in to get for free' }}
+            </button>
+
+          </ng-container>
+
+          <!-- Not available / coming soon -->
+          <ng-container *ngIf="!isPurchased && book.status !== 'available'">
+            <span class="status-label" *ngIf="book.status === 'in_progress'">
+              <mat-icon>schedule</mat-icon> Coming soon
+            </span>
+            <span class="status-label" *ngIf="book.status === 'not_available'">
+              <mat-icon>block</mat-icon> Not available
+            </span>
+          </ng-container>
+
+          <!-- Wishlist / Favorite — always visible when logged in -->
+          <button
+            class="btn btn--wishlist"
+            *ngIf="isLogged"
+            [class.active]="isInWishlist"
+            [disabled]="wishlistLoading"
+            (click)="toggleWishlist()"
+            [attr.aria-label]="wishlistLabel">
+            <mat-icon>{{ isInWishlist ? 'favorite' : 'favorite_border' }}</mat-icon>
+            {{ wishlistLabel }}
+          </button>
+
+        </div>
+
       </div>
-
-      <p class="universe-count">
-        Total de livros: <strong>{{ PaperCount }}</strong>
-      </p>
-
-      <button mat-button color="accent" [routerLink]="['/store/universe', book.world_id]">
-        Ver universo
-      </button>
     </div>
-
   </div>
-
-  <!-- 📖 Descrição do Livro -->
-  <div *ngIf="book.description" class="description-block">
-    <ng-container *ngIf="book.description.length > 300; else fullBookDesc">
-      <p class="description"
-        [innerText]="showFullBookDesc ? book.description : (book.description | slice:0:250) + '...'">
-      </p>
-      <button mat-button (click)="showFullBookDesc = !showFullBookDesc">
-        {{ showFullBookDesc ? 'Show less' : 'Show more' }}
-      </button>
-    </ng-container>
-
-    <ng-template #fullBookDesc>
-      <p class="description">{{ book.description }}</p>
-    </ng-template>
-  </div>
+</section>

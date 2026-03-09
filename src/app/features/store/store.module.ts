@@ -41,6 +41,8 @@ import { BackToTopComponent } from '../../shared/back-to-top/back-to-top.compone
 import { PageLayoutComponent } from '../../shared/page-layout/page-layout.component';
 import { TruncatePipe } from "../../truncate.pipe";
 import { CloudinaryPipe } from '../dashboard/pipes/cloudinary.pipe';
+import { CoPaymentMethodsComponent } from './shared/co-payment-methods.component';
+import { CoConsentComponent } from './shared/co-consent.component';
 
 const routes: Routes = [
   {
@@ -97,6 +99,8 @@ const routes: Routes = [
     CloudinaryPipe,
     BackToTopComponent,
     PageLayoutComponent,
-]
+    CoPaymentMethodsComponent,
+    CoConsentComponent,
+  ]
 })
 export class StoreModule {}

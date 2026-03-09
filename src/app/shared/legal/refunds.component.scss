@@ -1,0 +1,121 @@
+:host {
+  --text:    #1C1917;
+  --text2:   #78716C;
+  --border:  #E5E3DC;
+  --surface: #FFFFFF;
+  --surface2:#F0EFEB;
+  --accent:  #B8732A;
+  display: block;
+}
+:host-context(.dark-theme) {
+  --text:    #F5F4F0;
+  --text2:   #A8A29E;
+  --border:  #2E2C2A;
+  --surface: #1C1B1A;
+  --surface2:#242320;
+  --accent:  #F0A830;
+}
+
+.doc__header {
+  margin-bottom: 36px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+}
+
+.doc__meta {
+  font-size: 0.78rem;
+  color: var(--text2);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.doc__section {
+  margin-bottom: 32px;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 12px;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 1.1em;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+  }
+
+  p {
+    font-size: 0.92rem;
+    line-height: 1.8;
+    color: var(--text2);
+    margin: 0 0 10px;
+
+    strong { color: var(--text); font-weight: 600; }
+  }
+
+  ul {
+    padding-left: 0;
+    margin: 8px 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text2);
+
+      &::before {
+        content: '–';
+        color: var(--accent);
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      strong { color: var(--text); font-weight: 600; }
+    }
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    &:hover { opacity: .8; }
+  }
+
+  &--highlight {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+
+    p { margin: 0; color: var(--text); font-size: 0.92rem; }
+  }
+}

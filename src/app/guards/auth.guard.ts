@@ -23,7 +23,7 @@ function isTokenValid(token: string | null, expiryString: string | null): boolea
   return parseExpiryToMs(expiryString) > Date.now();
 }
 
-function consumeCallbackParams(route: ActivatedRouteSnapshot, auth: AuthService): boolean {
+function consumeCallbackParams(route: ActivatedRouteSnapshot, auth: AuthService): string | false {
   const urlToken     = route.queryParams['accessToken'];
   const urlExpiry    = route.queryParams['expiry'];
   const urlSessionId = route.queryParams['sessionId'];
@@ -35,7 +35,10 @@ function consumeCallbackParams(route: ActivatedRouteSnapshot, auth: AuthService)
   localStorage.setItem('expiry', urlExpiry);
   if (urlSessionId) localStorage.setItem('sessionId', urlSessionId);
   auth.setLoggedStatus(true);
-  return true;
+
+  const redirect = localStorage.getItem('auth-redirect') || '';
+  localStorage.removeItem('auth-redirect');
+  return redirect;
 }
 
 export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
@@ -43,7 +46,9 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
   const auth   = inject(AuthService);
 
   // 1) Callback tokens via URL (OAuth redirect)
-  if (consumeCallbackParams(route, auth)) {
+  const oauthRedirect = consumeCallbackParams(route, auth);
+  if (oauthRedirect !== false) {
+    if (oauthRedirect) return router.parseUrl(oauthRedirect);
     const tree = router.parseUrl(state.url);
     tree.queryParams = {};
     return tree;
@@ -68,12 +73,14 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
       }),
       catchError(() => {
         auth.setLoggedStatus(false);
-        return of(router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }));
+        localStorage.setItem('auth-redirect', state.url);
+        return of(router.createUrlTree(['/login']));
       })
     );
   }
 
   // 4) Sem token -> login
   auth.setLoggedStatus(false);
-  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  localStorage.setItem('auth-redirect', state.url);
+  return router.createUrlTree(['/login']);
 };

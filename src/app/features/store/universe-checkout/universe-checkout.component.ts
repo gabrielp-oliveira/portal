@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Title, Meta } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StoreService } from '../store.service';
 import { paper } from '../../../models/paperTrailTypes';
@@ -11,67 +12,81 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./universe-checkout.component.scss']
 })
 export class UniverseCheckoutComponent implements OnInit, OnDestroy {
-  id: string = '';
+  id            = '';
   collectionName = '';
   books: paper[] = [];
   booksToBuy: paper[] = [];
 
-  paymentMethod: string = '';
-  total = 0;
-  totalOriginal = 0;
-  country = 'BR';
-  currencyCode = 'BRL';
+  paymentMethod  = '';
+  total          = 0;
+  totalOriginal  = 0;
+  ownedCount     = 0;
+  country        = 'US';
+  currencyCode   = 'USD';
+  purchasing     = false;
+  purchaseError: string | null = null;
+  termsAccepted  = false;
+  consentTouched = false;
+  isPt           = navigator.language.startsWith('pt');
+
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
 
-  private subscriptions: Subscription[] = [];
+  private subs: Subscription[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private store: StoreService
+    private store: StoreService,
+    private titleSvc: Title,
+    private meta: Meta
   ) {}
 
   ngOnInit(): void {
     const universeId = this.route.snapshot.paramMap.get('id');
     if (!universeId) return;
-
     this.id = universeId;
 
     fetch('https://ipapi.co/json')
-      .then(res => res.json())
-      .then(data => {
-        this.country = data.country === 'BR' ? 'BR' : 'US';
+      .then(r => r.json())
+      .then(d => {
+        this.country      = d.country === 'BR' ? 'BR' : 'US';
         this.currencyCode = this.country === 'BR' ? 'BRL' : 'USD';
-        this.loadContent();
       })
-      .catch(() => {
-        this.country = 'US';
-        this.currencyCode = 'USD';
-        this.loadContent();
-      });
+      .catch(() => { this.country = 'US'; this.currencyCode = 'USD'; })
+      .finally(() => this.loadContent());
   }
 
-  loadContent() {
-    const sub = this.store.getUniverseById(this.id, this.currencyCode, this.country).subscribe(universe => {
-      this.collectionName = universe.name;
-      this.books = universe.papers || [];
+  private loadContent(): void {
+    const sub = this.store.getUniverseById(this.id, this.currencyCode, this.country).subscribe(res => {
+      const u = res.universe ?? (res as any);
+      this.collectionName  = u.name;
+      this.books           = u.papers || [];
+      this.booksToBuy      = this.books.filter((b: paper) => !b.AlreadyPurchased);
+      this.ownedCount      = this.books.length - this.booksToBuy.length;
+      this.total           = this.booksToBuy.reduce((s, b) => s + (Number(b.price) || 0), 0);
+      this.totalOriginal   = this.books.reduce((s, b) => s + (Number(b.price) || 0), 0);
 
-      this.booksToBuy = this.books.filter(b => !b.AlreadyPurchased);
-      this.total = this.booksToBuy.reduce((sum, book) => sum + (Number(book.price) || 0), 0);
-      this.totalOriginal = this.books.reduce((sum, book) => sum + (Number(book.price) || 0), 0);
+      const pageTitle = `Buy ${u.name} Universe — Narratus`;
+      this.titleSvc.setTitle(pageTitle);
+      this.meta.updateTag({ name: 'robots',          content: 'noindex, nofollow' });
+      this.meta.updateTag({ name: 'description',     content: `Get the full "${u.name}" universe — ${this.books.length} books on Narratus.` });
+      this.meta.updateTag({ property: 'og:title',   content: pageTitle });
+      this.meta.updateTag({ property: 'og:description', content: `Get the full "${u.name}" universe — ${this.books.length} books on Narratus.` });
+      const cover = this.books[0]?.cover_url;
+      if (cover) { this.meta.updateTag({ property: 'og:image', content: cover }); }
     });
-
-    this.subscriptions.push(sub);
+    this.subs.push(sub);
   }
 
-  finalizePurchase() {
-    if (!this.paymentMethod) {
-      alert("Por favor, selecione uma forma de pagamento.");
-      return;
-    }
+  finalizePurchase(): void {
+    if (this.total > 0 && !this.paymentMethod) return;
+    if (!this.termsAccepted) return;
+
+    this.purchasing    = true;
+    this.purchaseError = null;
 
     const body = {
-      paymentMethod: this.paymentMethod,
+      paymentMethod: this.paymentMethod || 'free',
       type: 'universe',
       country: this.country,
       currencyCode: this.currencyCode,
@@ -79,20 +94,25 @@ export class UniverseCheckoutComponent implements OnInit, OnDestroy {
     };
 
     const sub = this.store.checkoutUniverse(body).subscribe({
-      next: (res:any) => {
-        if (this.total === 0) {
-          alert('Livro gratuito adicionado à sua biblioteca!');
-        } else if (res.checkoutUrl) {
-          window.location.href = res.checkoutUrl;
+      next: (res: any) => {
+        this.purchasing = false;
+        if (this.total === 0 || res.message) {
+          alert('Universe added to your library!');
+        } else if (res.url) {
+          window.location.href = res.url;
         }
       },
-      error: (err) => console.error('Erro ao comprar universo:', err),
+      error: (err) => {
+        this.purchasing    = false;
+        this.purchaseError = err?.error?.error || 'Something went wrong. Please try again.';
+      }
     });
-
-    this.subscriptions.push(sub);
+    this.subs.push(sub);
   }
 
+  trackById(_: number, b: paper): string { return b.id; }
+
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subs.forEach(s => s.unsubscribe());
   }
 }

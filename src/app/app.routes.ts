@@ -41,6 +41,18 @@ export const routes: Routes = [
     loadChildren: () => import('./features/read-world/read-world.module').then(c => c.ReadWorldModule),
     canActivate: [authGuard]
   },
+  {
+    path: 'terms',
+    loadComponent: () => import('./shared/legal/terms.component').then(c => c.TermsComponent)
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./shared/legal/privacy.component').then(c => c.PrivacyComponent)
+  },
+  {
+    path: 'refunds',
+    loadComponent: () => import('./shared/legal/refunds.component').then(c => c.RefundsComponent)
+  },
   { path: '**', redirectTo: '' }
 
 ];

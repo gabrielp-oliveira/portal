@@ -76,6 +76,7 @@ export class BodyStoreComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.storeService.setCatalogTotal(null);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -118,6 +119,7 @@ export class BodyStoreComponent implements OnInit, OnDestroy {
     this.totalElements = res.total;
     this.loading       = false;
     this.loadError     = false;
+    this.storeService.setCatalogTotal(res.total);
   }
 
   retry(): void {

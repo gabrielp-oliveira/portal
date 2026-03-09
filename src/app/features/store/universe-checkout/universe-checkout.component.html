@@ -1,57 +1,214 @@
-<div class="checkout-container">
-  <h1 class="title">Checkout: {{ collectionName }}</h1>
-
-  <!-- Carregando -->
-  <div *ngIf="!books.length && !total" class="loading">
-    Carregando informações da compra...
-  </div>
-
-  <!-- Lista de livros ainda não comprados (universo) -->
-  <div *ngIf="booksToBuy.length" class="books-grid">
-    <div *ngFor="let b of booksToBuy" class="book-card">
-      <img [src]="(b.cover_url || DEFAULT_COVER) | cloudinary:100:150"
-           [srcset]="((b.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((b.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
-           [alt]="'Capa: ' + b.name" width="100" height="150" loading="lazy" decoding="async" />
-      <p class="book-title">{{ b.name }}</p>
+<!-- ── Loading skeleton ── -->
+<div class="co" *ngIf="!collectionName" aria-busy="true" aria-label="Loading checkout…" role="status">
+  <div class="co__back sk-line" style="width:120px; height:18px"></div>
+  <div class="co__layout">
+    <div class="co__product">
+      <div class="sk-covers">
+        <div class="sk-cover-main"></div>
+        <div class="sk-cover-sm" *ngFor="let i of [1,2,3]"></div>
+      </div>
+      <div class="co__product-info">
+        <div class="sk-line" style="width:55%; height:14px"></div>
+        <div class="sk-line" style="width:80%; height:24px; margin-top:8px"></div>
+        <div class="sk-line" style="width:40%; height:13px; margin-top:6px"></div>
+        <div class="sk-line" style="width:100%; height:12px; margin-top:18px"></div>
+        <div class="sk-line" style="width:90%; height:12px; margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="co__panel">
+      <div class="sk-line" style="width:80%; height:18px"></div>
+      <div class="sk-line" style="width:100%; height:60px; margin-top:8px; border-radius:12px"></div>
+      <div class="sk-method" *ngFor="let i of [1,2,3]"></div>
+      <div class="sk-btn"></div>
     </div>
   </div>
+</div>
 
-  <!-- Total -->
-  <p *ngIf="total > 0" class="total">
-    Total:
-    <ng-container *ngIf="books.length && totalOriginal > total">
-      <s style="color: red; margin-right: 8px;">
-        {{ totalOriginal | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
-      </s>
-    </ng-container>
-    <strong>{{ total | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}</strong>
-  </p>
+<!-- ── Real checkout ── -->
+<div class="co" *ngIf="collectionName">
 
-  <h2>Forma de pagamento</h2>
+  <!-- Back -->
+  <a class="co__back" [routerLink]="['/store/universe', id]" aria-label="Back to universe">
+    <mat-icon>arrow_back</mat-icon> Back
+  </a>
 
-  <!-- Seleção do método de pagamento -->
-  <div class="payment-options" *ngIf="country === 'BR' || country === 'US'">
-    <!-- Brasil -->
-    <ng-container *ngIf="country === 'BR'">
-      <label><input type="radio" name="method" value="pix" [(ngModel)]="paymentMethod" /> Pix</label>
-      <label><input type="radio" name="method" value="boleto" [(ngModel)]="paymentMethod" /> Boleto Bancário</label>
-      <label><input type="radio" name="method" value="card" [(ngModel)]="paymentMethod" /> Cartão de Crédito</label>
-    </ng-container>
+  <!-- Breadcrumb -->
+  <nav class="co__crumbs" aria-label="Breadcrumb">
+    <a routerLink="/store">Store</a>
+    <mat-icon>chevron_right</mat-icon>
+    <a [routerLink]="['/store/universe', id]">{{ collectionName }}</a>
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    <span aria-current="page">Checkout</span>
+  </nav>
 
-    <!-- Estados Unidos -->
-    <ng-container *ngIf="country === 'US'">
-      <label><input type="radio" name="method" value="stripe" [(ngModel)]="paymentMethod" /> Credit Card (via Stripe)</label>
-      <label><input type="radio" name="method" value="paypal" [(ngModel)]="paymentMethod" /> PayPal</label>
-    </ng-container>
-  </div>
+  <div class="co__layout">
 
-  <!-- País não suportado -->
-  <div *ngIf="country !== 'BR' && country !== 'US'" class="alert">
-    Nenhuma forma de pagamento disponível para sua região.
-  </div>
+    <!-- ── Left: product ── -->
+    <section class="co__product" aria-labelledby="co-universe-title">
 
-  <!-- Finalizar -->
-  <div class="btn-wrapper" *ngIf="total > 0">
-    <button (click)="finalizePurchase()" [disabled]="!paymentMethod">Finalizar compra</button>
+      <!-- Universe cover mosaic (decorative) -->
+      <div class="co__covers" aria-hidden="true">
+        <img class="co__cover-main"
+          *ngIf="books[0]"
+          [src]="(books[0].cover_url || DEFAULT_COVER) | cloudinary:200:300"
+          [srcset]="((books[0].cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((books[0].cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
+          sizes="100px"
+          alt="" width="100" height="150"
+          loading="eager" fetchpriority="high" />
+        <div class="co__covers-stack">
+          <img *ngFor="let b of books.slice(1, 4)"
+            [src]="(b.cover_url || DEFAULT_COVER) | cloudinary:120:180"
+            alt="" width="60" height="90" loading="lazy" decoding="async" />
+        </div>
+      </div>
+
+      <div class="co__product-info">
+        <p class="co__product-type">
+          <mat-icon aria-hidden="true">collections_bookmark</mat-icon>
+          Universe · {{ books.length }} book{{ books.length !== 1 ? 's' : '' }}
+        </p>
+        <h1 class="co__product-title" id="co-universe-title">{{ collectionName }}</h1>
+
+        <!-- Progress: already owned -->
+        <div class="co__owned-bar" *ngIf="ownedCount > 0" [attr.aria-label]="ownedCount + ' of ' + books.length + ' books already owned'">
+          <span class="co__owned-text">
+            <mat-icon aria-hidden="true">check_circle</mat-icon>
+            You own {{ ownedCount }} of {{ books.length }} books
+          </span>
+          <div class="co__progress-track" aria-hidden="true">
+            <div class="co__progress-fill" [style.width.%]="(ownedCount / books.length) * 100"></div>
+          </div>
+        </div>
+
+        <!-- Book list -->
+        <div class="co__book-list" role="list" aria-label="Books in this universe">
+          <div class="co__book-item" *ngFor="let b of books; trackBy: trackById" role="listitem">
+            <img [src]="(b.cover_url || DEFAULT_COVER) | cloudinary:80:120"
+              [alt]="b.name + ' cover'" width="40" height="60" loading="lazy" decoding="async" />
+            <div class="co__book-item-info">
+              <span class="co__book-item-name">{{ b.name }}</span>
+              <span class="co__book-item-owned" *ngIf="b.AlreadyPurchased">
+                <mat-icon>check</mat-icon> Owned
+              </span>
+              <span class="co__book-item-price" *ngIf="!b.AlreadyPurchased">
+                {{ b.price ? (b.price | currency: currencyCode : 'symbol-narrow' : '1.2-2') : 'Free' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Right: payment panel ── -->
+    <aside class="co__panel" aria-label="Order and payment">
+
+      <!-- What you're buying summary -->
+      <div class="co__universe-summary">
+        <p class="co__universe-summary-title">What you're getting</p>
+        <ul class="co__universe-summary-list">
+          <li>
+            <mat-icon>collections_bookmark</mat-icon>
+            <span>Full <strong>{{ collectionName }}</strong> universe</span>
+          </li>
+          <li *ngIf="booksToBuy.length < books.length">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ booksToBuy.length }} new book{{ booksToBuy.length !== 1 ? 's' : '' }} · {{ ownedCount }} already owned</span>
+          </li>
+          <li *ngIf="booksToBuy.length === books.length">
+            <mat-icon>auto_stories</mat-icon>
+            <span>{{ books.length }} book{{ books.length !== 1 ? 's' : '' }} included</span>
+          </li>
+          <li>
+            <mat-icon>download</mat-icon>
+            <span>Instant access · Read anywhere</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Price summary -->
+      <div class="co__price-block">
+        <div class="co__price-row" *ngIf="ownedCount > 0">
+          <span class="co__price-label">
+            Original ({{ books.length }} books)
+          </span>
+          <span class="co__price-original">
+            {{ totalOriginal | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
+          </span>
+        </div>
+        <div class="co__price-row" *ngIf="ownedCount > 0">
+          <span class="co__price-label">Already owned</span>
+          <span class="co__price-discount">
+            − {{ (totalOriginal - total) | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
+          </span>
+        </div>
+        <div class="co__price-divider"></div>
+        <div class="co__price-row co__price-row--total">
+          <span>Total</span>
+          <strong class="co__price-final" [class.co__price-final--free]="total === 0">
+            {{ total === 0 ? 'Free' : (total | currency: currencyCode : 'symbol-narrow' : '1.2-2') }}
+          </strong>
+        </div>
+      </div>
+
+      <!-- Free flow -->
+      <ng-container *ngIf="total === 0">
+        <div class="co__free-badge">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          This universe is free — no payment needed
+        </div>
+        <co-consent
+          [isPt]="isPt"
+          [value]="termsAccepted"
+          [required]="consentTouched && !termsAccepted"
+          (valueChange)="termsAccepted = $event; consentTouched = true">
+        </co-consent>
+        <button class="co__cta co__cta--primary"
+          (click)="consentTouched = true; finalizePurchase()"
+          [disabled]="purchasing"
+          [attr.aria-disabled]="!termsAccepted"
+          [class.co__cta--consent-required]="consentTouched && !termsAccepted">
+          <mat-icon aria-hidden="true">collections_bookmark</mat-icon>
+          <span>Add universe to library</span>
+        </button>
+      </ng-container>
+
+      <!-- Paid flow -->
+      <ng-container *ngIf="total > 0">
+        <co-payment-methods
+          [currencyCode]="currencyCode"
+          [value]="paymentMethod"
+          (valueChange)="paymentMethod = $event">
+        </co-payment-methods>
+        <co-consent
+          [isPt]="isPt"
+          [value]="termsAccepted"
+          [required]="consentTouched && !termsAccepted"
+          (valueChange)="termsAccepted = $event; consentTouched = true">
+        </co-consent>
+        <button class="co__cta co__cta--primary"
+          (click)="consentTouched = true; finalizePurchase()"
+          [disabled]="!paymentMethod || purchasing"
+          [attr.aria-disabled]="!termsAccepted || !paymentMethod"
+          [attr.aria-busy]="purchasing"
+          [class.co__cta--loading]="purchasing"
+          [class.co__cta--consent-required]="consentTouched && !termsAccepted">
+          <mat-icon *ngIf="!purchasing" aria-hidden="true">collections_bookmark</mat-icon>
+          <span class="co__spinner" *ngIf="purchasing" aria-hidden="true"></span>
+          <span>{{ purchasing ? 'Redirecting…' : 'Buy universe' }}</span>
+        </button>
+
+        <p class="co__secure-note" aria-hidden="true">
+          <mat-icon>shield</mat-icon>
+          Secured by Stripe · 256-bit encryption
+        </p>
+      </ng-container>
+
+      <!-- Error -->
+      <div class="co__error" role="alert" *ngIf="purchaseError">
+        <mat-icon>error_outline</mat-icon>
+        {{ purchaseError }}
+      </div>
+
+    </aside>
   </div>
 </div>

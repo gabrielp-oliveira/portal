@@ -1,41 +1,157 @@
-<app-ads></app-ads>
-
-<!-- Skeleton while loading -->
-<div *ngIf="loading" class="sk-paper-page" aria-hidden="true">
-  <div class="sk-paper-info">
-    <div class="sk-paper-cover"></div>
-    <div class="sk-paper-details">
-      <div class="sk-p-line sk-p-line--title"></div>
-      <div class="sk-p-line sk-p-line--author"></div>
-      <div class="sk-p-line"></div>
-      <div class="sk-p-line sk-p-line--short"></div>
-      <div class="sk-p-line sk-p-line--short"></div>
-      <div class="sk-p-btn"></div>
+<!-- ── Skeleton ──────────────────────────────────────────────────────────── -->
+<div *ngIf="loading" class="sk-page" aria-hidden="true">
+  <div class="sk-hero">
+    <div class="sk-cover"></div>
+    <div class="sk-details">
+      <div class="sk-line sk-line--sm"></div>
+      <div class="sk-line sk-line--title"></div>
+      <div class="sk-line sk-line--author"></div>
+      <div class="sk-chips">
+        <div class="sk-chip"></div><div class="sk-chip"></div><div class="sk-chip"></div>
+      </div>
+      <div class="sk-meta-row">
+        <div class="sk-meta-item"></div><div class="sk-meta-item"></div><div class="sk-meta-item"></div>
+      </div>
+      <div class="sk-stars">
+        <div class="sk-star" *ngFor="let i of SKELETON_STARS"></div>
+        <div class="sk-rating-count"></div>
+      </div>
+      <div class="sk-divider"></div>
+      <div class="sk-line sk-line--price"></div>
+      <div class="sk-actions">
+        <div class="sk-btn sk-btn--primary"></div>
+        <div class="sk-btn sk-btn--ghost"></div>
+      </div>
     </div>
   </div>
-  <div class="sk-paper-desc">
-    <div class="sk-p-line" *ngFor="let i of [1,2,3,4,5]"></div>
-  </div>
-  <div class="sk-paper-reco">
-    <div class="sk-reco-card" *ngFor="let i of [1,2,3,4,5]">
-      <div class="sk-reco-cover"></div>
-      <div class="sk-p-line sk-p-line--short"></div>
-    </div>
+  <div class="sk-body">
+    <div class="sk-section-title"></div>
+    <div class="sk-line" *ngFor="let i of SKELETON_ROWS"></div>
   </div>
 </div>
 
-<div *ngIf="paper$ | async as paper" class="book-detail-page">
+<!-- ── Content ──────────────────────────────────────────────────────────── -->
+<div *ngIf="!loading && (paper$ | async) as paper" class="book-page">
 
-  <app-book-info [book]="paper" [PaperCount]="PaperCount" [worldDescription]="worldDescription" [isPurchased]="isPurchased" [isInWishlist]="isInWishlist"></app-book-info>
+  <!-- Hero -->
+  <app-book-info
+    [book]="paper"
+    [PaperCount]="PaperCount"
+    [isPurchased]="isPurchased"
+    [isInWishlist]="isInWishlist"
+    [ratingAvg]="ratingAvg"
+    [ratingCount]="ratingCount"
+    [userRating]="userRating"
+    (ratingChange)="onRatingChange($event)">
+  </app-book-info>
 
+  <div class="page-body">
 
+    <!-- Synopsis -->
+    <section class="section synopsis-section" *ngIf="paper.description">
+      <h2 class="section-heading">About this book</h2>
+      <div id="synopsis-text" class="synopsis-text" [class.expanded]="synopsisExpanded">
+        <p>{{ paper.description }}</p>
+      </div>
+      <button
+        class="toggle-btn"
+        *ngIf="paper.description.length > 400"
+        [attr.aria-expanded]="synopsisExpanded"
+        aria-controls="synopsis-text"
+        (click)="synopsisExpanded = !synopsisExpanded">
+        {{ synopsisExpanded ? 'Show less' : 'Show more' }}
+        <mat-icon aria-hidden="true">{{ synopsisExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+    </section>
 
-  <app-book-metadata [book]="paper"></app-book-metadata>
-  <div class="recommendations-wrapper">
-    <app-books-by-author [authorId]="paper.author_id" [excludeBookId]="paper.id"></app-books-by-author>
+    <!-- Books in this series -->
+    <section class="section series-section" *ngIf="universeBooks.length > 1">
+      <h2 class="section-heading">
+        <mat-icon class="heading-icon">auto_stories</mat-icon>
+        Books in "{{ paper.world_name }}"
+      </h2>
+      <p class="series-subtitle" *ngIf="worldDescription">{{ worldDescription }}</p>
 
-    <app-recommended-books [book]="paper"></app-recommended-books>
+      <div class="series-track">
+        <div
+          class="series-card"
+          *ngFor="let ub of universeBooks"
+          [class.series-card--current]="ub.id === paper.id"
+          [class.series-card--link]="ub.id !== paper.id"
+          [routerLink]="ub.id !== paper.id ? ['/store/book', ub.id] : null"
+          [attr.role]="ub.id !== paper.id ? 'link' : null"
+          [attr.tabindex]="ub.id !== paper.id ? 0 : null"
+          [attr.aria-label]="ub.name + (ub.order != null ? ', Book ' + ub.order : '')"
+          (keyup.enter)="ub.id !== paper.id && router.navigate(['/store/book', ub.id])">
+
+          <div class="series-cover-wrap">
+            <img
+              [src]="(ub.cover_url || DEFAULT_COVER) | cloudinary:100:150"
+              [srcset]="((ub.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, '
+                      + ((ub.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
+              [alt]="ub.name"
+              class="series-cover"
+              width="100" height="150"
+              loading="lazy" decoding="async" />
+
+            <div class="series-badge series-badge--current" *ngIf="ub.id === paper.id">Reading</div>
+            <div class="series-badge series-badge--owned"   *ngIf="ub.isPurchased && ub.id !== paper.id">
+              <mat-icon>check</mat-icon>
+            </div>
+            <div class="series-status" *ngIf="ub.status !== 'available'">
+              {{ ub.status === 'in_progress' ? 'Soon' : '—' }}
+            </div>
+          </div>
+
+          <p class="series-order" *ngIf="ub.order != null">Book {{ ub.order }}</p>
+          <p class="series-name">{{ ub.name }}</p>
+        </div>
+      </div>
+
+      <a class="universe-link" [routerLink]="['/store/universe', paper.world_id]">
+        View full universe <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </section>
+
+    <!-- Universe info only (no books list from API yet) -->
+    <section class="section universe-section"
+      *ngIf="paper.world_id && PaperCount > 1 && universeBooks.length <= 1 && worldDescription">
+      <h2 class="section-heading">
+        <mat-icon class="heading-icon">public</mat-icon>
+        Part of "{{ paper.world_name }}"
+      </h2>
+      <p class="universe-description">{{ worldDescription }}</p>
+      <div class="universe-meta">
+        <span class="universe-count">
+          <mat-icon>library_books</mat-icon>{{ PaperCount }} books in this universe
+        </span>
+        <a class="universe-link" [routerLink]="['/store/universe', paper.world_id]">
+          View universe <mat-icon>arrow_forward</mat-icon>
+        </a>
+      </div>
+    </section>
+
+    <!-- Technical details -->
+    <app-book-metadata [book]="paper"></app-book-metadata>
+
+    <!-- Carousels -->
+    <div class="carousels">
+      <app-books-by-author
+        [books]="byAuthor"
+        [heading]="'More by ' + paper.author_name">
+      </app-books-by-author>
+      <app-recommended-books [books]="byGenre" heading="Similar books"></app-recommended-books>
+      <app-recommended-books [books]="byExplore" heading="Explore"></app-recommended-books>
+    </div>
+
   </div>
-
-
 </div>
+
+<!-- ── Back to top ─────────────────────────────────────────────────────────── -->
+<button
+  class="back-to-top"
+  *ngIf="showBackToTop"
+  (click)="scrollToTop()"
+  aria-label="Back to top">
+  <mat-icon>arrow_upward</mat-icon>
+</button>

@@ -1,0 +1,170 @@
+<app-legal-layout>
+  <!-- English -->
+  <article class="doc" *ngIf="!isPt">
+    <header class="doc__header">
+      <h1>Privacy Policy</h1>
+      <p class="doc__meta">Last updated: {{ updated }}</p>
+    </header>
+
+    <section class="doc__section">
+      <h2>1. Introduction</h2>
+      <p>PaperTrail ("we", "us") is committed to protecting your personal data. This Privacy Policy explains what information we collect, how we use it, and your rights under the LGPD (Brazil) and GDPR (EU).</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>2. Data We Collect</h2>
+      <ul>
+        <li><strong>Account data:</strong> name, email address, profile picture (via Google/Microsoft OAuth)</li>
+        <li><strong>Purchase data:</strong> transaction history, purchased books, payment method type (we do not store card numbers — processed by Stripe)</li>
+        <li><strong>Usage data:</strong> pages visited, reading progress, search queries, IP address</li>
+        <li><strong>Device data:</strong> browser type, operating system, language preference</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>3. How We Use Your Data</h2>
+      <ul>
+        <li>To provide and improve the Platform</li>
+        <li>To process payments and manage purchases</li>
+        <li>To personalise book recommendations</li>
+        <li>To send transactional emails (purchase confirmation, account alerts)</li>
+        <li>To comply with legal obligations</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>4. Data Sharing</h2>
+      <p>We do not sell your personal data. We share data only with:</p>
+      <ul>
+        <li><strong>Stripe</strong> — payment processing</li>
+        <li><strong>Google / Microsoft</strong> — authentication (OAuth)</li>
+        <li><strong>Cloudinary</strong> — image hosting and delivery</li>
+        <li>Legal authorities when required by law</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>5. Data Retention</h2>
+      <p>We retain your account data for as long as your account is active. Purchase records are kept for 5 years for tax and legal compliance. You may request deletion of your account at any time.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>6. Your Rights</h2>
+      <p>Under the LGPD and GDPR, you have the right to:</p>
+      <ul>
+        <li>Access the personal data we hold about you</li>
+        <li>Correct inaccurate data</li>
+        <li>Request deletion of your data ("right to be forgotten")</li>
+        <li>Object to or restrict processing</li>
+        <li>Data portability</li>
+        <li>Withdraw consent at any time</li>
+      </ul>
+      <p>To exercise any of these rights, contact <a href="mailto:privacy&#64;papertrail.app">privacy&#64;papertrail.app</a>.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>7. Cookies</h2>
+      <p>We use strictly necessary cookies for authentication and session management. We do not use third-party tracking or advertising cookies.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>8. Security</h2>
+      <p>All data is transmitted over HTTPS with TLS 1.2+. Passwords are hashed using bcrypt. Payment data is handled exclusively by Stripe (PCI DSS Level 1 certified).</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>9. International Transfers</h2>
+      <p>Some processors (Stripe, Cloudinary) may store or process data outside Brazil. We ensure all transfers comply with applicable data protection laws through standard contractual clauses.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>10. Contact &amp; DPO</h2>
+      <p>For privacy concerns, contact our Data Protection Officer at <a href="mailto:privacy&#64;papertrail.app">privacy&#64;papertrail.app</a>.</p>
+    </section>
+  </article>
+
+  <!-- PT-BR -->
+  <article class="doc" *ngIf="isPt">
+    <header class="doc__header">
+      <h1>Política de Privacidade</h1>
+      <p class="doc__meta">Última atualização: {{ updatedPt }}</p>
+    </header>
+
+    <section class="doc__section">
+      <h2>1. Introdução</h2>
+      <p>O PaperTrail ("nós") está comprometido com a proteção dos seus dados pessoais. Esta Política de Privacidade explica quais informações coletamos, como as utilizamos e seus direitos previstos na LGPD (Lei nº 13.709/2018) e no GDPR (UE).</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>2. Dados que Coletamos</h2>
+      <ul>
+        <li><strong>Dados de conta:</strong> nome, endereço de e-mail, foto de perfil (via OAuth Google/Microsoft)</li>
+        <li><strong>Dados de compra:</strong> histórico de transações, livros adquiridos, tipo de método de pagamento (não armazenamos dados de cartão — processados pelo Stripe)</li>
+        <li><strong>Dados de uso:</strong> páginas visitadas, progresso de leitura, consultas de busca, endereço IP</li>
+        <li><strong>Dados do dispositivo:</strong> tipo de navegador, sistema operacional, idioma configurado</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>3. Como Utilizamos Seus Dados</h2>
+      <ul>
+        <li>Para fornecer e melhorar a Plataforma</li>
+        <li>Para processar pagamentos e gerenciar compras</li>
+        <li>Para personalizar recomendações de livros</li>
+        <li>Para enviar e-mails transacionais (confirmação de compra, alertas de conta)</li>
+        <li>Para cumprir obrigações legais</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>4. Compartilhamento de Dados</h2>
+      <p>Não vendemos seus dados pessoais. Compartilhamos dados apenas com:</p>
+      <ul>
+        <li><strong>Stripe</strong> — processamento de pagamentos</li>
+        <li><strong>Google / Microsoft</strong> — autenticação (OAuth)</li>
+        <li><strong>Cloudinary</strong> — hospedagem e entrega de imagens</li>
+        <li>Autoridades legais quando exigido por lei</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>5. Retenção de Dados</h2>
+      <p>Mantemos seus dados de conta enquanto sua conta estiver ativa. Os registros de compra são conservados por 5 anos para conformidade fiscal e legal. Você pode solicitar a exclusão da sua conta a qualquer momento.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>6. Seus Direitos (LGPD)</h2>
+      <p>Nos termos da LGPD, você tem direito a:</p>
+      <ul>
+        <li>Confirmação da existência de tratamento dos seus dados</li>
+        <li>Acesso aos dados pessoais que mantemos sobre você</li>
+        <li>Correção de dados incompletos, inexatos ou desatualizados</li>
+        <li>Anonimização, bloqueio ou eliminação de dados desnecessários</li>
+        <li>Portabilidade dos dados</li>
+        <li>Eliminação dos dados tratados com consentimento</li>
+        <li>Revogação do consentimento a qualquer momento</li>
+      </ul>
+      <p>Para exercer qualquer desses direitos, contate <a href="mailto:privacidade&#64;papertrail.app">privacidade&#64;papertrail.app</a>.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>7. Cookies</h2>
+      <p>Utilizamos apenas cookies estritamente necessários para autenticação e gerenciamento de sessão. Não utilizamos cookies de rastreamento ou publicidade de terceiros.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>8. Segurança</h2>
+      <p>Todos os dados são transmitidos via HTTPS com TLS 1.2+. Senhas são armazenadas com hash bcrypt. Os dados de pagamento são processados exclusivamente pelo Stripe (certificado PCI DSS Nível 1).</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>9. Transferências Internacionais</h2>
+      <p>Alguns processadores (Stripe, Cloudinary) podem armazenar ou processar dados fora do Brasil. Garantimos que todas as transferências estejam em conformidade com a LGPD mediante cláusulas contratuais padrão.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>10. Contato e Encarregado (DPO)</h2>
+      <p>Para questões de privacidade, entre em contato com nosso Encarregado pelo Tratamento de Dados Pessoais pelo e-mail <a href="mailto:privacidade&#64;papertrail.app">privacidade&#64;papertrail.app</a>.</p>
+    </section>
+  </article>
+</app-legal-layout>

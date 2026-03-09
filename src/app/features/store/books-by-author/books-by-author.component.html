@@ -1,31 +1,52 @@
-<div class="books-carousel sk-carousel" *ngIf="loading" aria-hidden="true">
-  <div class="sk-c-title"></div>
-  <div class="carousel-container">
-    <div class="sk-c-card" *ngFor="let i of [1,2,3,4,5]">
-      <div class="sk-c-cover"></div>
-      <div class="sk-c-line"></div>
-    </div>
-  </div>
-</div>
+<div class="carousel-section" *ngIf="books.length">
+  <h2 class="carousel-heading">{{ heading }}</h2>
 
-<div class="books-carousel" *ngIf="!loading && (books.length > 1 || (books.length === 1 && books[0].id !== excludeBookId))">
-  <h3 class="section-title">Livros do mesmo autor</h3>
-  <div class="carousel-container">
-    <div class="book-card" *ngFor="let book of books" (click)="goToBookPage(book.id)">
-      <!-- (click)="navigateToBook(book.id)" -->
+  <div class="carousel-track" role="list">
+    <div
+      class="book-card"
+      *ngFor="let book of books"
+      (click)="goTo(book.id)"
+      (keyup.enter)="goTo(book.id)"
+      role="listitem"
+      tabindex="0"
+      [attr.aria-label]="book.name + ' by ' + book.author_name">
 
-      <div class="cover-wrapper">
-          <div class="isAvailable" *ngIf="book.status !== 'available'"><span>{{book.status.replace("_", " ")}}</span></div>
+      <div class="card-cover-wrap">
+        <img
+          [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:120:180"
+          [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:120:180) + ' 1x, '
+                  + ((book.cover_url || DEFAULT_COVER) | cloudinary:240:360) + ' 2x'"
+          [alt]="book.name"
+          class="card-cover"
+          width="120" height="180"
+          loading="lazy" decoding="async" />
 
-        <img [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:100:150"
-             [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:100:150) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 2x'"
-             [alt]="book.name" class="book-cover"
-             width="100" height="150" loading="lazy" decoding="async" />
+        <div class="card-overlay" aria-hidden="true">
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+
+        <span class="card-owned" *ngIf="book.already_purchased" aria-hidden="true">
+          <mat-icon>check_circle</mat-icon>
+        </span>
+
+        <span class="card-status" *ngIf="book.status !== 'available' && !book.already_purchased">
+          {{ book.status === 'in_progress' ? 'Coming soon' : 'Unavailable' }}
+        </span>
+
+        <span class="card-discount" *ngIf="book.discount_pct">−{{ book.discount_pct | number:'1.0-0' }}%</span>
       </div>
 
-      <p class="book-title">{{ book.name }}</p>
-      <div class="genre-list">
-        <span *ngFor="let g of book.genre" class="genre-chip">{{ g }}</span>
+      <p class="card-title">{{ book.name }}</p>
+
+      <div class="card-price" *ngIf="book.status === 'available' && !book.already_purchased">
+        <span class="price-tag" *ngIf="book.price">{{ formatPrice(book.price, book.priceCurrency) }}</span>
+        <span class="price-tag price-tag--free" *ngIf="!book.price">Free</span>
+        <span class="price-original" *ngIf="book.original_price && book.original_price > book.price">
+          {{ formatPrice(book.original_price, book.priceCurrency) }}
+        </span>
+      </div>
+      <div class="card-price card-price--owned" *ngIf="book.already_purchased">
+        <mat-icon>library_books</mat-icon> In library
       </div>
     </div>
   </div>

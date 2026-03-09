@@ -1,0 +1,109 @@
+<app-legal-layout>
+  <!-- English -->
+  <article class="doc" *ngIf="!isPt">
+    <header class="doc__header">
+      <h1>Refund Policy</h1>
+      <p class="doc__meta">Last updated: {{ updated }}</p>
+    </header>
+
+    <section class="doc__section doc__section--highlight">
+      <p><strong>Short version:</strong> Digital products are non-refundable once access has been granted, except in the cases listed below.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>1. General Rule</h2>
+      <p>Because our products are digital goods delivered instantly upon purchase, all sales are <strong>final</strong> once access has been granted to your library. This is in line with consumer protection laws applicable to digital content (Art. 49 of the Brazilian CDC and Art. 16(1)(a) of the EU Consumer Rights Directive).</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>2. Eligible Refunds</h2>
+      <p>We will issue a full refund if:</p>
+      <ul>
+        <li>You were charged more than once for the same item (duplicate charge)</li>
+        <li>You purchased content that was not as described (e.g., significantly incomplete or corrupted)</li>
+        <li>A technical error on our platform prevented you from accessing the content</li>
+        <li>The purchase was made fraudulently without your authorisation</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>3. Refund Window</h2>
+      <p>Refund requests must be submitted within <strong>7 days</strong> of the purchase date. Requests submitted after this window will not be eligible, except in cases of fraud.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>4. How to Request a Refund</h2>
+      <p>Send an email to <a href="mailto:support&#64;papertrail.app">support&#64;papertrail.app</a> with:</p>
+      <ul>
+        <li>Your registered email address</li>
+        <li>Order ID (found in your purchase history)</li>
+        <li>Reason for the refund request</li>
+      </ul>
+      <p>We will respond within 3 business days.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>5. Refund Processing</h2>
+      <p>Approved refunds are processed to the original payment method within 5–10 business days, depending on your bank or payment provider. Universe purchases are refunded in full — partial refunds (for already-owned books) are not issued.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>6. Subscriptions</h2>
+      <p>If subscription plans are offered in the future, cancellation terms will be published here and apply from the next billing cycle.</p>
+    </section>
+  </article>
+
+  <!-- PT-BR -->
+  <article class="doc" *ngIf="isPt">
+    <header class="doc__header">
+      <h1>Política de Reembolso</h1>
+      <p class="doc__meta">Última atualização: {{ updatedPt }}</p>
+    </header>
+
+    <section class="doc__section doc__section--highlight">
+      <p><strong>Resumo:</strong> Produtos digitais não são reembolsáveis após a concessão de acesso, exceto nos casos listados abaixo.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>1. Regra Geral</h2>
+      <p>Por se tratar de conteúdo digital entregue imediatamente após a compra, todas as vendas são <strong>definitivas</strong> uma vez que o acesso tenha sido concedido à sua biblioteca. Nos termos do art. 49 do Código de Defesa do Consumidor (CDC), o direito de arrependimento para produtos digitais não se aplica quando o download ou acesso é iniciado imediatamente pelo consumidor, conforme consentimento expresso prestado no ato da compra.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>2. Hipóteses de Reembolso</h2>
+      <p>Emitiremos reembolso integral nos seguintes casos:</p>
+      <ul>
+        <li>Cobrança duplicada pelo mesmo item</li>
+        <li>Conteúdo significativamente diferente do descrito (incompleto ou corrompido)</li>
+        <li>Erro técnico da Plataforma que impediu o acesso ao conteúdo</li>
+        <li>Compra realizada de forma fraudulenta sem a sua autorização</li>
+      </ul>
+    </section>
+
+    <section class="doc__section">
+      <h2>3. Prazo para Solicitação</h2>
+      <p>As solicitações de reembolso devem ser enviadas em até <strong>7 dias corridos</strong> a partir da data da compra. Solicitações fora deste prazo não serão elegíveis, exceto em casos de fraude.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>4. Como Solicitar Reembolso</h2>
+      <p>Envie um e-mail para <a href="mailto:suporte&#64;papertrail.app">suporte&#64;papertrail.app</a> com:</p>
+      <ul>
+        <li>Seu endereço de e-mail cadastrado</li>
+        <li>ID do pedido (disponível no seu histórico de compras)</li>
+        <li>Motivo da solicitação de reembolso</li>
+      </ul>
+      <p>Responderemos em até 3 dias úteis.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>5. Processamento do Reembolso</h2>
+      <p>Os reembolsos aprovados são processados no método de pagamento original em até 5 a 10 dias úteis, conforme o banco ou operadora. Compras de universos são reembolsadas integralmente — não são emitidos reembolsos parciais em razão de livros já adquiridos anteriormente.</p>
+    </section>
+
+    <section class="doc__section">
+      <h2>6. Assinaturas</h2>
+      <p>Caso planos de assinatura sejam oferecidos futuramente, as condições de cancelamento serão publicadas aqui e vigorarão a partir do próximo ciclo de cobrança.</p>
+    </section>
+  </article>
+</app-legal-layout>

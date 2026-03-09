@@ -45,9 +45,24 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-card    { transition: none; }
+  .paper-img    { transition: none; }
+  .hover-overlay { transition: none; }
+  .wishlist-btn { transition: none; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
 }
 
 // ─── Cover ────────────────────────────────────────────────────────────────────

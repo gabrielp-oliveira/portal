@@ -77,7 +77,7 @@
           <span class="book-price" *ngIf="book.price">{{ formatPrice(book.price, book.priceCurrency) }}</span>
           <span class="book-price free" *ngIf="!book.price">Free</span>
           <span class="original-price" *ngIf="book.original_price && book.original_price > book.price">
-            {{ formatPrice(book.original_price, book.priceCurrency) }}
+            <span class="sr-only">antes </span>{{ formatPrice(book.original_price, book.priceCurrency) }}
           </span>
         </div>
         <span class="discount-badge" *ngIf="book.discount_pct">-{{ book.discount_pct | number:'1.0-0' }}%</span>

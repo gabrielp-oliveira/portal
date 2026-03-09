@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable, of, shareReplay } from 'rxjs';
+import { retry, tap } from 'rxjs/operators';
 import { paper, world, StoreFilter } from '../../models/paperTrailTypes';
 
 export type FullPaper = paper & {
@@ -10,6 +11,7 @@ export type FullPaper = paper & {
   total_pages: number;
 };
 
+/** @deprecated — use BookDetailResponse */
 export type paperResponse = {
   paper: FullPaper;
   worldDescription: string;
@@ -19,6 +21,73 @@ export type paperResponse = {
   isPurchased: boolean;
   isInWishlist: boolean;
 };
+
+export interface UniverseBook {
+  id: string;
+  name: string;
+  cover_url: string;
+  order: number | null;
+  status: string;
+  isPurchased: boolean;
+}
+
+export interface RecommendedBook {
+  id: string;
+  name: string;
+  cover_url: string;
+  author_name: string;
+  genre: string[];
+  price: number;
+  priceCurrency: string;
+  original_price?: number;
+  discount_pct?: number;
+  status: string;
+  already_purchased: boolean;
+  is_in_wishlist: boolean;
+}
+
+export interface BookDetailResponse {
+  paper: FullPaper;
+  worldDescription: string;
+  worldName: string;
+  PaperCount: number;
+  price: number;
+  isPurchased: boolean;
+  isInWishlist: boolean;
+  // New fields
+  universeBooks: UniverseBook[];
+  ratingAvg: number | null;
+  ratingCount: number;
+  userRating: number | null;
+  recommendations: {
+    byAuthor: RecommendedBook[];
+    byGenre:  RecommendedBook[];
+    explore:  RecommendedBook[];
+  };
+}
+
+export interface RatingResponse {
+  ratingAvg: number | null;
+  ratingCount: number;
+  userRating: number | null;
+}
+
+export interface UniverseDetailResponse {
+  universe:        world;
+  isPurchased:     boolean;
+  isInWishlist:    boolean;
+  ratingAvg:       number | null;
+  ratingCount:     number;
+  userRating:      number | null;
+  totalPrice:      number;
+  remainingPrice:  number;
+  currency:        string;
+  recommendations?: {
+    byAuthor: RecommendedBook[];
+    byGenre:  RecommendedBook[];
+    explore:  RecommendedBook[];
+  };
+}
 
 export type checkout = {
   paymentMethod: string;
@@ -34,6 +103,7 @@ export interface SimplePaper {
   genre: string[];
   cover_url: string;
   status: string;
+  author_name?: string;
 }
 
 export interface WishlistAvailablePaper {
@@ -82,12 +152,11 @@ export interface StoreStatsResponse {
 
 /** Resposta de GET /api/store/home */
 export interface HomeSection {
-  hero: paper;
   trending: paper[];
   newReleases: paper[];
   recommended: paper[];
   universes: world[];
-  stats: StoreStatsResponse;
+  // hero and stats come from /api/store/meta, not /home
 }
 
 /** Resposta de GET /api/store/catalog?type=books */
@@ -118,6 +187,7 @@ export interface StoreMetaResponse {
   languages: string[];
   authors: { id: string; name: string }[];
   stats: StoreStatsResponse;
+  hero?: paper;  // featured book — cached for 1h, shown instantly on revisit
 }
 
 @Injectable({
@@ -126,6 +196,42 @@ export interface StoreMetaResponse {
 export class StoreService {
   baseUrl = 'http://localhost:4040/api/';
   DEFAULT_COVER = 'https://res.cloudinary.com/dyibidxxv/image/upload/w_300,f_auto,q_auto/defaultCover_lublod';
+
+  private static readonly LS_HOME     = 'store-home-cache';
+  private static readonly LS_HOME_TTL = 'store-home-cache-ttl';
+  private static readonly LS_META     = 'store-meta-cache';
+  private static readonly LS_META_TTL = 'store-meta-cache-ttl';
+  private static readonly CACHE_TTL   = 5 * 60 * 1000;       // 5 minutes
+  private static readonly META_TTL    = 60 * 60 * 1000;      // 1 hour
+  private static readonly BOOK_TTL    = 3 * 60 * 1000;       // 3 minutes
+
+  // Always pre-fired in constructor — retry(1) + shareReplay so components get the
+  // same response without a second HTTP call regardless of when they subscribe.
+  private readonly _home$: Observable<HomeSection> = this.http
+    .get<HomeSection>(`${this.baseUrl}store/home`)
+    .pipe(
+      retry(1),
+      tap(home => {
+        this.cachedHome = home;
+        this.writeLS(StoreService.LS_HOME, StoreService.LS_HOME_TTL, home);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+  private readonly _meta$: Observable<StoreMetaResponse> = this.http
+    .get<StoreMetaResponse>(`${this.baseUrl}store/meta`)
+    .pipe(
+      retry(1),
+      tap(meta => {
+        this.cachedMeta = meta;
+        this.writeLS(StoreService.LS_META, StoreService.LS_META_TTL, meta);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+  // Populated synchronously from localStorage on init — used for instant first render
+  cachedHome: HomeSection | null = null;
+  cachedMeta: StoreMetaResponse | null = null;
 
   private paperSubject = new BehaviorSubject<FullPaper | null>(null);
   private filterSubject = new BehaviorSubject<StoreFilter>({
@@ -141,10 +247,35 @@ export class StoreService {
   filter$ = this.filterSubject.asObservable();
   storePaper$ = this.paperSubject.asObservable();
 
+  private catalogTotalSubject = new BehaviorSubject<number | null>(null);
+  catalogTotal$ = this.catalogTotalSubject.asObservable();
+  setCatalogTotal(n: number | null): void { this.catalogTotalSubject.next(n); }
+
   private storePapersSubject = new BehaviorSubject<paper[] | null>(null);
   papersSubject$ = this.storePapersSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Load localStorage caches synchronously for instant first render
+    this.cachedHome = this.readLS<HomeSection>(StoreService.LS_HOME, StoreService.LS_HOME_TTL, StoreService.CACHE_TTL);
+    this.cachedMeta = this.readLS<StoreMetaResponse>(StoreService.LS_META, StoreService.LS_META_TTL, StoreService.META_TTL);
+
+  }
+
+  private readLS<T>(key: string, ttlKey: string, maxAge: number): T | null {
+    try {
+      const raw = localStorage.getItem(key);
+      const ttl = Number(localStorage.getItem(ttlKey) ?? 0);
+      if (raw && (Date.now() - ttl) < maxAge) return JSON.parse(raw) as T;
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  private writeLS(key: string, ttlKey: string, value: unknown): void {
+    try {
+      localStorage.setItem(key,    JSON.stringify(value));
+      localStorage.setItem(ttlKey, Date.now().toString());
+    } catch { /* ignore */ }
+  }
 
   setFilter(filter: StoreFilter): void {
     this.filterSubject.next(filter);
@@ -176,10 +307,23 @@ export class StoreService {
     return this.http.get<BooksResponse>(`${this.baseUrl}store/books`, { params });
   }
 
-  getPaperById(id: string, currencyCode: string, country: string): Observable<paperResponse> {
-    return this.http.get<paperResponse>(
+  getPaperById(id: string, currencyCode: string, country: string): Observable<BookDetailResponse> {
+    const lsKey    = `store-book-${id}-${currencyCode}-${country}`;
+    const lsTtlKey = `${lsKey}-ttl`;
+    const cached   = this.readLS<BookDetailResponse>(lsKey, lsTtlKey, StoreService.BOOK_TTL);
+    if (cached) return of(cached);
+
+    return this.http.get<BookDetailResponse>(
       `${this.baseUrl}store/books/${id}?currency=${currencyCode}&country=${country}`
-    );
+    ).pipe(tap(res => this.writeLS(lsKey, lsTtlKey, res)));
+  }
+
+  rateBook(id: string, rating: number): Observable<RatingResponse> {
+    return this.http.post<RatingResponse>(`${this.baseUrl}store/books/${id}/rate`, { rating });
+  }
+
+  deleteRating(id: string): Observable<RatingResponse> {
+    return this.http.delete<RatingResponse>(`${this.baseUrl}store/books/${id}/rate`);
   }
 
   /** @deprecated Use getCatalog() */
@@ -196,15 +340,34 @@ export class StoreService {
     return this.http.get<UniversesResponse>(`${this.baseUrl}store/universes`, { params });
   }
 
-  getUniverseById(id: string, currencyCode: string, country: string): Observable<world> {
-    return this.http.get<world>(
+  getUniverseById(id: string, currencyCode: string, country: string): Observable<UniverseDetailResponse> {
+    const lsKey    = `store-universe-${id}-${currencyCode}-${country}`;
+    const lsTtlKey = `${lsKey}-ttl`;
+    const cached   = this.readLS<UniverseDetailResponse>(lsKey, lsTtlKey, StoreService.BOOK_TTL);
+    if (cached) return of(cached);
+
+    return this.http.get<UniverseDetailResponse>(
       `${this.baseUrl}store/universes/${id}?currency=${currencyCode}&country=${country}`
+    ).pipe(tap(res => this.writeLS(lsKey, lsTtlKey, res)));
+  }
+
+  toggleUniverseWishlist(universeId: string): Observable<{ isInWishlist: boolean }> {
+    return this.http.post<{ isInWishlist: boolean }>(
+      `${this.baseUrl}wishlist/universe/${universeId}/toggle`, {}
     );
   }
 
-  /** GET /api/store/home — seções da home em um único request (Redis-cached no backend) */
+  rateUniverse(id: string, rating: number): Observable<RatingResponse> {
+    return this.http.post<RatingResponse>(`${this.baseUrl}store/universes/${id}/rate`, { rating });
+  }
+
+  deleteUniverseRating(id: string): Observable<RatingResponse> {
+    return this.http.delete<RatingResponse>(`${this.baseUrl}store/universes/${id}/rate`);
+  }
+
+  /** GET /api/store/home — returns cache instantly if valid (5min TTL) */
   getHome(): Observable<HomeSection> {
-    return this.http.get<HomeSection>(`${this.baseUrl}store/home`);
+    return this.cachedHome ? of(this.cachedHome) : this._home$;
   }
 
   /**
@@ -237,9 +400,9 @@ export class StoreService {
     return this.http.get<CatalogResponse>(`${this.baseUrl}store/catalog`, { params });
   }
 
-  /** GET /api/store/meta — genres, authors, languages + stats (Redis-cached no backend) */
+  /** GET /api/store/meta — pre-fired in constructor, retry(1) + shareReplay */
   getStoreMeta(): Observable<StoreMetaResponse> {
-    return this.http.get<StoreMetaResponse>(`${this.baseUrl}store/meta`);
+    return this.cachedMeta ? of(this.cachedMeta) : this._meta$;
   }
 
   /** @deprecated Use getStoreMeta() */

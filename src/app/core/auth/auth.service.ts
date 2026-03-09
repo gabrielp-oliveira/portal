@@ -99,7 +99,9 @@ export class AuthService {
           });
 
           this.isLoggedSubject.next(true);
-          this.router.navigate(['/dashboard']);
+          const redirect = localStorage.getItem('auth-redirect');
+          localStorage.removeItem('auth-redirect');
+          this.router.navigate([redirect ?? '/dashboard']);
         }),
         map(() => void 0),
         catchError(err => {

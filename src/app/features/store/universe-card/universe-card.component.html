@@ -55,8 +55,8 @@
       <span class="chip" *ngFor="let g of world.Genres.slice(0, 3)">{{ g }}</span>
     </div>
 
-    <p class="authors" *ngIf="world.Authors.length">
-      {{ world.Authors.slice(0, 2).join(' · ') }}<span *ngIf="world.Authors.length > 2"> +{{ world.Authors.length - 2 }}</span>
+    <p class="authors" *ngIf="world.Authors?.length">
+      {{ world.Authors!.slice(0, 2).join(' · ') }}<span *ngIf="world.Authors!.length > 2"> +{{ world.Authors!.length - 2 }}</span>
     </p>
 
     <div class="price-row" *ngIf="world.price != null && !library">

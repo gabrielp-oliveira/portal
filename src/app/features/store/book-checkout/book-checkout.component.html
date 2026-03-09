@@ -1,56 +1,171 @@
-<div class="checkout-container" *ngIf="book">
-  <div class="book-info">
-    <img
-      [src]="book.cover_url || DEFAULT_COVER"
-      alt="{{ book.name }}"
-      class="book-cover"
-    />
-    <div class="book-details">
-      <h2>{{ book.name }}</h2>
-      <p class="author">by {{ book.author_name }}</p>
-      <p class="pages">📄 {{ book.total_pages }} páginas</p>
-      <p class="description">{{ book.description }}</p>
+<!-- ── Loading skeleton ── -->
+<div class="co" *ngIf="!book" aria-busy="true" aria-label="Loading checkout…" role="status">
+  <div class="co__back sk-line" style="width:120px; height:18px"></div>
+  <div class="co__layout">
+    <div class="co__product">
+      <div class="sk-cover"></div>
+      <div class="co__product-info">
+        <div class="sk-line" style="width:60%; height:14px"></div>
+        <div class="sk-line" style="width:85%; height:22px; margin-top:8px"></div>
+        <div class="sk-line" style="width:45%; height:14px; margin-top:6px"></div>
+        <div class="sk-line" style="width:100%; height:12px; margin-top:16px"></div>
+        <div class="sk-line" style="width:90%; height:12px; margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="co__panel">
+      <div class="sk-line" style="width:80%; height:18px"></div>
+      <div class="sk-method" *ngFor="let i of [1,2,3]"></div>
+      <div class="sk-line" style="width:60%; height:14px; margin-top:24px"></div>
+      <div class="sk-btn"></div>
     </div>
   </div>
-
-  <mat-divider></mat-divider>
-
-  <div class="payment">
-    <h3>💳 Forma de pagamento</h3>
-
-    <mat-radio-group [(ngModel)]="paymentMethod" class="payment-options">
-      <!-- 🇧🇷 Brasil -->
-      <ng-container *ngIf="currencyCode === 'BRL'">
-        <mat-radio-button value="credit_card">Cartão de crédito</mat-radio-button>
-        <mat-radio-button value="pix">PIX</mat-radio-button>
-        <mat-radio-button value="boleto">Boleto bancário</mat-radio-button>
-      </ng-container>
-
-      <!-- 🇺🇸 EUA -->
-      <ng-container *ngIf="currencyCode === 'USD'">
-        <mat-radio-button value="paypal">PayPal</mat-radio-button>
-        <mat-radio-button value="apple_pay">Apple Pay</mat-radio-button>
-        <mat-radio-button value="stripe">stripe</mat-radio-button>
-      </ng-container>
-    </mat-radio-group>
-  </div>
-
-  <mat-divider></mat-divider>
-
-  <div class="summary">
-    <h3>📦 Resumo da compra</h3>
-    <p><strong>Título:</strong> {{ book.name }}</p>
-    <p><strong>Autor:</strong> {{ book.author_name }}</p>
-    <p><strong>Total:</strong>
-      {{ book.price | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
-    </p>
-  </div>
-
-  <button mat-raised-button color="primary" (click)="finalizePurchase()">
-    Finalizar Compra
-  </button>
 </div>
 
-<div *ngIf="!book">
-  <p>🔄 Carregando dados do livro...</p>
+<!-- ── Real checkout ── -->
+<div class="co" *ngIf="book">
+
+  <!-- Back -->
+  <a class="co__back" [routerLink]="['/store/book', book.id]" aria-label="Back to book">
+    <mat-icon>arrow_back</mat-icon> Back
+  </a>
+
+  <!-- Breadcrumb -->
+  <nav class="co__crumbs" aria-label="Breadcrumb">
+    <a routerLink="/store">Store</a>
+    <mat-icon>chevron_right</mat-icon>
+    <a [routerLink]="['/store/book', book.id]">{{ book.name }}</a>
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    <span aria-current="page">Checkout</span>
+  </nav>
+
+  <div class="co__layout">
+
+    <!-- ── Left: product ── -->
+    <section class="co__product" aria-labelledby="co-book-title">
+      <img class="co__cover"
+        [src]="book.cover_url | cloudinary:260:390"
+        [srcset]="(book.cover_url | cloudinary:130:195) + ' 1x, ' + (book.cover_url | cloudinary:260:390) + ' 2x'"
+        sizes="130px"
+        [alt]="book.name + ' book cover'"
+        width="130" height="195"
+        loading="eager" fetchpriority="high" />
+
+      <div class="co__product-info">
+        <p class="co__product-type">
+          <mat-icon aria-hidden="true">menu_book</mat-icon>
+          <span>Book</span>
+        </p>
+        <h1 class="co__product-title" id="co-book-title">{{ book.name }}</h1>
+        <p class="co__product-author">by {{ book.author_name }}</p>
+
+        <div class="co__product-meta">
+          <span *ngIf="book.total_pages">
+            <mat-icon aria-hidden="true">article</mat-icon>
+            {{ book.total_pages }} pages
+          </span>
+          <span *ngIf="book.language">
+            <mat-icon aria-hidden="true">language</mat-icon>
+            {{ book.language }}
+          </span>
+          <span *ngIf="book.maturity">
+            <mat-icon aria-hidden="true">verified_user</mat-icon>
+            {{ book.maturity }}
+          </span>
+        </div>
+
+        <div class="co__product-genres" *ngIf="book.genre?.length">
+          <span class="genre-chip" *ngFor="let g of book.genre">{{ g }}</span>
+        </div>
+
+        <p class="co__product-desc">{{ truncate(book.description, 240) }}</p>
+      </div>
+    </section>
+
+    <!-- ── Right: payment panel ── -->
+    <aside class="co__panel" aria-label="Order and payment">
+
+      <!-- Price summary -->
+      <div class="co__price-block">
+        <div class="co__price-row">
+          <span class="co__price-label">Price</span>
+          <div class="co__price-value">
+            <span class="co__price-original"
+              *ngIf="book.original_price && book.original_price > book.price">
+              <span class="sr-only">Was </span>
+              {{ book.original_price | currency: currencyCode : 'symbol-narrow' : '1.2-2' }}
+            </span>
+            <span class="co__price-final" [class.co__price-final--free]="book.price === 0">
+              {{ book.price === 0 ? 'Free' : (book.price | currency: currencyCode : 'symbol-narrow' : '1.2-2') }}
+            </span>
+          </div>
+        </div>
+        <div class="co__price-divider"></div>
+        <div class="co__price-row co__price-row--total">
+          <span>Total</span>
+          <strong class="co__price-final" [class.co__price-final--free]="book.price === 0">
+            {{ book.price === 0 ? 'Free' : (book.price | currency: currencyCode : 'symbol-narrow' : '1.2-2') }}
+          </strong>
+        </div>
+      </div>
+
+      <!-- Free book flow -->
+      <ng-container *ngIf="book.price === 0">
+        <div class="co__free-badge">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          This book is free — no payment needed
+        </div>
+        <co-consent
+          [isPt]="isPt"
+          [value]="termsAccepted"
+          [required]="consentTouched && !termsAccepted"
+          (valueChange)="termsAccepted = $event; consentTouched = true">
+        </co-consent>
+        <button class="co__cta co__cta--primary"
+          (click)="consentTouched = true; finalizePurchase()"
+          [attr.aria-disabled]="!termsAccepted"
+          [class.co__cta--consent-required]="consentTouched && !termsAccepted">
+          <mat-icon aria-hidden="true">download</mat-icon>
+          <span>Add to library</span>
+        </button>
+      </ng-container>
+
+      <!-- Paid flow -->
+      <ng-container *ngIf="book.price > 0">
+        <co-payment-methods
+          [currencyCode]="currencyCode"
+          [value]="paymentMethod"
+          (valueChange)="paymentMethod = $event">
+        </co-payment-methods>
+        <co-consent
+          [isPt]="isPt"
+          [value]="termsAccepted"
+          [required]="consentTouched && !termsAccepted"
+          (valueChange)="termsAccepted = $event; consentTouched = true">
+        </co-consent>
+        <button class="co__cta co__cta--primary"
+          (click)="consentTouched = true; finalizePurchase()"
+          [disabled]="!paymentMethod || purchasing"
+          [attr.aria-disabled]="!termsAccepted || !paymentMethod"
+          [attr.aria-busy]="purchasing"
+          [class.co__cta--loading]="purchasing"
+          [class.co__cta--consent-required]="consentTouched && !termsAccepted">
+          <mat-icon *ngIf="!purchasing" aria-hidden="true">lock</mat-icon>
+          <span class="co__spinner" *ngIf="purchasing" aria-hidden="true"></span>
+          <span>{{ purchasing ? 'Redirecting…' : 'Complete purchase' }}</span>
+        </button>
+
+        <p class="co__secure-note">
+          <mat-icon>shield</mat-icon>
+          Secured by Stripe · 256-bit encryption
+        </p>
+      </ng-container>
+
+      <!-- Error -->
+      <div class="co__error" role="alert" *ngIf="purchaseError">
+        <mat-icon>error_outline</mat-icon>
+        {{ purchaseError }}
+      </div>
+
+    </aside>
+  </div>
 </div>

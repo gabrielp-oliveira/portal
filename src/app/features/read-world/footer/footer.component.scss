@@ -77,6 +77,13 @@
   }
 }
 
+.footer-links--legal {
+  margin-top: -4px;
+  gap: 12px;
+  opacity: .65;
+  li a { font-size: 12px; }
+}
+
 .footer-bottom {
   font-size: 12px;
   margin-top: 16px;

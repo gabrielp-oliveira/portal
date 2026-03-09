@@ -16,7 +16,7 @@ export type world = {
     CoverURLs: string[],
     PaperCount: number,
     Genres: string[],
-    Authors: string[],
+    Authors: string[] | null,
     price?: number,
     original_price?: number,
     price_currency?: string,
@@ -44,6 +44,15 @@ export type basicWorld = {
 }
 
 
+export interface LibraryProgress {
+    totalChapters:    number;
+    completedCount:   number;
+    favoritesCount:   number;
+    annotationsCount: number;
+    lastReadOrder:    number | null;
+    nextChapterOrder: number | null;
+}
+
 export type paper = {
     id: string;
     name: string;
@@ -55,6 +64,7 @@ export type paper = {
     world_id: string;
     world_name: string;
     status: "not_available" | "in_progress" | "available";
+    progress?: LibraryProgress;
     price: number;
     priceCurrency: string;
     priceCountry: string;

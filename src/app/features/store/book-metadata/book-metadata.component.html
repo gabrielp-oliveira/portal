@@ -1,48 +1,56 @@
-<!-- 📚 Informações Adicionais -->
-<div class="additional-info" *ngIf="book.genre?.length || book.maturity || book.isbn_10 || book.isbn_13">
-  <div class="metadataWrapper">
+<section class="metadata-section"
+  *ngIf="book.isbn_10 || book.isbn_13 || book.publisher || book.maturity || book.genre?.length || book.language || book.year || book.total_pages">
 
-    <div class="meta-section">
-      <!-- 🎯 Gênero -->
-      <div *ngIf="book.genre?.length">
-        <strong>Gênero(s):</strong>
-        <span *ngFor="let g of book.genre; let last = last">
-          {{ g }}<span *ngIf="!last">, </span>
-        </span>
-      </div>
+  <h2 class="meta-heading">Book details</h2>
 
-      <!-- 🔞 Classificação -->
-      <div>
-        <strong>Classificação:</strong>
-        <span [ngClass]="
-          book.maturity === 'MATURE' ? 'mature-badge' :
-          book.maturity === 'NOT_MATURE' ? 'not-mature-badge' :
-          'unrated-badge'
-        ">
-          {{
-            book.maturity === 'MATURE'
-              ? 'Para maiores de 18'
-              : book.maturity === 'NOT_MATURE'
-              ? 'Livre para todos'
-              : 'Não classificado'
-          }}
-        </span>
-      </div>
+  <div class="meta-grid">
 
-      <!-- 📕 ISBNs -->
-      <div *ngIf="book.isbn_10 || book.isbn_13">
-        <strong>ISBN:</strong>
-        <span *ngIf="book.isbn_10">ISBN-10: {{ book.isbn_10 }}</span><br />
-        <span *ngIf="book.isbn_13" class="isbn-indent">ISBN-13: {{ book.isbn_13 }}</span>
+    <div class="meta-cell" *ngIf="book.genre?.length">
+      <span class="cell-label">Genre</span>
+      <div class="cell-chips">
+        <span class="cell-chip" *ngFor="let g of book.genre">{{ g }}</span>
       </div>
     </div>
 
-    <div class="meta-section">
-      <div *ngIf="book.total_pages"><strong>Páginas:</strong> {{ book.total_pages }}</div>
-      <div *ngIf="book.author_name"><strong>Autor:</strong> {{ book.author_name }}</div>
-      <div *ngIf="book.language"><strong>Idioma:</strong> {{ book.language }}</div>
-      <div *ngIf="book.year"><strong>Ano de publicação:</strong> {{ book.year }}</div>
+    <div class="meta-cell" *ngIf="book.maturity">
+      <span class="cell-label">Audience</span>
+      <span class="cell-badge"
+        [class.mature]="book.maturity === 'MATURE'"
+        [class.teen]="book.maturity === 'TEEN'"
+        [class.everyone]="book.maturity === 'NOT_MATURE'">
+        {{ maturityLabel }}
+      </span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.language">
+      <span class="cell-label">Language</span>
+      <span class="cell-value">{{ book.language }}</span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.total_pages">
+      <span class="cell-label">Pages</span>
+      <span class="cell-value">{{ book.total_pages | number }}</span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.year">
+      <span class="cell-label">Published</span>
+      <span class="cell-value">{{ book.year }}</span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.publisher">
+      <span class="cell-label">Publisher</span>
+      <span class="cell-value">{{ book.publisher }}</span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.isbn_10">
+      <span class="cell-label">ISBN-10</span>
+      <span class="cell-value cell-value--mono">{{ book.isbn_10 }}</span>
+    </div>
+
+    <div class="meta-cell" *ngIf="book.isbn_13">
+      <span class="cell-label">ISBN-13</span>
+      <span class="cell-value cell-value--mono">{{ book.isbn_13 }}</span>
     </div>
 
   </div>
-</div>
+</section>
