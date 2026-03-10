@@ -684,6 +684,8 @@
 .shelf-slot {
   flex: 0 0 158px;
   min-width: 158px;
+  // Reserve vertical space before image loads — card cover is 2:3 ratio + footer ~80px
+  min-height: calc(158px * 1.5 + 80px);
   scroll-snap-align: start;
 }
 
@@ -692,6 +694,12 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
+}
+
+// ── Off-screen sections: skip rendering until near viewport ────────────────────
+.store-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px; // estimated height — prevents scroll jump
 }
 
 // ── Error state ───────────────────────────────────────────────────────────────

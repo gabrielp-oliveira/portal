@@ -1,53 +1,70 @@
 <div class="top-panel" [class.dark]="isDarkMode">
-    
-        <div class="world-card" [class.dark]="isDarkMode">
-        <div class="world-header">
-            <h2>{{ basicWorld?.name }}</h2>
-            <p class="author" *ngFor="let pp of papers">Autor: {{ pp.author_name }}</p>
-        </div>
 
-        <p class="description">{{ basicWorld?.description }}</p>
-
-        <div class="progress-section">
-            <span>📘 Capítulos prontos: {{ completedChapters }}/{{ totalChapters }}</span>
-            <progress max="{{ totalChapters }}" [value]="completedChapters"></progress>
-        </div>
+  <!-- Progress bar (compact) -->
+  <div class="tp-progress" *ngIf="totalChapters > 0">
+    <div class="tp-track">
+      <div class="tp-fill" [style.width.%]="(completedChapters / totalChapters) * 100"></div>
     </div>
+    <span class="tp-prog-label">{{ completedChapters }}/{{ totalChapters }}</span>
+  </div>
 
-    <div class="stats">
-        <div class="card" (click)="openBottomSheet('books')" [matBadge]="hiddenPapersCount" matBadgeColor="warn">
-            <div class="icon">📚</div>
-            <div class="label">Books</div>
-            <div class="value">{{ (papers$ | async)?.length || 0 }}</div>
-        </div>
+  <span class="tp-sep" *ngIf="totalChapters > 0"></span>
+  <span class="tp-label">Board</span>
 
-        <div class="card" (click)="openBottomSheet('chapters')" [matBadge]="hiddenChaptersCount" matBadgeColor="warn">
-            <div class="icon">📄</div>
-            <div class="label">Chapters</div>
-            <div class="value">{{ (chapters$ | async)?.length || 0 }}</div>
-        </div>
+  <!-- Filter chips -->
+  <button class="stat-chip" (click)="openBottomSheet('books')" [class.warn]="hiddenPapersCount < 0"
+          matTooltip="Filter books">
+    <mat-icon>auto_stories</mat-icon>
+    <span class="sc-val">{{ (papers$ | async)?.length || 0 }}</span>
+    <span class="sc-hidden" *ngIf="hiddenPapersCount < 0">{{ hiddenPapersCount }}</span>
+  </button>
 
-        <div class="card" (click)="openBottomSheet('timelines')" [matBadge]="hiddenTimelinesCount" matBadgeColor="warn">
-            <div class="icon">⏱️</div>
-            <div class="label">Timelines</div>
-            <div class="value">{{ (timelines$ | async)?.length || 0 }}</div>
-        </div>
+  <button class="stat-chip" (click)="openBottomSheet('chapters')" [class.warn]="hiddenChaptersCount < 0"
+          matTooltip="Filter chapters">
+    <mat-icon>format_list_numbered</mat-icon>
+    <span class="sc-val">{{ (chapters$ | async)?.length || 0 }}</span>
+    <span class="sc-hidden" *ngIf="hiddenChaptersCount < 0">{{ hiddenChaptersCount }}</span>
+  </button>
 
-        <div class="clearCard" (click)="clearFilters()"
-            *ngIf="hiddenChaptersCount < 0 || hiddenTimelinesCount < 0 || hiddenPapersCount < 0">
-            <div class="icon">♻️</div>
-            <div class="label">Limpar</div>
-        </div>
+  <button class="stat-chip" (click)="openBottomSheet('timelines')" [class.warn]="hiddenTimelinesCount < 0"
+          matTooltip="Filter timelines">
+    <mat-icon>timeline</mat-icon>
+    <span class="sc-val">{{ (timelines$ | async)?.length || 0 }}</span>
+    <span class="sc-hidden" *ngIf="hiddenTimelinesCount < 0">{{ hiddenTimelinesCount }}</span>
+  </button>
 
-        <!-- <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center;"
-            matBadgeColor="warn">
-            <button class="btn-action">🧾 Exportar visão</button>
-            <button class="btn-action">📃 Resumo narrativo</button>
-        </div> -->
+  <button class="stat-chip stat-chip--reset"
+          *ngIf="hiddenChaptersCount < 0 || hiddenTimelinesCount < 0 || hiddenPapersCount < 0"
+          (click)="clearFilters()" matTooltip="Reset all filters">
+    <mat-icon>refresh</mat-icon>
+  </button>
 
+  <!-- Filter info -->
+  <div class="tp-info-wrap"
+       (mouseenter)="filtersInfoOpen=true"
+       (mouseleave)="filtersInfoOpen=false">
+    <button class="stat-chip stat-chip--info" aria-label="How filters work">
+      <mat-icon>info_outline</mat-icon>
+    </button>
+    <div class="tp-info-tooltip" [class.visible]="filtersInfoOpen" role="tooltip">
+      <p class="tit-title">How board filters work</p>
+      <div class="tit-row">
+        <mat-icon>auto_stories</mat-icon>
+        <span><strong>Books</strong> — show or hide all chapters from a book</span>
+      </div>
+      <div class="tit-row">
+        <mat-icon>timeline</mat-icon>
+        <span><strong>Timelines</strong> — only chapters in visible timelines appear on the board</span>
+      </div>
+      <div class="tit-row">
+        <mat-icon>format_list_numbered</mat-icon>
+        <span><strong>Chapters</strong> — toggle individual chapters on the map</span>
+      </div>
+      <div class="tit-row">
+        <mat-icon>warning_amber</mat-icon>
+        <span>A <strong>yellow badge</strong> means some items are hidden</span>
+      </div>
     </div>
-
-
-
+  </div>
 
 </div>

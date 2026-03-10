@@ -28,7 +28,7 @@ export class BottomSheetComponent {
   timelineSortBy: 'name' | 'order' = 'order';
   sortAsc: boolean = true;
 
-  isDarkTheme: boolean = false;
+  isDarkMode: boolean = false;
   private destroyRef = inject(DestroyRef);
 
   constructor(
@@ -74,11 +74,8 @@ export class BottomSheetComponent {
     this.wd.settings$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ss) => {
-        this.isDarkTheme = ss.theme;
-        this.applyThemeToMaterialClasses();
+        this.isDarkMode = !ss.theme;
       });
-
-    this.observeBottomSheetChanges(); // observa novas instâncias
 
   }
 
@@ -136,8 +133,8 @@ onPaperVisibilityToggle(paper: paper) {
     this.wd.updateTimeline(timeline)
   }
 
-  showDetails(chapter: Chapter) {
-    alert(`📄 Detalhes do capítulo:\n\n${chapter.description}`);
+  showDetails(timeline: Timeline) {
+    alert(`Timeline: ${timeline.name}`);
     // No futuro, pode abrir um Dialog com mais detalhes
   }
 
@@ -211,34 +208,6 @@ onPaperVisibilityToggle(paper: paper) {
     }
   }
 
-  private applyThemeToMaterialClasses() {
-    const background = this.isDarkTheme ? '#1e1e1e' : '#ffffff';
-    const color = this.isDarkTheme ? '#f4f4f4' : '#1a1a1a';
-
-    const elements = document.querySelectorAll<HTMLElement>(
-      '.mat-bottom-sheet-container, .mat-elevation-z2, .mat-elevation-z2 tr'
-    );
-
-    elements.forEach((el) => {
-      el.style.backgroundColor = background;
-      el.style.color = color;
-      el.style.fontFamily = "'Segoe UI', sans-serif";
-      el.style.fontSize = '14px';
-    });
-  }
-
-  private observeBottomSheetChanges() {
-    const observer = new MutationObserver(() => {
-      this.applyThemeToMaterialClasses(); // aplica o estilo sempre que algo novo for adicionado
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    this.destroyRef.onDestroy(() => observer.disconnect());
-  }
 
 
 

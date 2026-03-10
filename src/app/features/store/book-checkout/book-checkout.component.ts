@@ -81,10 +81,10 @@ export class BookCheckoutComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           this.purchasing = false;
-          if (res.price === 0 || res.message) {
+          if (res.checkoutUrl) {
+            window.location.href = res.checkoutUrl;
+          } else {
             alert('Book added to your library!');
-          } else if (res.url) {
-            window.location.href = res.url;
           }
         },
         error: (err) => {

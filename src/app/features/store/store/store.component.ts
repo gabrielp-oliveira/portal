@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { StoreService, StoreStatsResponse } from '../store.service';
 import { StoreFilter, paper, world } from '../../../models/paperTrailTypes';
@@ -64,27 +64,26 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
     this.titleService.setTitle('Store — Discover Books & Universes');
     this.metaService.updateTag({ name: 'description', content: 'Browse and purchase books and fictional universes. Discover trending stories, new releases and hand-picked recommendations.' });
 
-    // ── Phase 0: meta cache (1h TTL) — hero + stats available instantly ──────
-    // Even on first visit to /home, if user already visited store once,
-    // meta is cached and we can show the featured book + head panel immediately.
+    // ── Instant render from cache ─────────────────────────────────────────────
     const cachedMeta = this.storeService.cachedMeta;
+    const cachedHome = this.storeService.cachedHome;
+
     if (cachedMeta?.hero) {
       this.heroBook         = cachedMeta.hero;
       this.heroIsInWishlist = !!cachedMeta.hero.is_in_wishlist;
       if (cachedMeta.stats) this.stats = cachedMeta.stats;
       this.loadingSections  = false;
     }
-
-    // ── Phase 1: home cache (5min TTL) — full sections (trending, releases…) ─
-    const cachedHome = this.storeService.cachedHome;
     if (cachedHome) {
       this.applyHome(cachedHome);
       this.loadingSections = false;
     }
-
-    this.loadSections();
-    // When cache was used, DOM is ready after first CD cycle — set up observer
     if (cachedMeta?.hero || cachedHome) setTimeout(() => this.setupUniverseObserver());
+
+    // ── Parallel HTTP: meta (hero+stats) + home (sections) simultaneously ────
+    // Meta is smaller/faster — hero renders as soon as it arrives,
+    // before the heavier home response completes.
+    this.loadSections();
 
     this.authService.isLogged$.pipe(takeUntil(this.destroy$)).subscribe(logged => {
       this.isLogged = logged;
@@ -146,17 +145,34 @@ export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadSections(): void {
-    this.storeService.getHome().pipe(takeUntil(this.destroy$)).subscribe({
+    // Fire meta + home in parallel — meta is smaller so hero arrives first
+    const meta$ = this.storeService.getStoreMeta();
+    const home$ = this.storeService.getHome();
+
+    // Meta: show hero as soon as possible (before home finishes)
+    meta$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (meta) => {
+        if (!this.heroBook && meta.hero) {
+          this.heroBook         = meta.hero;
+          this.heroIsInWishlist = !!meta.hero.is_in_wishlist;
+          this.stats            = meta.stats;
+          this.loadingSections  = false;
+        }
+      }
+    });
+
+    // Home: full sections — new releases already included, no second HTTP needed
+    home$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (home) => {
         this.applyHome(home);
         this.loadingSections = false;
-        this.loadNewReleases();
-        // Se sem cache, precisa aguardar *ngIf renderizar antes do observer
+        // Only fetch new releases separately if home didn't include them
+        if (!home.newReleases?.length) this.loadNewReleases();
         if (!this.universesLoaded) setTimeout(() => this.setupUniverseObserver());
       },
       error: () => {
         this.loadingSections = false;
-        if (!this.heroBook) this.loadError = true; // only show error if nothing cached to show
+        if (!this.heroBook) this.loadError = true;
       }
     });
   }

@@ -1,0 +1,500 @@
+<!-- ── Skeleton ─────────────────────────────────────────────────────────────── -->
+<ng-container *ngIf="loading">
+  <div class="sk-hero" aria-hidden="true">
+    <div class="sk-hero__inner">
+      <div class="sk-line" style="width:80px;height:10px"></div>
+      <div class="sk-line" style="width:320px;height:40px;margin-top:12px"></div>
+      <div class="sk-chips">
+        <div class="sk-chip" *ngFor="let i of [1,2,3]"></div>
+      </div>
+      <div class="sk-stats">
+        <div class="sk-stat" *ngFor="let i of SKELETON_CARDS.slice(0,4)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sk-body">
+    <div class="sk-tabs">
+      <div class="sk-tab" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+    <div class="sk-grid">
+      <div class="sk-card" *ngFor="let i of SKELETON_CARDS">
+        <div class="sk-cover"></div>
+        <div class="sk-line" style="width:80%;margin-top:8px"></div>
+        <div class="sk-line" style="width:50%;margin-top:6px;height:10px"></div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── Error ──────────────────────────────────────────────────────────────── -->
+<div *ngIf="!loading && error" class="error-state">
+  <mat-icon>error_outline</mat-icon>
+  <p>Couldn't load this universe.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CONTENT                                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="!loading && world" class="world-page">
+
+  <!-- ── Hero ────────────────────────────────────────────────────────────── -->
+  <header class="world-hero">
+    <div class="hero-backdrop" *ngIf="backdropUrl"
+      [style.background-image]="'url(' + backdropUrl + ')'"
+      aria-hidden="true"></div>
+    <div class="hero-vignette" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a class="breadcrumb-link" routerLink="/dashboard">
+          <mat-icon>grid_view</mat-icon> Dashboard
+        </a>
+        <mat-icon class="bc-sep">chevron_right</mat-icon>
+        <span class="bc-cur">{{ world.name }}</span>
+      </nav>
+
+      <div class="hero-layout">
+        <!-- Cover mosaic -->
+        <div class="cover-mosaic" aria-hidden="true">
+          <div class="cm-tile" *ngFor="let p of world.papers.slice(0,4); let i = index"
+               [class.cm-tile--main]="i === 0"
+               [class.cm-tile--2]="i === 1"
+               [class.cm-tile--3]="i === 2"
+               [class.cm-tile--4]="i === 3">
+            <img
+              [src]="(p.cover_url || DEFAULT_COVER) | cloudinary:220:330"
+              [alt]="p.name" width="220" height="330"
+              [loading]="i === 0 ? 'eager' : 'lazy'" decoding="async" />
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="hero-meta">
+          <div class="world-badge">
+            <mat-icon>public</mat-icon> Universe
+          </div>
+
+          <h1 class="world-name">{{ world.name }}</h1>
+
+          <p class="world-authors" *ngIf="world.Authors?.length">
+            <mat-icon>person</mat-icon>
+            {{ world.Authors!.join(' · ') }}
+          </p>
+
+          <div class="genre-row" *ngIf="world.Genres?.length">
+            <span class="chip" *ngFor="let g of world.Genres">{{ g }}</span>
+          </div>
+
+          <!-- Reading ring + stat grid -->
+          <div class="hero-stats">
+            <div class="reading-ring" *ngIf="totalChapters > 0" [title]="readingPct + '% read'">
+              <svg viewBox="0 0 56 56" aria-hidden="true">
+                <circle class="rr-bg"   cx="28" cy="28" r="23"/>
+                <circle class="rr-fill" cx="28" cy="28" r="23"
+                  [style.stroke-dasharray]="144.513"
+                  [style.stroke-dashoffset]="144.513 * (1 - readingPct / 100)"/>
+              </svg>
+              <span class="rr-label">{{ readingPct }}<small>%</small></span>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat-cell">
+                <span class="sc-val">{{ world.papers.length }}</span>
+                <span class="sc-key">books</span>
+              </div>
+              <div class="stat-cell">
+                <span class="sc-val">{{ totalChapters }}</span>
+                <span class="sc-key">chapters</span>
+              </div>
+              <div class="stat-cell stat-cell--green">
+                <span class="sc-val">{{ completedCount }}</span>
+                <span class="sc-key">read</span>
+              </div>
+              <div class="stat-cell stat-cell--amber">
+                <span class="sc-val">{{ favoriteCount }}</span>
+                <span class="sc-key">favorites</span>
+              </div>
+              <div class="stat-cell" *ngIf="totalTimelines > 0">
+                <span class="sc-val">{{ totalTimelines }}</span>
+                <span class="sc-key">timelines</span>
+              </div>
+              <div class="stat-cell" *ngIf="totalEvents > 0">
+                <span class="sc-val">{{ totalEvents }}</span>
+                <span class="sc-key">events</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="world-desc" *ngIf="world.description">{{ world.description }}</p>
+
+          <div class="hero-actions">
+            <a class="btn btn--primary" [routerLink]="['/store/universe', world.id]">
+              <mat-icon>storefront</mat-icon> Store page
+            </a>
+            <a class="btn btn--ghost" [routerLink]="['/read', world.name]">
+              <mat-icon>menu_book</mat-icon> Read universe
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Tab bar ──────────────────────────────────────────────────────────── -->
+  <nav class="tab-bar" [class.tab-bar--stuck]="isScrolled" role="tablist">
+    <div class="tbar-inner">
+
+      <button class="tab-btn" [class.active]="activeTab === 'overview'"
+        (click)="setTab('overview')" role="tab">
+        <mat-icon>dashboard</mat-icon> Overview
+      </button>
+
+      <button class="tab-btn" [class.active]="activeTab === 'books'"
+        (click)="setTab('books')" role="tab">
+        <mat-icon>auto_stories</mat-icon> Books
+        <span class="tbadge">{{ world.papers.length }}</span>
+      </button>
+
+      <button class="tab-btn" [class.active]="activeTab === 'chapters'"
+        (click)="setTab('chapters')" role="tab">
+        <mat-icon>format_list_numbered</mat-icon> Chapters
+        <span class="tbadge">{{ totalChapters }}</span>
+      </button>
+
+      <button class="tab-btn" [class.active]="activeTab === 'structure'"
+        (click)="setTab('structure')" role="tab"
+        *ngIf="totalTimelines > 0 || totalStorylines > 0">
+        <mat-icon>account_tree</mat-icon> Structure
+      </button>
+
+      <button class="tab-btn" [class.active]="activeTab === 'events'"
+        (click)="setTab('events')" role="tab"
+        *ngIf="totalEvents > 0">
+        <mat-icon>event_note</mat-icon> Events
+        <span class="tbadge">{{ totalEvents }}</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Tab panels ───────────────────────────────────────────────────────── -->
+  <main class="world-body">
+
+    <!-- ══ OVERVIEW ══ -->
+    <section class="tab-panel" *ngIf="activeTab === 'overview'">
+
+      <!-- Reading progress card -->
+      <div class="prog-card" *ngIf="totalChapters > 0">
+        <div class="pc-head">
+          <mat-icon>trending_up</mat-icon>
+          <span>Reading progress</span>
+          <span class="pc-pct">{{ readingPct }}%</span>
+        </div>
+        <div class="pc-track">
+          <div class="pc-fill" [style.width.%]="readingPct"></div>
+        </div>
+        <div class="pc-legend">
+          <span><em class="dot dot--green"></em> {{ completedCount }} read</span>
+          <span><em class="dot dot--amber"></em> {{ favoriteCount }} favorited</span>
+          <span><em class="dot dot--dim"></em>   {{ totalChapters - completedCount }} remaining</span>
+        </div>
+      </div>
+
+      <!-- Books row -->
+      <div class="sh">
+        <mat-icon>auto_stories</mat-icon>
+        <h2>Books</h2>
+        <button class="sh-more" (click)="setTab('books')">See all</button>
+      </div>
+
+      <div class="snap-row">
+        <a class="snap-card" *ngFor="let ps of paperStats; trackBy: trackByPaper"
+           [routerLink]="['/store/book', ps.paper.id]">
+          <div class="snap-cover">
+            <img [src]="(ps.paper.cover_url || DEFAULT_COVER) | cloudinary:160:240"
+              [alt]="ps.paper.name" width="160" height="240" loading="lazy" decoding="async" />
+            <div class="snap-bar" *ngIf="ps.total > 0" [style.--p]="ps.pct + '%'"></div>
+            <span class="snap-pct" *ngIf="ps.pct > 0">{{ ps.pct }}%</span>
+          </div>
+          <p class="snap-title">{{ ps.paper.name }}</p>
+          <p class="snap-meta" *ngIf="ps.total > 0">
+            {{ ps.completed }}/{{ ps.total }}
+            <ng-container *ngIf="ps.favorites > 0"> · ★ {{ ps.favorites }}</ng-container>
+          </p>
+        </a>
+      </div>
+
+      <!-- Timelines strip -->
+      <ng-container *ngIf="totalTimelines > 0">
+        <div class="sh">
+          <mat-icon>timeline</mat-icon>
+          <h2>Timelines</h2>
+          <button class="sh-more" (click)="setTab('structure')">See all</button>
+        </div>
+        <div class="strip-list">
+          <div class="strip-item" *ngFor="let tl of world.timelines; trackBy: trackByTimeline">
+            <span class="si-name">{{ tl.name }}</span>
+            <span class="si-count">{{ chaptersForTimeline(tl).length }} chapters</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Events pills -->
+      <ng-container *ngIf="totalEvents > 0">
+        <div class="sh">
+          <mat-icon>event_note</mat-icon>
+          <h2>Events</h2>
+          <button class="sh-more" (click)="setTab('events')">See all</button>
+        </div>
+        <div class="ev-pills">
+          <span class="ev-pill" *ngFor="let ev of world.events.slice(0,14); trackBy: trackByEvent">
+            {{ ev.name }}
+          </span>
+          <span class="ev-pill ev-pill--more" *ngIf="totalEvents > 14"
+                (click)="setTab('events')">
+            +{{ totalEvents - 14 }} more
+          </span>
+        </div>
+      </ng-container>
+
+    </section>
+
+    <!-- ══ BOOKS ══ -->
+    <section class="tab-panel" *ngIf="activeTab === 'books'">
+      <div class="empty-state" *ngIf="!world.papers.length">
+        <mat-icon>auto_stories</mat-icon><p>No books yet.</p>
+      </div>
+
+      <div class="books-grid" *ngIf="world.papers.length">
+        <div class="book-card" *ngFor="let ps of paperStats; trackBy: trackByPaper">
+
+          <a class="bc-cover-link" [routerLink]="['/store/book', ps.paper.id]">
+            <div class="bc-cover">
+              <img
+                [src]="(ps.paper.cover_url || DEFAULT_COVER) | cloudinary:220:330"
+                [srcset]="((ps.paper.cover_url || DEFAULT_COVER) | cloudinary:160:240) + ' 160w, '
+                        + ((ps.paper.cover_url || DEFAULT_COVER) | cloudinary:220:330) + ' 220w'"
+                sizes="clamp(100px,18vw,140px)"
+                [alt]="ps.paper.name" width="220" height="330"
+                loading="lazy" decoding="async" />
+              <span class="bc-order" *ngIf="ps.paper.order != null">#{{ ps.paper.order }}</span>
+              <span class="bc-owned" *ngIf="ps.paper.AlreadyPurchased">
+                <mat-icon>check_circle</mat-icon>
+              </span>
+              <div class="bc-prog" *ngIf="ps.total > 0" [style.--p]="ps.pct + '%'"></div>
+            </div>
+          </a>
+
+          <div class="bc-info">
+            <a class="bc-title" [routerLink]="['/store/book', ps.paper.id]">{{ ps.paper.name }}</a>
+
+            <p class="bc-author" *ngIf="ps.paper.author_name">
+              <mat-icon>person</mat-icon> {{ ps.paper.author_name }}
+            </p>
+
+            <div class="bc-genres" *ngIf="ps.paper.genre?.length">
+              <span class="chip chip--sm" *ngFor="let g of ps.paper.genre.slice(0,3)">{{ g }}</span>
+            </div>
+
+            <p class="bc-desc" *ngIf="ps.paper.description">{{ ps.paper.description }}</p>
+
+            <div class="bc-reading" *ngIf="ps.total > 0">
+              <div class="mini-bar-row">
+                <div class="mini-bar"><div class="mb-fill" [style.width.%]="ps.pct"></div></div>
+                <span class="mb-pct">{{ ps.pct }}%</span>
+              </div>
+              <div class="bc-reading-meta">
+                <span><mat-icon>check</mat-icon> {{ ps.completed }}/{{ ps.total }} chapters</span>
+                <span *ngIf="ps.favorites > 0"><mat-icon>star</mat-icon> {{ ps.favorites }}</span>
+              </div>
+            </div>
+
+            <div class="bc-footer">
+              <span class="bc-badge bc-badge--owned" *ngIf="ps.paper.AlreadyPurchased">
+                <mat-icon>library_books</mat-icon> In library
+              </span>
+              <span class="bc-badge bc-badge--soon" *ngIf="ps.paper.status === 'in_progress'">
+                <mat-icon>schedule</mat-icon> Coming soon
+              </span>
+              <span class="bc-price" *ngIf="!ps.paper.AlreadyPurchased && ps.paper.status === 'available' && ps.paper.price">
+                {{ ps.paper.price | currency:ps.paper.priceCurrency:'symbol-narrow':'1.2-2' }}
+              </span>
+              <span class="bc-price bc-price--free"
+                    *ngIf="!ps.paper.AlreadyPurchased && ps.paper.status === 'available' && !ps.paper.price">
+                Free
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CHAPTERS ══ -->
+    <section class="tab-panel" *ngIf="activeTab === 'chapters'">
+      <div class="empty-state" *ngIf="!totalChapters">
+        <mat-icon>format_list_numbered</mat-icon><p>No chapters yet.</p>
+      </div>
+
+      <div class="chapter-group"
+           *ngFor="let ps of paperStats; trackBy: trackByPaper">
+        <ng-container *ngIf="ps.chapters.length > 0">
+
+          <!-- Group header -->
+          <div class="cg-head">
+            <img class="cg-thumb"
+              [src]="(ps.paper.cover_url || DEFAULT_COVER) | cloudinary:48:72"
+              [alt]="ps.paper.name" width="48" height="72" loading="lazy" />
+            <div class="cg-meta">
+              <a class="cg-title" [routerLink]="['/store/book', ps.paper.id]">{{ ps.paper.name }}</a>
+              <span class="cg-sub">
+                {{ ps.completed }}/{{ ps.total }} read
+                <ng-container *ngIf="ps.favorites > 0"> · ★ {{ ps.favorites }}</ng-container>
+              </span>
+            </div>
+            <div class="cg-ring">
+              <svg viewBox="0 0 36 36" aria-hidden="true">
+                <circle class="cgr-bg"   cx="18" cy="18" r="15"/>
+                <circle class="cgr-fill" cx="18" cy="18" r="15"
+                  [style.stroke-dasharray]="94.248"
+                  [style.stroke-dashoffset]="94.248 * (1 - ps.pct / 100)"/>
+              </svg>
+              <span class="cgr-label">{{ ps.pct }}<small>%</small></span>
+            </div>
+          </div>
+
+          <!-- Dot grid -->
+          <div class="dot-grid">
+            <a class="dot"
+               *ngFor="let ch of ps.chapters; trackBy: trackByChapter"
+               [class.dot--done]="isCompleted(ch.id) && !isFavorite(ch.id)"
+               [class.dot--fav]="isFavorite(ch.id)"
+               [routerLink]="['/read/book', ps.paper.id, 'chapter', ch.order]"
+               [title]="ch.title">
+              <span class="dot-num">{{ ch.order }}</span>
+              <mat-icon class="dot-icon dot-icon--done" *ngIf="isCompleted(ch.id) && !isFavorite(ch.id)">check</mat-icon>
+              <mat-icon class="dot-icon dot-icon--fav"  *ngIf="isFavorite(ch.id)">star</mat-icon>
+            </a>
+          </div>
+
+          <!-- Chapter list -->
+          <a class="ch-row"
+             *ngFor="let ch of ps.chapters; trackBy: trackByChapter"
+             [class.ch-row--done]="isCompleted(ch.id)"
+             [class.ch-row--fav]="isFavorite(ch.id)"
+             [routerLink]="['/read/book', ps.paper.id, 'chapter', ch.order]">
+            <span class="ch-num">{{ ch.order }}</span>
+            <span class="ch-title">{{ ch.title }}</span>
+            <mat-icon class="ch-icon ch-icon--done" *ngIf="isCompleted(ch.id) && !isFavorite(ch.id)">check_circle</mat-icon>
+            <mat-icon class="ch-icon ch-icon--fav"  *ngIf="isFavorite(ch.id)">star</mat-icon>
+            <span class="ch-pages" *ngIf="ch.pageCount">{{ ch.pageCount }}p</span>
+            <mat-icon class="ch-arrow">chevron_right</mat-icon>
+          </a>
+        </ng-container>
+      </div>
+
+      <div class="legend" *ngIf="totalChapters > 0">
+        <span><em class="leg leg--done"></em> Read</span>
+        <span><em class="leg leg--fav"></em>  Favorite</span>
+        <span><em class="leg leg--none"></em> Unread</span>
+      </div>
+    </section>
+
+    <!-- ══ STRUCTURE ══ -->
+    <section class="tab-panel" *ngIf="activeTab === 'structure'">
+
+      <ng-container *ngIf="totalTimelines > 0">
+        <div class="sh"><mat-icon>timeline</mat-icon><h2>Timelines</h2></div>
+
+        <div class="tl-board">
+          <div class="tl-lane"
+               *ngFor="let tl of world.timelines; trackBy: trackByTimeline">
+            <div class="tl-lane-head">
+              <span class="tl-dot"></span>
+              <h3 class="tl-name">{{ tl.name }}</h3>
+              <span class="tl-count">{{ chaptersForTimeline(tl).length }} ch.</span>
+            </div>
+            <p class="tl-desc" *ngIf="tl.description">{{ tl.description }}</p>
+            <div class="tl-chips">
+              <a class="tl-chip"
+                 *ngFor="let ch of chaptersForTimeline(tl); trackBy: trackByChapter"
+                 [class.tl-chip--done]="isCompleted(ch.id) && !isFavorite(ch.id)"
+                 [class.tl-chip--fav]="isFavorite(ch.id)"
+                 [routerLink]="['/read/book', ch.paper_id, 'chapter', ch.order]"
+                 [title]="ch.title">
+                {{ ch.order }}
+                <mat-icon *ngIf="isFavorite(ch.id)">star</mat-icon>
+                <mat-icon *ngIf="isCompleted(ch.id) && !isFavorite(ch.id)">check</mat-icon>
+              </a>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="totalStorylines > 0">
+        <div class="sh" [style.margin-top]="totalTimelines > 0 ? '3rem' : '0'">
+          <mat-icon>fork_right</mat-icon>
+          <h2>Storylines</h2>
+        </div>
+
+        <div class="sl-board">
+          <div class="sl-card"
+               *ngFor="let sl of world.storyLines; let i = index; trackBy: trackByStoryline"
+               [style.--hue]="(i * 47 + 200) % 360">
+            <div class="sl-accent"></div>
+            <div class="sl-body">
+              <h3 class="sl-name">{{ sl.name }}</h3>
+              <p class="sl-desc" *ngIf="sl.description">{{ sl.description }}</p>
+              <p class="sl-count">
+                {{ chaptersForStoryline(sl).length }} chapter{{ chaptersForStoryline(sl).length !== 1 ? 's' : '' }}
+              </p>
+              <div class="sl-chips" *ngIf="chaptersForStoryline(sl).length">
+                <a class="sl-chip"
+                   *ngFor="let ch of chaptersForStoryline(sl).slice(0, 10); trackBy: trackByChapter"
+                   [class.sl-chip--done]="isCompleted(ch.id) && !isFavorite(ch.id)"
+                   [class.sl-chip--fav]="isFavorite(ch.id)"
+                   [routerLink]="['/read/book', ch.paper_id, 'chapter', ch.order]"
+                   [title]="ch.title">
+                  {{ ch.order }}
+                </a>
+                <span class="sl-more" *ngIf="chaptersForStoryline(sl).length > 10">
+                  +{{ chaptersForStoryline(sl).length - 10 }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="conn-note" *ngIf="totalConnections > 0">
+        <mat-icon>hub</mat-icon>
+        {{ totalConnections }} connection{{ totalConnections !== 1 ? 's' : '' }} between chapters
+      </div>
+    </section>
+
+    <!-- ══ EVENTS ══ -->
+    <section class="tab-panel" *ngIf="activeTab === 'events'">
+      <div class="empty-state" *ngIf="!totalEvents">
+        <mat-icon>event_note</mat-icon><p>No events recorded yet.</p>
+      </div>
+
+      <div class="events-tl" *ngIf="totalEvents > 0">
+        <div class="et-item"
+             *ngFor="let ev of world.events; let i = index; let last = last; trackBy: trackByEvent">
+          <div class="et-spine">
+            <div class="et-dot" [class.et-dot--hi]="i % 4 === 0"></div>
+            <div class="et-line" *ngIf="!last"></div>
+          </div>
+          <div class="et-card">
+            <h3 class="et-name">{{ ev.name }}</h3>
+            <p class="et-desc" *ngIf="ev.description">{{ ev.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Back to top -->
+<button class="back-to-top" *ngIf="showBackToTop" (click)="scrollToTop()" aria-label="Back to top">
+  <mat-icon>arrow_upward</mat-icon>
+</button>

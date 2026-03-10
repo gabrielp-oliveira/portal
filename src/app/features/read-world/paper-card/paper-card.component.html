@@ -1,94 +1,101 @@
-<mat-card class="paper-card" [ngClass]="{ 'dark-theme': isDarkMode, 'light-theme': !isDarkMode }" appearance="outlined">
-  <div style="display: flex;">
-    <!-- CAPA -->
-    <div class="cover-container">
+<div class="paper-card" [class.dark]="isDarkMode">
 
-      <img class="paper-img"
+  <!-- Top row: cover + main info -->
+  <div class="pc-top">
+
+    <!-- Cover -->
+    <div class="pc-cover-wrap">
+      <img class="pc-cover"
            [src]="(paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:130:195"
-           [srcset]="((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:130:195) + ' 1x, ' + ((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:260:390) + ' 2x'"
+           [srcset]="((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:130:195) + ' 1x, '
+                   + ((paperCard.paper.cover_url || DEFAULT_COVER) | cloudinary:260:390) + ' 2x'"
            [alt]="paperCard.paper.name"
            width="130" height="195"
            loading="lazy" decoding="async" />
-
+      <div class="pc-cover-prog" *ngIf="totalChapters > 0">
+        <div class="pc-cover-fill" [style.height.%]="(completedCount / totalChapters) * 100"></div>
+      </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div style="display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
-      <!-- HEADER -->
-      <div class="header">
-        <div class="left">
-          
-          <h3 matLine [innerText]=" ( paperCard.paper.name | truncate: 16)"></h3>
+    <!-- Info column -->
+    <div class="pc-body">
+      <h3 class="pc-title">{{ paperCard.paper.name | truncate:30 }}</h3>
 
-          
-          <div class="meta">
-            💛 {{ favoritesCount }} favorite &nbsp; 📝 {{ annotationsCount }} notes
-          </div>
-        </div>
+      <p class="pc-author" *ngIf="paperCard.paper.author_name">
+        <mat-icon>person</mat-icon> {{ paperCard.paper.author_name }}
+      </p>
 
-        <div class="right">
-          <button mat-stroked-button color="primary" (click)="continueReading()">📖 continue reading</button>
+      <p class="pc-desc" *ngIf="paperCard.paper.description">{{ paperCard.paper.description }}</p>
+
+      <div class="pc-meta-row">
+        <span class="pc-meta" *ngIf="favoritesCount > 0">
+          <mat-icon>star</mat-icon> {{ favoritesCount }}
+        </span>
+        <span class="pc-meta" *ngIf="annotationsCount > 0">
+          <mat-icon>edit_note</mat-icon> {{ annotationsCount }}
+        </span>
+        <span class="pc-meta pc-meta--prog">
+          <mat-icon>check_circle_outline</mat-icon>
+          {{ completedCount }}/{{ totalChapters }}
+        </span>
+      </div>
+
+      <!-- Chapter dot bar -->
+      <div class="pc-dot-bar">
+        <div class="pc-dot"
+             *ngFor="let ch of paperCard.chapterList"
+             [class.pc-dot--done]="ch.completed && !ch.favorite"
+             [class.pc-dot--fav]="ch.favorite"
+             [matTooltip]="ch.title">
         </div>
       </div>
 
-      <!-- PROGRESS COUNT -->
-      <div class="progress">{{ completedCount }} / {{ totalChapters }}</div>
-
-      <!-- PROGRESS BAR -->
-      <div class="progress-bar">
-        <div *ngFor="let ch of paperCard.chapterList" [ngClass]="{
-            'block': true,
-            'read': ch.completed,
-            'favorite': ch.favorite
-          }" [matTooltip]="ch.title"></div>
-      </div>
-
-      <!-- CHAPTER TOGGLE (AGORA EMBAIXO) -->
-      <div class="expand-toggle" (click)="toggleExpand()" style="margin-top: 10px;">
-        <button mat-button>
+      <!-- Actions -->
+      <div class="pc-actions">
+        <button class="btn-continue" (click)="continueReading()">
+          <mat-icon>play_arrow</mat-icon> Continue
+        </button>
+        <button class="btn-expand" (click)="toggleExpand()">
           <mat-icon>{{ expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          <span id="toggleLabel">{{ expandLabel }}</span>
+          {{ expanded ? 'Hide' : 'Chapters' }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- LISTA DE CAPÍTULOS -->
-  <div [@expandCollapse]="expanded ? 'expanded' : 'collapsed'" class="chapter-list mat-elevation-z1">
-    <mat-divider></mat-divider>
-    <div *ngFor="let ch of paperCard.chapterList" class="chapter-item" [ngClass]="{ 'completed': ch.completed }">
-      <span>
-        <mat-icon matTooltip="{{ ch.completed ? 'Completo' : 'Não lido' }}">
-          {{ ch.completed ? 'check_box' : 'check_box_outline_blank' }}
-        </mat-icon>
+  <!-- Expandable chapter list -->
+  <div [@expandCollapse]="expanded ? 'expanded' : 'collapsed'" class="pc-chapter-list">
+    <div class="pcl-inner">
+      <div class="pcl-item"
+           *ngFor="let ch of paperCard.chapterList"
+           [class.pcl-item--done]="ch.completed">
 
+        <mat-icon class="pcl-icon pcl-icon--done"  *ngIf="ch.completed && !ch.favorite">check_circle</mat-icon>
+        <mat-icon class="pcl-icon pcl-icon--fav"   *ngIf="ch.favorite">star</mat-icon>
+        <mat-icon class="pcl-icon pcl-icon--blank" *ngIf="!ch.completed && !ch.favorite">radio_button_unchecked</mat-icon>
 
-        <p class="chapter-title" [innerText]=" ( ch.title | truncate: 25)">
-        </p>
+        <span class="pcl-title">{{ ch.title | truncate:28 }}</span>
 
-        <mat-icon *ngIf="ch.favorite" matTooltip="Favorito" style="color: gold;">star</mat-icon>
-
-        <span *ngIf="ch.annotations?.length">
-          <mat-icon inline matTooltip="{{ ch.annotations?.length }} anotações">notes</mat-icon>
-          ({{ ch.annotations?.length }})
+        <span class="pcl-notes" *ngIf="ch.annotations?.length">
+          <mat-icon>edit_note</mat-icon> {{ ch.annotations?.length }}
         </span>
-      </span>
 
-      <button mat-icon-button [matMenuTriggerFor]="chapterMenu" matTooltip="Mais opções" (click)="currentChapter = ch">
-        <mat-icon>more_vert</mat-icon>
-      </button>
+        <button mat-icon-button class="pcl-more"
+                [matMenuTriggerFor]="chMenu"
+                (click)="currentChapter = ch">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </div>
     </div>
 
-    <mat-menu #chapterMenu="matMenu">
+    <mat-menu #chMenu="matMenu">
       <button mat-menu-item (click)="onViewDetails(currentChapter)">
-
-        <mat-icon>info</mat-icon>
-        <span>Chapter Details</span>
+        <mat-icon>info</mat-icon> Details
       </button>
       <button mat-menu-item (click)="onReadChapter(currentChapter)">
-        <mat-icon>menu_book</mat-icon>
-        <span>Read Chapter</span>
+        <mat-icon>menu_book</mat-icon> Read
       </button>
     </mat-menu>
   </div>
-</mat-card>
+
+</div>

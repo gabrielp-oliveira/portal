@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Chapter, ChapterAnnotation, UserChapterDetailsResponse, ChapterConfiguration, ChapterDetails, Connection, createWorld, DashboardHeroResponse, DashboardResponse, description, Event, GroupConnection, paper, StoryLine, Subway_Settings, Timeline, world } from '../models/paperTrailTypes';
+import { Chapter, ChapterAnnotation, UserChapterDetailsResponse, ChapterConfiguration, ChapterDetails, Connection, createWorld, DashboardHeroResponse, DashboardResponse, description, DetailsFilter, Event, FavoritesFilter, GroupConnection, paper, PaginatedResponse, DetailsItem, FavoriteItem, StoryLine, Subway_Settings, Timeline, world, WorldBoardResponse, WorldHeroResponse } from '../models/paperTrailTypes';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +36,63 @@ export class ApiService {
       `${this.baseUrl}/worldByName?name=${encodeURIComponent(name)}`
     );
   }
+
+  // ── 3-phase read-world API ─────────────────────────────────────────────────
+
+  private readonly HERO_CACHE_TTL = 60 * 60 * 1000; // 1h
+
+  getWorldHero(worldName: string): Observable<WorldHeroResponse> {
+    const key = `hero_${worldName}`;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const { ts, data } = JSON.parse(raw);
+        if (Date.now() - ts < this.HERO_CACHE_TTL) {
+          return new Observable(obs => { obs.next(data); obs.complete(); });
+        }
+      }
+    } catch { /* ignore */ }
+    return new Observable(obs => {
+      this.http.get<WorldHeroResponse>(`${this.baseUrl}/worldByName?name=${encodeURIComponent(worldName)}&view=hero`)
+        .subscribe({
+          next: d => {
+            try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: d })); } catch { /* ignore */ }
+            obs.next(d); obs.complete();
+          },
+          error: e => obs.error(e)
+        });
+    });
+  }
+
+  getWorldBoard(worldName: string): Observable<WorldBoardResponse> {
+    return this.http.get<WorldBoardResponse>(
+      `${this.baseUrl}/worldByName?name=${encodeURIComponent(worldName)}&view=board`
+    );
+  }
+
+  getWorldDetails(worldName: string, filters: DetailsFilter = {}): Observable<PaginatedResponse<DetailsItem>> {
+    const params = Object.entries(filters)
+      .filter(([, v]) => v != null)
+      .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+      .join('&');
+    const qs = params ? `&${params}` : '';
+    return this.http.get<PaginatedResponse<DetailsItem>>(
+      `${this.baseUrl}/worldByName?name=${encodeURIComponent(worldName)}&view=details${qs}`
+    );
+  }
+
+  getWorldFavorites(worldName: string, filters: FavoritesFilter = {}): Observable<PaginatedResponse<FavoriteItem>> {
+    const params = Object.entries(filters)
+      .filter(([, v]) => v != null)
+      .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+      .join('&');
+    const qs = params ? `&${params}` : '';
+    return this.http.get<PaginatedResponse<FavoriteItem>>(
+      `${this.baseUrl}/worldByName?name=${encodeURIComponent(worldName)}&view=favorites${qs}`
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
 
   getChapteData(chapterId: string): Observable<ChapterDetails> {
     return this.http.get<ChapterDetails>(`${this.baseUrl}/chapter?id=${chapterId}`);

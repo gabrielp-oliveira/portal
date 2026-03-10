@@ -287,6 +287,137 @@ export type StoryLine = {
 
 
 
+// ── 3-phase read-world types ────────────────────────────────────────────────
+
+export interface WorldStats {
+  total_books: number;
+  completed_books: number;
+  total_chapters: number;
+  completed_chapters: number;
+  total_favorites: number;
+  total_annotations: number;
+  reading_pct: number;
+}
+
+export interface HeroProgress {
+  total_chapters:     number;
+  completed_chapters: number;
+}
+
+export interface HeroPaper {
+  id:        string;
+  name:      string;
+  cover_url: string;
+  color:     string;
+  order:     number;
+  status:    string;
+  progress:  HeroProgress;
+}
+
+export interface WorldHeroResponse {
+  id: string;
+  name: string;
+  description: string;
+  papers: HeroPaper[];
+  stats: WorldStats;
+}
+
+export interface BoardChapter {
+  id: string;
+  title: string;
+  paper_id: string;
+  timeline_id: string | null;
+  storyline_id: string | null;
+  range: number;
+  order: number;
+  color: string;
+  favorite: boolean;
+  completed: boolean;
+  has_notes: boolean;
+  notes_count?: number;
+  favorited_excerpts_count?: number;
+}
+
+/** Lightweight timeline/storyline shape returned by view=board */
+export interface BoardTimeline {
+  id: string;
+  name: string;
+  order: number;
+  range: number;
+  color: string;
+}
+
+export interface WorldBoardResponse {
+  chapters: BoardChapter[];
+  timelines: BoardTimeline[];
+  storylines: BoardTimeline[];
+  subway_settings: Subway_Settings;
+}
+
+export interface DetailsAnnotation {
+  id: string;
+  text: string;     // highlighted span text
+  note: string;
+  favorite: boolean;
+  created_at: string;
+}
+
+export interface DetailsItem {
+  chapter_id: string;
+  chapter_title: string;
+  chapter_order: number;
+  paper_id: string;
+  paper_name: string;
+  paper_color: string;
+  annotation: DetailsAnnotation;
+}
+
+export interface FavoriteItem {
+  chapter_id: string;
+  chapter_title: string;
+  chapter_order: number;
+  paper_id: string;
+  paper_name: string;
+  paper_cover: string;
+  paper_color: string;
+  completed: boolean;
+  annotationsCount: number;
+}
+
+export interface PaginatedMeta {
+  total: number;
+  total_pages: number;
+  page: number;
+  limit: number;
+  has_next: boolean;
+  next_cursor?: string;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  pagination: PaginatedMeta;
+}
+
+export interface DetailsFilter {
+  page?: number;
+  limit?: number;
+  filter?: string;
+  book?: string;
+  sort?: string;
+  search?: string;
+  after_id?: string;
+}
+
+export interface FavoritesFilter {
+  page?: number;
+  limit?: number;
+  book?: string;
+  search?: string;
+  after_id?: string;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export interface ChapterAnnotation {
     id?: string; // Gerado no backend
     user_id: string;

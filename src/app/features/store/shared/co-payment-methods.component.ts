@@ -22,8 +22,8 @@ import { MatIconModule } from '@angular/material/icon';
         <span class="co__method-name">PIX</span>
         <span class="co__method-tag">Instant</span>
       </label>
-      <label class="co__method" [class.co__method--selected]="value === 'credit_card'">
-        <input type="radio" name="co-method" value="credit_card"
+      <label class="co__method" [class.co__method--selected]="value === 'stripe'">
+        <input type="radio" name="co-method" value="stripe"
           [ngModel]="value" (ngModelChange)="valueChange.emit($event)" class="sr-only" />
         <mat-icon class="co__method-mat-icon" aria-hidden="true">credit_card</mat-icon>
         <span class="co__method-name">Credit card</span>
@@ -39,8 +39,8 @@ import { MatIconModule } from '@angular/material/icon';
 
     <!-- USD / International -->
     <div class="co__methods" role="radiogroup" aria-label="Payment method" *ngIf="currencyCode === 'USD'">
-      <label class="co__method" [class.co__method--selected]="value === 'credit_card'">
-        <input type="radio" name="co-method" value="credit_card"
+      <label class="co__method" [class.co__method--selected]="value === 'stripe'">
+        <input type="radio" name="co-method" value="stripe"
           [ngModel]="value" (ngModelChange)="valueChange.emit($event)" class="sr-only" />
         <mat-icon class="co__method-mat-icon" aria-hidden="true">credit_card</mat-icon>
         <span class="co__method-name">Credit card</span>

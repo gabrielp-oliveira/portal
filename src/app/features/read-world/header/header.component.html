@@ -4,11 +4,18 @@
     <!-- Grupo 1: Ícone home -->
     <div class="header-group">
       <button class="btn-flat" routerLink="/">
-        <img
-          [src]="settings.theme ? 'assets/homeDarkIcon.png' : 'assets/homeLightIcon.png'"
-          alt="Home"
-          class="home-icon"
-        />
+        <picture>
+          <source
+            type="image/avif"
+            [srcset]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_efk1t3.avif' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_opxauw.avif'" />
+          <source
+            type="image/webp"
+            [srcset]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'" />
+          <img
+            [src]="!settings.theme ? 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeDarkIcon_hook0j.webp' : 'https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp'"
+            alt="PaperTrail Home"
+            class="home-icon" />
+        </picture>
       </button>
     </div>
     <div class="header-group">

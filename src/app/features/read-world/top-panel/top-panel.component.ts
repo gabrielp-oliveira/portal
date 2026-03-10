@@ -26,6 +26,7 @@ export class TopPanelComponent implements OnInit {
   hiddenChaptersCount = 0;
   hiddenTimelinesCount = 0;
   isDarkMode = false;
+  filtersInfoOpen = false;
 
   completedChapters = 0;
   totalChapters = 0;

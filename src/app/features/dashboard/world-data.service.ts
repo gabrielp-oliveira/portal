@@ -25,7 +25,7 @@ export class WorldDataService {
     timeline_update_chapter: false,
     storyline_update_chapter: false,
     show_span_favorite : false,
-    theme: true,
+    theme: localStorage.getItem('rw_theme') !== 'false',
     group_connection_update_chapter: false,
     user_id: '',
     k: 0.7,
@@ -67,6 +67,7 @@ export class WorldDataService {
     this.papersSubject.next(papers);
   }
   setSettings(ss: Subway_Settings): void {
+    localStorage.setItem('rw_theme', String(ss.theme));
     this.settingsSubject.next(ss);
   }
   getSettings() {
@@ -179,7 +180,9 @@ export class WorldDataService {
     return this.chaptersSubject.value.filter((c) => c.paper_id == id)
   }
   getPaperByChapterId(id: string) {
-    return this.papersSubject.value.filter((p) => p.id == this.getChapterById(id).paper_id)[0]
+    const chapter = this.getChapterById(id);
+    if (!chapter) return undefined;
+    return this.papersSubject.value.filter((p) => p.id == chapter.paper_id)[0];
   }
   getNextPaperInOrderById(id: string) {
     const paper = this.papersSubject.value.filter((p) => p.id == id)[0]
@@ -242,8 +245,11 @@ export class WorldDataService {
     this.timelinesSubject.next(timelines);
   }
   getTimeline(timelineId: string): Timeline {
-    const timeline = this.timelinesSubject.value.filter(t => t.id !== timelineId)[0]
-    return timeline
+    return this.timelinesSubject.value.find(t => t.id === timelineId)!;
+  }
+
+  getStoryline(storylineId: string): StoryLine | undefined {
+    return this.storylinesSubject.value.find(s => s.id === storylineId);
   }
 
   removeConnection(connectionId: string): void {

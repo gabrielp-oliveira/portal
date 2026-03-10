@@ -1,7 +1,7 @@
 <!-- ── Non-default: world route (usa settings$ do WorldDataService) ── -->
 <ng-container *ngIf="!default; else defaultHeader">
   <ng-container *ngIf="settings$ | async as settings">
-    <header class="hdr" [class.dark]="settings.theme">
+    <header class="hdr" [class.dark]="!settings.theme">
       <div class="hdr__bar">
 
         <button class="hdr__brand" (click)="GoTo('/')" aria-label="Ir para o início">

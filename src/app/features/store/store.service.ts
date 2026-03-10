@@ -259,6 +259,10 @@ export class StoreService {
     this.cachedHome = this.readLS<HomeSection>(StoreService.LS_HOME, StoreService.LS_HOME_TTL, StoreService.CACHE_TTL);
     this.cachedMeta = this.readLS<StoreMetaResponse>(StoreService.LS_META, StoreService.LS_META_TTL, StoreService.META_TTL);
 
+    // Pre-fire HTTP requests immediately if no valid cache — so data is already
+    // in-flight before the component even initializes (shaves ~100-200ms off TTFB)
+    if (!this.cachedMeta) this._meta$.subscribe();
+    if (!this.cachedHome) this._home$.subscribe();
   }
 
   private readLS<T>(key: string, ttlKey: string, maxAge: number): T | null {

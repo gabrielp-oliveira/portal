@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ReadWorldComponent } from './read-world.component';
 import { RouterModule, Routes } from '@angular/router';
-import { HeaderComponent } from './header/header.component';
+import { HeaderComponent } from '../../shared/header/header.component';
 import { TopPanelComponent } from './top-panel/top-panel.component';
 import { BottomSheetService } from './bottom-sheet.service';
 import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
@@ -35,13 +35,13 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     ReadWorldComponent,
-    HeaderComponent,
     TopPanelComponent,
     BottomSheetComponent,
     ChapterDetailsComponent,
   ],
   providers: [BottomSheetService],
   imports: [
+    HeaderComponent,
     FooterComponent,
     CommonModule,
     PaperCardComponent,

@@ -9,8 +9,8 @@
   <div class="cover-wrapper">
     <img
       [src]="(book.cover_url || DEFAULT_COVER) | cloudinary:200:300"
-      [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 1x, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:400:600) + ' 2x'"
-      sizes="(max-width: 640px) 140px, 158px"
+      [srcset]="((book.cover_url || DEFAULT_COVER) | cloudinary:200:300) + ' 200w, ' + ((book.cover_url || DEFAULT_COVER) | cloudinary:400:600) + ' 400w'"
+      sizes="(max-width: 640px) 140px, 200px"
       [alt]="book.name + ' by ' + book.author_name + ' — book cover'"
       class="paper-img"
       width="200" height="300"

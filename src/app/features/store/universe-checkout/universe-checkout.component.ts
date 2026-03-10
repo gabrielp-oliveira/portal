@@ -96,10 +96,10 @@ export class UniverseCheckoutComponent implements OnInit, OnDestroy {
     const sub = this.store.checkoutUniverse(body).subscribe({
       next: (res: any) => {
         this.purchasing = false;
-        if (this.total === 0 || res.message) {
+        if (res.checkoutUrl) {
+          window.location.href = res.checkoutUrl;
+        } else {
           alert('Universe added to your library!');
-        } else if (res.url) {
-          window.location.href = res.url;
         }
       },
       error: (err) => {

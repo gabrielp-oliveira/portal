@@ -11,27 +11,33 @@
     <!-- 3+ covers: main left + stacked right -->
     <ng-container *ngIf="coversCount >= 3">
       <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:240:300"
-           class="cover cover--main" loading="lazy" decoding="async" alt="" />
+           class="cover cover--main" loading="lazy" decoding="async"
+           width="240" height="300" alt="" />
       <div class="cover-stack">
         <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:160:150"
-             class="cover cover--stack-item" loading="lazy" decoding="async" alt="" />
+             class="cover cover--stack-item" loading="lazy" decoding="async"
+             width="160" height="150" alt="" />
         <img [src]="(world.CoverURLs[2] || DEFAULT_COVER) | cloudinary:160:150"
-             class="cover cover--stack-item" loading="lazy" decoding="async" alt="" />
+             class="cover cover--stack-item" loading="lazy" decoding="async"
+             width="160" height="150" alt="" />
       </div>
     </ng-container>
 
     <!-- 2 covers: side by side -->
     <ng-container *ngIf="coversCount === 2">
       <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:200:300"
-           class="cover cover--half" loading="lazy" decoding="async" alt="" />
+           class="cover cover--half" loading="lazy" decoding="async"
+           width="200" height="300" alt="" />
       <img [src]="(world.CoverURLs[1] || DEFAULT_COVER) | cloudinary:200:300"
-           class="cover cover--half" loading="lazy" decoding="async" alt="" />
+           class="cover cover--half" loading="lazy" decoding="async"
+           width="200" height="300" alt="" />
     </ng-container>
 
     <!-- 1 or 0 covers -->
     <ng-container *ngIf="coversCount <= 1">
       <img [src]="(world.CoverURLs[0] || DEFAULT_COVER) | cloudinary:400:300"
-           class="cover cover--full" loading="lazy" decoding="async" alt="" />
+           class="cover cover--full" loading="lazy" decoding="async"
+           width="400" height="300" alt="" />
     </ng-container>
 
     <div class="cover-gradient"></div>

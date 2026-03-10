@@ -177,7 +177,7 @@
           [attr.aria-label]="heroBook.name + ' by ' + heroBook.author_name + ' — ' + (heroBook.price ? formatPrice(heroBook.price, heroBook.priceCurrency) : 'Free') + '. Featured book. Press Enter to view.'">
 
           <div class="hero__backdrop" aria-hidden="true"
-            [style.background-image]="'url(' + (heroBook.cover_url | cloudinary:40:60) + ')'">
+            [style.background-image]="'url(' + (heroBook.cover_url | cloudinary:800:600) + ')'">
           </div>
 
           <div class="hero__badge" aria-hidden="true">
@@ -197,8 +197,8 @@
 
           <div class="hero__inner">
             <img class="hero__cover"
-              [src]="heroBook.cover_url | cloudinary:310:465"
-              [srcset]="(heroBook.cover_url | cloudinary:155:233) + ' 1x, ' + (heroBook.cover_url | cloudinary:310:465) + ' 2x'"
+              [src]="heroBook.cover_url | cloudinary:155:233"
+              [srcset]="(heroBook.cover_url | cloudinary:155:233) + ' 155w, ' + (heroBook.cover_url | cloudinary:310:465) + ' 310w'"
               sizes="(max-width: 640px) 96px, 155px"
               [alt]="heroBook.name + ' — book cover'"
               width="155" height="233"
@@ -270,7 +270,7 @@
           </header>
           <ul class="shelf" role="list" aria-label="New releases" [attr.aria-busy]="newReleasesLoading || null">
             <ng-container *ngIf="newReleasesLoading">
-              <li class="shelf-slot" *ngFor="let i of [1,2,3,4]" role="listitem" aria-hidden="true">
+              <li class="shelf-slot" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]" role="listitem" aria-hidden="true">
                 <div class="sk-card"><div class="sk-card__cover"></div><div class="sk-card__foot"><div class="sk-line sk-line--md"></div><div class="sk-line sk-line--sm"></div></div></div>
               </li>
             </ng-container>
