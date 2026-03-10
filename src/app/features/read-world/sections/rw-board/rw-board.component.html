@@ -1,0 +1,88 @@
+<!-- Mobile fullscreen overlay bar -->
+<div class="board-fullscreen" *ngIf="boardFullscreen" role="dialog" aria-modal="true" aria-label="Story Map fullscreen">
+  <div class="bfs-bar">
+    <span class="bfs-title"><mat-icon aria-hidden="true">map</mat-icon> Story Map</span>
+    <div class="bfs-actions">
+      <button class="bfs-btn" (click)="toggleStorylinesCollapse()"
+              [attr.aria-label]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'"
+              [class.active]="boardStorylinesCollapsed">
+        <mat-icon aria-hidden="true">{{ boardStorylinesCollapsed ? 'unfold_more' : 'unfold_less' }}</mat-icon>
+      </button>
+      <button class="bfs-btn bfs-close" (click)="closeBoardFullscreen()" aria-label="Close Story Map">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div class="bfs-hint">
+    <mat-icon aria-hidden="true">pinch</mat-icon> Pinch to zoom &nbsp;·&nbsp;
+    <mat-icon aria-hidden="true">pan_tool</mat-icon> Drag to pan
+  </div>
+</div>
+
+<!-- Board (collapsible) -->
+<section class="board-section" aria-label="Story Map">
+
+  <!-- Collapsed pill -->
+  <div class="board-collapsed-bar" *ngIf="boardCollapsed"
+       role="button" tabindex="0"
+       aria-label="Show Story Map"
+       (click)="$event.stopPropagation(); toggleBoard()"
+       (keydown.enter)="$event.stopPropagation(); toggleBoard()"
+       (keydown.space)="$event.preventDefault(); $event.stopPropagation(); toggleBoard()">
+    <mat-icon class="bcb-icon" aria-hidden="true">map</mat-icon>
+    <span class="bcb-label">Story Map</span>
+    <mat-icon class="bcb-arrow" aria-hidden="true">keyboard_arrow_down</mat-icon>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="board-toolbar" *ngIf="!boardCollapsed" role="toolbar" aria-label="Story Map controls">
+    <app-top-panel></app-top-panel>
+    <div class="board-info-wrap" (mouseenter)="boardInfoOpen=true" (mouseleave)="boardInfoOpen=false">
+      <button class="board-toggle board-info-btn"
+              aria-label="How to use the Story Map"
+              [attr.aria-expanded]="boardInfoOpen">
+        <mat-icon aria-hidden="true">info_outline</mat-icon>
+      </button>
+      <div class="board-info-tooltip" role="tooltip" [class.visible]="boardInfoOpen">
+        <p class="bit-title">How to use the Story Map</p>
+        <div class="bit-row"><mat-icon aria-hidden="true">pan_tool</mat-icon><span><strong>Pan</strong> — drag to move around</span></div>
+        <div class="bit-row"><mat-icon aria-hidden="true">zoom_in</mat-icon><span><strong>Zoom</strong> — <kbd>Ctrl</kbd> + scroll, or pinch on touch</span></div>
+        <div class="bit-row"><mat-icon aria-hidden="true">touch_app</mat-icon><span><strong>Chapter</strong> — click a card to see details</span></div>
+        <div class="bit-row"><mat-icon aria-hidden="true">folder_open</mat-icon><span><strong>Group</strong> — click a badge to expand chapters</span></div>
+        <div class="bit-row"><mat-icon aria-hidden="true">star</mat-icon><span><strong>Badges</strong> — ★ favorite &middot; pill = notes count</span></div>
+        <div class="bit-row"><mat-icon aria-hidden="true">unfold_less</mat-icon><span><strong>Collapse</strong> — hide storyline rows</span></div>
+      </div>
+    </div>
+    <button class="board-toggle" (click)="$event.stopPropagation(); toggleStorylinesCollapse()"
+            [class.active]="boardStorylinesCollapsed"
+            [attr.aria-label]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'"
+            [attr.aria-pressed]="boardStorylinesCollapsed"
+            [matTooltip]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'">
+      <mat-icon aria-hidden="true">{{ boardStorylinesCollapsed ? 'unfold_more' : 'unfold_less' }}</mat-icon>
+    </button>
+    <button class="board-toggle" (click)="$event.stopPropagation(); toggleBoard()"
+            aria-label="Hide Story Map" matTooltip="Hide board">
+      <mat-icon aria-hidden="true">expand_less</mat-icon>
+    </button>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="board-loading-overlay" *ngIf="!boardCollapsed && !phaseBoardLoaded" aria-live="polite" aria-label="Loading Story Map">
+    <div class="board-loading-spinner">
+      <mat-icon class="spin-icon" aria-hidden="true">sync</mat-icon>
+      <span>Loading Story Map…</span>
+    </div>
+  </div>
+
+  <!-- iframe -->
+  <div class="board-frame-wrap"
+       [class.board-frame-wrap--hidden]="boardCollapsed && !boardFullscreen"
+       [class.board-frame-wrap--fullscreen]="boardFullscreen">
+    <iframe *ngIf="phaseBoardLoaded" #boardFrame id="board-frame" src="assets/board/index.html"
+            title="Interactive Story Map board"
+            [attr.aria-hidden]="(boardCollapsed && !boardFullscreen) ? 'true' : null"
+            [attr.tabindex]="(boardCollapsed && !boardFullscreen) ? -1 : 0">
+    </iframe>
+  </div>
+
+</section>

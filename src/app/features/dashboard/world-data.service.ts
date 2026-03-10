@@ -58,7 +58,6 @@ export class WorldDataService {
 
   // Métodos para atualizar o estado
   setWorld(world: basicWorld): void {
-    console.log('..')
     this.worldId = world.id
     this.worldSubject.next(world);
   }

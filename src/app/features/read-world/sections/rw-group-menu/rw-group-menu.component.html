@@ -1,0 +1,55 @@
+<ng-container *ngIf="items.length">
+  <div class="board-menu-backdrop" (click)="close.emit()" aria-hidden="true"></div>
+  <div class="board-ctx-menu board-ctx-menu--group"
+       role="dialog" aria-modal="true" aria-label="Group chapters"
+       [style.left.px]="position.x"
+       [style.top.px]="position.y">
+
+    <ng-container *ngIf="items[0] as first">
+      <div class="bcm-book-header">
+        <div class="bcm-cover-wrap" aria-hidden="true">
+          <img *ngIf="first.paper.cover_url" class="bcm-cover-img"
+               loading="lazy" decoding="async"
+               width="44" height="58"
+               [src]="first.paper.cover_url | cloudinary:44:58"
+               [srcset]="(first.paper.cover_url | cloudinary:44:58) + ' 1x, ' + (first.paper.cover_url | cloudinary:88:116) + ' 2x'"
+               [alt]="first.paper.name + ' cover'" />
+          <div *ngIf="!first.paper.cover_url" class="bcm-cover-fallback"
+               [style.background]="first.paper.color || '#7c6af5'" aria-hidden="true">
+            <mat-icon aria-hidden="true">auto_stories</mat-icon>
+          </div>
+        </div>
+        <div class="bcm-book-meta">
+          <span class="bcm-book-name">{{ first.paper.name }}</span>
+          <span class="bcm-book-count">{{ items.length }} chapters</span>
+          <p class="bcm-book-desc" *ngIf="first.paper.description">{{ first.paper.description }}</p>
+        </div>
+      </div>
+      <div class="bcm-divider" aria-hidden="true"></div>
+    </ng-container>
+
+    <div class="bcm-chapter-row" role="list"
+         *ngFor="let item of items; trackBy: trackByChapterId">
+      <div class="bcm-dot" aria-hidden="true" [style.background]="item.paper.color || '#7c6af5'"></div>
+      <div class="bcm-row-info">
+        <span class="bcm-title">Ch.{{ item.chapter.order }} — {{ item.chapter.title }}</span>
+        <span class="bcm-ch-desc" *ngIf="item.chapter.description">{{ item.chapter.description }}</span>
+      </div>
+      <div class="bcm-row-actions">
+        <button class="bcm-row-btn"
+                [attr.aria-label]="'Read chapter: ' + item.chapter.title"
+                matTooltip="Read chapter"
+                (click)="navigate.emit({ paperId: item.chapter.paper_id, order: item.chapter.order }); close.emit()">
+          <mat-icon aria-hidden="true">menu_book</mat-icon>
+        </button>
+        <button class="bcm-row-btn"
+                [attr.aria-label]="'Details for: ' + item.chapter.title"
+                matTooltip="Chapter details"
+                (click)="openDetails.emit(item.chapter.id); close.emit()">
+          <mat-icon aria-hidden="true">info_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</ng-container>

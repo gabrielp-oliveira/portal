@@ -1,0 +1,116 @@
+<ng-container *ngIf="chapter">
+  <div class="board-menu-backdrop" (click)="close.emit()" aria-hidden="true"></div>
+  <div class="board-ctx-menu board-ctx-menu--chapter"
+       role="dialog" aria-modal="true"
+       [attr.aria-label]="'Chapter details: ' + chapter.title"
+       [class.is-expanded]="expanded"
+       [style.left.px]="position.x"
+       [style.top.px]="position.y">
+
+    <div class="bcm-body">
+
+      <!-- Header -->
+      <div class="bcm-book-header">
+        <div class="bcm-cover-wrap" [class.bcm-cover-wrap--lg]="expanded" aria-hidden="true">
+          <img *ngIf="paperCoverUrl" class="bcm-cover-img"
+               loading="lazy" decoding="async"
+               width="44" height="58"
+               [src]="paperCoverUrl | cloudinary:44:58"
+               [srcset]="(paperCoverUrl | cloudinary:44:58) + ' 1x, ' + (paperCoverUrl | cloudinary:88:116) + ' 2x'"
+               [alt]="(paperName || '') + ' cover'" />
+          <div *ngIf="!paperCoverUrl" class="bcm-cover-fallback"
+               [style.background]="paperColor || '#7c6af5'">
+            <mat-icon aria-hidden="true">auto_stories</mat-icon>
+          </div>
+        </div>
+        <div class="bcm-book-meta">
+          <span class="bcm-book-name">{{ paperName }}</span>
+          <span class="bcm-chapter-label">
+            Ch.{{ chapter.order }} — {{ chapter.title }}
+            <mat-icon class="bcm-fav-icon" *ngIf="chapter.favorite" aria-label="Favorite chapter">star</mat-icon>
+          </span>
+          <p class="bcm-book-desc" *ngIf="chapter.description && !expanded">{{ chapter.description }}</p>
+        </div>
+        <button class="bcm-close-btn" (click)="close.emit()" aria-label="Close chapter details">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Expanded: full description -->
+      <ng-container *ngIf="expanded && chapter.description">
+        <div class="bcm-divider" aria-hidden="true"></div>
+        <p class="bcm-full-desc">{{ chapter.description }}</p>
+      </ng-container>
+
+      <!-- Expanded: meta chips -->
+      <div class="bcm-chips" *ngIf="expanded" aria-label="Chapter details">
+        <div class="bcm-chip" *ngIf="timelineName">
+          <mat-icon aria-hidden="true">timeline</mat-icon>
+          <span>{{ timelineName }}</span>
+        </div>
+        <div class="bcm-chip" *ngIf="storylineName">
+          <mat-icon aria-hidden="true">account_tree</mat-icon>
+          <span>{{ storylineName }}</span>
+        </div>
+        <div class="bcm-chip" *ngIf="chapter.pageCount">
+          <mat-icon aria-hidden="true">description</mat-icon>
+          <span>{{ chapter.pageCount }} pages</span>
+        </div>
+        <div class="bcm-chip bcm-chip--done" *ngIf="chapter.completed">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          <span>Completed</span>
+        </div>
+      </div>
+
+      <!-- Annotations -->
+      <ng-container *ngIf="chapter.annotations?.length">
+        <div class="bcm-divider" aria-hidden="true"></div>
+        <div class="bcm-ann-header" aria-label="Highlights and notes">
+          <mat-icon aria-hidden="true">format_quote</mat-icon>
+          Highlights &amp; Notes
+          <span class="bcm-ann-count" aria-hidden="true">{{ chapter.annotations!.length }}</span>
+          <span class="sr-only">{{ chapter.annotations!.length }} annotations</span>
+          <span class="bcm-ann-fav-count" *ngIf="favAnnotationsCount() > 0" aria-hidden="true">
+            <mat-icon aria-hidden="true">star</mat-icon>{{ favAnnotationsCount() }}
+          </span>
+        </div>
+        <div class="bcm-ann-list" role="list">
+          <div class="bcm-ann-entry" role="listitem"
+               [class.bcm-ann-entry--fav]="ann.favorite"
+               *ngFor="let ann of expanded ? sortedAnnotations() : chapter.annotations!.slice(0, 3); trackBy: trackById">
+            <div class="bcm-ann-meta" *ngIf="ann.favorite">
+              <mat-icon class="bcm-ann-star" aria-hidden="true">star</mat-icon>
+              <span class="bcm-ann-saved">Saved</span>
+            </div>
+            <blockquote class="bcm-ann-passage" [class.full]="expanded" *ngIf="ann.span_text">"{{ ann.span_text }}"</blockquote>
+            <p class="bcm-ann-note" [class.full]="expanded" *ngIf="ann.note">{{ ann.note }}</p>
+          </div>
+          <p class="bcm-ann-more" *ngIf="!expanded && chapter.annotations!.length > 3">
+            +{{ chapter.annotations!.length - 3 }} more — click Details
+          </p>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="bcm-footer">
+      <div class="bcm-divider" aria-hidden="true"></div>
+      <div class="bcm-actions-row">
+        <button class="bcm-action-btn bcm-action-btn--primary"
+                [attr.aria-label]="'Read chapter: ' + chapter.title"
+                (click)="navigate.emit({ paperId: chapter.paper_id, order: chapter.order }); close.emit()">
+          <mat-icon aria-hidden="true">menu_book</mat-icon> Read
+        </button>
+        <button class="bcm-action-btn"
+                [attr.aria-label]="expanded ? 'Show less' : 'Show more details'"
+                [attr.aria-expanded]="expanded"
+                (click)="toggleExpanded.emit()">
+          <mat-icon aria-hidden="true">{{ expanded ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+          {{ expanded ? 'Less' : 'Details' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</ng-container>

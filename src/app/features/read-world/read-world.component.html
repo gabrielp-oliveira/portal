@@ -1,86 +1,21 @@
 <div class="rw-root" [class.dark]="isDark">
   <app-header></app-header>
 
-  <!-- ── HERO ─────────────────────────────────────────────────────────────── -->
-  <!-- Hero skeleton while Phase 1 loads -->
-  <header class="rw-hero rw-hero--skeleton" aria-hidden="true" *ngIf="!phaseHeroLoaded">
-    <div class="rw-hero-overlay"></div>
-    <div class="rw-hero-content">
-      <div class="rw-hero-left">
-        <div class="skel skel--title"></div>
-        <div class="skel skel--line"></div>
-        <div class="skel skel--line skel--short"></div>
-      </div>
-    </div>
-  </header>
+  <app-rw-hero
+    [phaseHeroLoaded]="phaseHeroLoaded"
+    [heroData]="heroData"
+    [paperCardList]="paperCardList"
+    [readingPct]="readingPct"
+    [totalChapters]="totalChapters"
+    [totalCompletedChapters]="totalCompletedChapters"
+    [totalFavorites]="totalFavorites"
+    [totalAnnotations]="totalAnnotations"
+    [completedBooks]="completedBooks"
+    [backdropCover]="backdropCover"
+    [uniqueAuthors]="uniqueAuthors">
+  </app-rw-hero>
 
-  <header class="rw-hero" aria-label="World overview" *ngIf="phaseHeroLoaded && heroData">
-    <div class="rw-hero-bg" aria-hidden="true" *ngIf="backdropCover"
-         [style.background-image]="'url(' + backdropCover + ')'"></div>
-    <div class="rw-hero-overlay" aria-hidden="true"></div>
-
-    <div class="rw-hero-content">
-      <div class="rw-hero-left">
-
-        <h1 class="rw-world-name">{{ heroData.name }}</h1>
-
-        <p class="rw-authors" *ngIf="uniqueAuthors.length">
-          <mat-icon aria-hidden="true">person</mat-icon>
-          <span>{{ uniqueAuthors.join(' · ') }}</span>
-        </p>
-
-        <p class="rw-world-desc" *ngIf="heroData.description">{{ heroData.description }}</p>
-
-        <dl class="rw-hero-stats" aria-label="Reading statistics">
-          <div class="rw-stat">
-            <dt class="rw-stat-key">Books</dt>
-            <dd class="rw-stat-val">{{ paperCardList.length }}</dd>
-          </div>
-          <div class="rw-stat-divider" aria-hidden="true"></div>
-          <div class="rw-stat">
-            <dt class="rw-stat-key">Finished</dt>
-            <dd class="rw-stat-val">{{ completedBooks }}</dd>
-          </div>
-          <div class="rw-stat-divider" aria-hidden="true"></div>
-          <div class="rw-stat">
-            <dt class="rw-stat-key">Favorites</dt>
-            <dd class="rw-stat-val">{{ totalFavorites }}</dd>
-          </div>
-          <div class="rw-stat-divider" aria-hidden="true"></div>
-          <div class="rw-stat">
-            <dt class="rw-stat-key">Notes</dt>
-            <dd class="rw-stat-val">{{ totalAnnotations }}</dd>
-          </div>
-        </dl>
-
-        <div class="rw-progress-wrap" *ngIf="totalChapters > 0"
-             role="progressbar"
-             [attr.aria-valuenow]="readingPct"
-             aria-valuemin="0" aria-valuemax="100"
-             [attr.aria-label]="readingPct + '% read — ' + totalCompletedChapters + ' of ' + totalChapters + ' chapters'">
-          <div class="rw-progress-track" aria-hidden="true">
-            <div class="rw-progress-fill" [style.width.%]="readingPct"></div>
-          </div>
-          <span class="rw-progress-label" aria-hidden="true">{{ readingPct }}% · {{ totalCompletedChapters }}/{{ totalChapters }} chapters</span>
-        </div>
-      </div>
-
-      <div class="rw-ring-wrap" aria-hidden="true" *ngIf="totalChapters > 0">
-        <svg class="rw-ring" viewBox="0 0 120 120" focusable="false">
-          <circle class="rw-ring-track" cx="60" cy="60" r="50"/>
-          <circle class="rw-ring-fill" cx="60" cy="60" r="50"
-                  [style.stroke-dasharray]="314"
-                  [style.stroke-dashoffset]="314 - (314 * readingPct / 100)"/>
-        </svg>
-        <div class="rw-ring-inner">
-          <span class="rw-ring-pct">{{ readingPct }}%</span>
-          <span class="rw-ring-sub">read</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ── CONTINUE READING ───────────────────────────────────────────────────── -->
+  <!-- Continue reading banner -->
   <section class="continue-banner" aria-label="Continue reading" *ngIf="nextRead">
     <div class="cb-inner">
       <mat-icon class="cb-icon" aria-hidden="true">play_circle</mat-icon>
@@ -97,550 +32,81 @@
     </div>
   </section>
 
-  <!-- ── BOARD fullscreen overlay (mobile only) ───────────────────────────── -->
-  <div class="board-fullscreen" *ngIf="boardFullscreen" role="dialog" aria-modal="true" aria-label="Story Map fullscreen">
-    <div class="bfs-bar">
-      <span class="bfs-title"><mat-icon aria-hidden="true">map</mat-icon> Story Map</span>
-      <div class="bfs-actions">
-        <button class="bfs-btn" (click)="toggleStorylinesCollapse()"
-                [attr.aria-label]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'"
-                [class.active]="boardStorylinesCollapsed">
-          <mat-icon aria-hidden="true">{{ boardStorylinesCollapsed ? 'unfold_more' : 'unfold_less' }}</mat-icon>
-        </button>
-        <button class="bfs-btn bfs-close" (click)="closeBoardFullscreen()" aria-label="Close Story Map">
-          <mat-icon aria-hidden="true">close</mat-icon>
-        </button>
-      </div>
-    </div>
-    <div class="bfs-hint">
-      <mat-icon aria-hidden="true">pinch</mat-icon> Pinch to zoom &nbsp;·&nbsp;
-      <mat-icon aria-hidden="true">pan_tool</mat-icon> Drag to pan
-    </div>
-  </div>
+  <app-rw-board
+    [phaseBoardLoaded]="phaseBoardLoaded"
+    [worldName]="currentWorldName"
+    (chapterClick)="onBoardChapterClick($event)"
+    (groupClick)="onBoardGroupClick($event)">
+  </app-rw-board>
 
-  <!-- ── BOARD (collapsible) ────────────────────────────────────────────────── -->
-  <section class="board-section" aria-label="Story Map" (click)="closeMenus()">
+  <app-rw-chapter-menu
+    *ngIf="chapterMenuChapter"
+    [position]="chapterMenu!"
+    [chapter]="chapterMenuChapter"
+    [paperName]="chapterMenuPaperName"
+    [paperCoverUrl]="chapterMenuPaperCoverUrl"
+    [paperColor]="chapterMenuPaperColor"
+    [expanded]="chapterMenuExpanded"
+    [timelineName]="chapterMenuTimelineName"
+    [storylineName]="chapterMenuStorylineName"
+    (close)="closeMenus()"
+    (navigate)="navigate($event)"
+    (openDetails)="openChapterDetails($event)"
+    (toggleExpanded)="chapterMenuExpanded = !chapterMenuExpanded">
+  </app-rw-chapter-menu>
 
-    <!-- Collapsed pill — visible only when board is hidden -->
-    <div class="board-collapsed-bar" *ngIf="boardCollapsed"
-         role="button" tabindex="0"
-         aria-label="Show Story Map"
-         (click)="$event.stopPropagation(); toggleBoard()"
-         (keydown.enter)="$event.stopPropagation(); toggleBoard()"
-         (keydown.space)="$event.preventDefault(); $event.stopPropagation(); toggleBoard()">
-      <mat-icon class="bcb-icon" aria-hidden="true">map</mat-icon>
-      <span class="bcb-label">Story Map</span>
-      <mat-icon class="bcb-arrow" aria-hidden="true">keyboard_arrow_down</mat-icon>
-    </div>
+  <app-rw-group-menu
+    *ngIf="groupMenuItems.length"
+    [position]="groupMenu!"
+    [items]="groupMenuItems"
+    (close)="closeMenus()"
+    (navigate)="navigate($event)"
+    (openDetails)="openChapterDetails($event)">
+  </app-rw-group-menu>
 
-    <!-- Toolbar — hidden when collapsed -->
-    <div class="board-toolbar" *ngIf="!boardCollapsed" role="toolbar" aria-label="Story Map controls">
-      <app-top-panel></app-top-panel>
-      <div class="board-info-wrap" (mouseenter)="boardInfoOpen=true" (mouseleave)="boardInfoOpen=false">
-        <button class="board-toggle board-info-btn"
-                aria-label="How to use the Story Map"
-                [attr.aria-expanded]="boardInfoOpen">
-          <mat-icon aria-hidden="true">info_outline</mat-icon>
-        </button>
-        <div class="board-info-tooltip" role="tooltip" [class.visible]="boardInfoOpen">
-          <p class="bit-title">How to use the Story Map</p>
-          <div class="bit-row"><mat-icon aria-hidden="true">pan_tool</mat-icon><span><strong>Pan</strong> — drag to move around</span></div>
-          <div class="bit-row"><mat-icon aria-hidden="true">zoom_in</mat-icon><span><strong>Zoom</strong> — <kbd>Ctrl</kbd> + scroll, or pinch on touch</span></div>
-          <div class="bit-row"><mat-icon aria-hidden="true">touch_app</mat-icon><span><strong>Chapter</strong> — click a card to see details</span></div>
-          <div class="bit-row"><mat-icon aria-hidden="true">folder_open</mat-icon><span><strong>Group</strong> — click a badge to expand chapters</span></div>
-          <div class="bit-row"><mat-icon aria-hidden="true">star</mat-icon><span><strong>Badges</strong> — ★ favorite &middot; pill = notes count</span></div>
-          <div class="bit-row"><mat-icon aria-hidden="true">unfold_less</mat-icon><span><strong>Collapse</strong> — hide storyline rows</span></div>
-        </div>
-      </div>
-      <button class="board-toggle" (click)="$event.stopPropagation(); toggleStorylinesCollapse()"
-              [class.active]="boardStorylinesCollapsed"
-              [attr.aria-label]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'"
-              [attr.aria-pressed]="boardStorylinesCollapsed"
-              [matTooltip]="boardStorylinesCollapsed ? 'Expand storylines' : 'Collapse storylines'">
-        <mat-icon aria-hidden="true">{{ boardStorylinesCollapsed ? 'unfold_more' : 'unfold_less' }}</mat-icon>
-      </button>
-      <button class="board-toggle" (click)="$event.stopPropagation(); toggleBoard()"
-              aria-label="Hide Story Map" matTooltip="Hide board">
-        <mat-icon aria-hidden="true">expand_less</mat-icon>
-      </button>
-    </div>
+  <app-rw-favorites
+    [favoriteItems]="favoriteItems"
+    [favoritesMeta]="favoritesMeta"
+    [favoritesLoading]="favoritesLoading"
+    [favoritesLoaded]="favoritesLoaded"
+    [favSearch]="favSearch"
+    [favBookFilter]="favBookFilter"
+    [paperCardList]="paperCardList"
+    (favSearchChange)="favSearch = $event; reloadFavorites()"
+    (favBookFilterChange)="favBookFilter = $event; reloadFavorites()"
+    (loadMore)="loadMoreFavorites()"
+    (navigate)="navigate($event)"
+    (resetSearch)="resetFavSearch()">
+  </app-rw-favorites>
 
-    <!-- Board loading overlay — shown until Phase 2 data arrives -->
-    <div class="board-loading-overlay" *ngIf="!boardCollapsed && !phaseBoardLoaded" aria-live="polite" aria-label="Loading Story Map">
-      <div class="board-loading-spinner">
-        <mat-icon class="spin-icon" aria-hidden="true">sync</mat-icon>
-        <span>Loading Story Map…</span>
-      </div>
-    </div>
+  <app-rw-books
+    [filteredCards]="filteredCards"
+    [booksStatusFilter]="booksStatusFilter"
+    [searchQuery]="searchQuery"
+    (statusFilterChange)="booksStatusFilter = $event"
+    (searchQueryChange)="searchQuery = $event">
+  </app-rw-books>
 
-    <!-- iframe only rendered after Phase 2 data is ready -->
-    <div class="board-frame-wrap"
-         [class.board-frame-wrap--hidden]="boardCollapsed && !boardFullscreen"
-         [class.board-frame-wrap--fullscreen]="boardFullscreen">
-      <iframe *ngIf="phaseBoardLoaded" #boardFrame id="board-frame" src="assets/board/index.html"
-              title="Interactive Story Map board"
-              [attr.aria-hidden]="(boardCollapsed && !boardFullscreen) ? 'true' : null"
-              [attr.tabindex]="(boardCollapsed && !boardFullscreen) ? -1 : 0">
-      </iframe>
-    </div>
-
-  </section>
-
-  <!-- ── CHAPTER CONTEXT MENU ───────────────────────────────────────────────── -->
-  <ng-container *ngIf="chapterMenu && chapterMenuChapter() as ch">
-    <div class="board-menu-backdrop" (click)="closeMenus()" aria-hidden="true"></div>
-    <div class="board-ctx-menu board-ctx-menu--chapter"
-         role="dialog" aria-modal="true"
-         [attr.aria-label]="'Chapter details: ' + ch.title"
-         [class.is-expanded]="chapterMenuExpanded"
-         [style.left.px]="chapterMenu.x"
-         [style.top.px]="chapterMenu.y">
-
-      <div class="bcm-body">
-
-        <!-- Header: cover + identity + close -->
-        <div class="bcm-book-header">
-          <div class="bcm-cover-wrap" [class.bcm-cover-wrap--lg]="chapterMenuExpanded" aria-hidden="true">
-            <img *ngIf="chapterMenuPaper()?.cover_url" class="bcm-cover-img"
-                 loading="lazy" decoding="async"
-                 [src]="chapterMenuPaper()!.cover_url" [alt]="chapterMenuPaper()!.name + ' cover'" />
-            <div *ngIf="!chapterMenuPaper()?.cover_url" class="bcm-cover-fallback"
-                 [style.background]="chapterMenuPaper()?.color || '#7c6af5'">
-              <mat-icon aria-hidden="true">auto_stories</mat-icon>
-            </div>
-          </div>
-          <div class="bcm-book-meta">
-            <span class="bcm-book-name">{{ chapterMenuPaper()?.name }}</span>
-            <span class="bcm-chapter-label">
-              Ch.{{ ch.order }} — {{ ch.title }}
-              <mat-icon class="bcm-fav-icon" *ngIf="ch.favorite" aria-label="Favorite chapter">star</mat-icon>
-            </span>
-            <p class="bcm-book-desc" *ngIf="ch.description && !chapterMenuExpanded">{{ ch.description }}</p>
-          </div>
-          <button class="bcm-close-btn" (click)="closeMenus()" aria-label="Close chapter details">
-            <mat-icon aria-hidden="true">close</mat-icon>
-          </button>
-        </div>
-
-        <!-- Expanded: description full -->
-        <ng-container *ngIf="chapterMenuExpanded && ch.description">
-          <div class="bcm-divider" aria-hidden="true"></div>
-          <p class="bcm-full-desc">{{ ch.description }}</p>
-        </ng-container>
-
-        <!-- Expanded: meta chips row -->
-        <div class="bcm-chips" *ngIf="chapterMenuExpanded" aria-label="Chapter details">
-          <ng-container *ngIf="chapterMenuTimeline() as tl">
-            <div class="bcm-chip">
-              <mat-icon aria-hidden="true">timeline</mat-icon>
-              <span>{{ tl.name }}</span>
-            </div>
-          </ng-container>
-          <ng-container *ngIf="chapterMenuStoryline() as sl">
-            <div class="bcm-chip">
-              <mat-icon aria-hidden="true">account_tree</mat-icon>
-              <span>{{ sl.name }}</span>
-            </div>
-          </ng-container>
-          <div class="bcm-chip" *ngIf="ch.pageCount">
-            <mat-icon aria-hidden="true">description</mat-icon>
-            <span>{{ ch.pageCount }} pages</span>
-          </div>
-          <div class="bcm-chip bcm-chip--done" *ngIf="ch.completed">
-            <mat-icon aria-hidden="true">check_circle</mat-icon>
-            <span>Completed</span>
-          </div>
-        </div>
-
-        <!-- Annotations -->
-        <ng-container *ngIf="ch.annotations?.length">
-          <div class="bcm-divider" aria-hidden="true"></div>
-          <div class="bcm-ann-header" aria-label="Highlights and notes">
-            <mat-icon aria-hidden="true">format_quote</mat-icon>
-            Highlights &amp; Notes
-            <span class="bcm-ann-count" aria-hidden="true">{{ ch.annotations!.length }}</span>
-            <span class="sr-only">{{ ch.annotations!.length }} annotations</span>
-            <span class="bcm-ann-fav-count" *ngIf="chapterFavAnnotationsCount(ch) > 0"
-                  aria-hidden="true">
-              <mat-icon aria-hidden="true">star</mat-icon>{{ chapterFavAnnotationsCount(ch) }}
-            </span>
-          </div>
-          <div class="bcm-ann-list" role="list">
-            <div class="bcm-ann-entry" role="listitem"
-                 [class.bcm-ann-entry--fav]="ann.favorite"
-                 *ngFor="let ann of chapterMenuExpanded ? sortedAnnotations(ch) : ch.annotations!.slice(0, 3); trackBy: trackById">
-              <div class="bcm-ann-meta" *ngIf="ann.favorite">
-                <mat-icon class="bcm-ann-star" aria-hidden="true">star</mat-icon>
-                <span class="bcm-ann-saved">Saved</span>
-              </div>
-              <blockquote class="bcm-ann-passage" [class.full]="chapterMenuExpanded" *ngIf="ann.span_text">
-                "{{ ann.span_text }}"
-              </blockquote>
-              <p class="bcm-ann-note" [class.full]="chapterMenuExpanded" *ngIf="ann.note">{{ ann.note }}</p>
-            </div>
-            <p class="bcm-ann-more" *ngIf="!chapterMenuExpanded && ch.annotations!.length > 3">
-              +{{ ch.annotations!.length - 3 }} more — click Details
-            </p>
-          </div>
-        </ng-container>
-
-      </div><!-- /bcm-body -->
-
-      <!-- Sticky footer -->
-      <div class="bcm-footer">
-        <div class="bcm-divider" aria-hidden="true"></div>
-        <div class="bcm-actions-row">
-          <button class="bcm-action-btn bcm-action-btn--primary"
-                  [attr.aria-label]="'Read chapter: ' + ch.title"
-                  (click)="router.navigate(['/read/book', ch.paper_id, 'chapter', ch.order]); closeMenus()">
-            <mat-icon aria-hidden="true">menu_book</mat-icon> Read
-          </button>
-          <button class="bcm-action-btn"
-                  [attr.aria-label]="chapterMenuExpanded ? 'Show less' : 'Show more details'"
-                  [attr.aria-expanded]="chapterMenuExpanded"
-                  (click)="toggleChapterMenuExpanded()">
-            <mat-icon aria-hidden="true">{{ chapterMenuExpanded ? 'unfold_less' : 'unfold_more' }}</mat-icon>
-            {{ chapterMenuExpanded ? 'Less' : 'Details' }}
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </ng-container>
-
-  <!-- ── GROUP CONTEXT MENU ─────────────────────────────────────────────────── -->
-  <ng-container *ngIf="groupMenu && groupMenuChapters().length">
-    <div class="board-menu-backdrop" (click)="closeMenus()" aria-hidden="true"></div>
-    <div class="board-ctx-menu board-ctx-menu--group"
-         role="dialog" aria-modal="true" aria-label="Group chapters"
-         [style.left.px]="groupMenu.x"
-         [style.top.px]="groupMenu.y">
-
-      <ng-container *ngIf="groupMenuChapters()[0] as first">
-        <div class="bcm-book-header">
-          <div class="bcm-cover-wrap" aria-hidden="true">
-            <img *ngIf="first.paper.cover_url" class="bcm-cover-img"
-                 loading="lazy" decoding="async"
-                 [src]="first.paper.cover_url" [alt]="first.paper.name + ' cover'" />
-            <div *ngIf="!first.paper.cover_url" class="bcm-cover-fallback"
-                 [style.background]="first.paper.color || '#7c6af5'" aria-hidden="true">
-              <mat-icon aria-hidden="true">auto_stories</mat-icon>
-            </div>
-          </div>
-          <div class="bcm-book-meta">
-            <span class="bcm-book-name">{{ first.paper.name }}</span>
-            <span class="bcm-book-count">{{ groupMenuChapters().length }} chapters</span>
-            <p class="bcm-book-desc" *ngIf="first.paper.description">{{ first.paper.description }}</p>
-          </div>
-        </div>
-        <div class="bcm-divider" aria-hidden="true"></div>
-      </ng-container>
-
-      <div class="bcm-chapter-row" role="list"
-           *ngFor="let item of groupMenuChapters(); trackBy: trackByChapterId">
-        <div class="bcm-dot" aria-hidden="true" [style.background]="item.paper.color || '#7c6af5'"></div>
-        <div class="bcm-row-info">
-          <span class="bcm-title">Ch.{{ item.chapter.order }} — {{ item.chapter.title }}</span>
-          <span class="bcm-ch-desc" *ngIf="item.chapter.description">{{ item.chapter.description }}</span>
-        </div>
-        <div class="bcm-row-actions">
-          <button class="bcm-row-btn"
-                  [attr.aria-label]="'Read chapter: ' + item.chapter.title"
-                  matTooltip="Read chapter"
-                  (click)="router.navigate(['/read/book', item.chapter.paper_id, 'chapter', item.chapter.order]); closeMenus()">
-            <mat-icon aria-hidden="true">menu_book</mat-icon>
-          </button>
-          <button class="bcm-row-btn"
-                  [attr.aria-label]="'Details for: ' + item.chapter.title"
-                  matTooltip="Chapter details"
-                  (click)="openChapterDetails(item.chapter.id); closeMenus()">
-            <mat-icon aria-hidden="true">info_outline</mat-icon>
-          </button>
-        </div>
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- ── FAVORITE CHAPTERS ─────────────────────────────────────────────────── -->
-  <section class="fav-section" aria-labelledby="fav-heading"
-           *ngIf="favoritesLoaded || favoritesLoading">
-
-    <!-- Loading skeleton -->
-    <div class="fav-loading" *ngIf="favoritesLoading && !favoriteItems.length" aria-live="polite">
-      <div class="skel skel--title" style="width:180px; margin-bottom:16px;"></div>
-      <div class="fav-scroll">
-        <div class="fav-chip fav-chip--skel" *ngFor="let s of [1,2,3,4,5]">
-          <div class="skel" style="width:100%;height:100%;border-radius:12px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <ng-container *ngIf="favoritesLoaded">
-      <!-- No favorites at all -->
-      <ng-container *ngIf="!favoriteItems.length && !favIsFiltering">
-        <!-- empty — hide section -->
-      </ng-container>
-
-      <ng-container *ngIf="favoriteItems.length || favIsFiltering">
-        <div class="fav-header">
-          <h2 class="section-title" id="fav-heading">
-            <mat-icon aria-hidden="true">star</mat-icon>
-            Favorites
-            <span class="section-count" aria-hidden="true" *ngIf="favoritesMeta">{{ formatCappedTotal(favoritesMeta.total) }}</span>
-          </h2>
-
-          <div class="fav-controls" *ngIf="(favoritesMeta?.total ?? 0) > 8 || favIsFiltering">
-            <div class="global-search fav-search">
-              <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
-              <input class="gs-input" type="search"
-                     aria-label="Search favorites"
-                     placeholder="Search favorites…"
-                     [(ngModel)]="favSearch"
-                     (ngModelChange)="reloadFavorites()" />
-              <button class="gs-clear" *ngIf="favSearch"
-                      aria-label="Clear search"
-                      (click)="favSearch = ''; reloadFavorites()">
-                <mat-icon aria-hidden="true">close</mat-icon>
-              </button>
-            </div>
-            <select class="nf-select" [(ngModel)]="favBookFilter" (ngModelChange)="reloadFavorites()"
-                    aria-label="Filter favorites by book">
-              <option value="all">All books</option>
-              <option *ngFor="let card of paperCardList; trackBy: trackByPaperId" [value]="card.paper.id">{{ card.paper.name }}</option>
-            </select>
-            <button class="gs-clear" *ngIf="favIsFiltering"
-                    aria-label="Clear all filters"
-                    (click)="resetFavSearch()" matTooltip="Clear filters">
-              <mat-icon aria-hidden="true">close</mat-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- Chips: ≤ 8 and not filtering -->
-        <div class="fav-scroll" role="list"
-             *ngIf="!favIsFiltering && (favoritesMeta?.total ?? 0) <= 8">
-          <div class="fav-chip" role="listitem" tabindex="0"
-               [attr.aria-label]="item.paper_name + ' chapter ' + item.chapter_order + ': ' + item.chapter_title"
-               *ngFor="let item of favoriteItems; trackBy: trackByFavItem"
-               (click)="router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])"
-               (keydown.enter)="router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])"
-               (keydown.space)="$event.preventDefault(); router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])">
-            <div class="fav-chip-bar" aria-hidden="true" [style.background]="item.paper_color || '#7c6af5'"></div>
-            <div class="fav-chip-body">
-              <span class="fav-chip-book">{{ item.paper_name }}</span>
-              <span class="fav-chip-title">Ch.{{ item.chapter_order }} · {{ item.chapter_title }}</span>
-            </div>
-            <mat-icon class="fav-chip-go" aria-hidden="true">arrow_forward_ios</mat-icon>
-          </div>
-        </div>
-
-        <!-- Grid: > 8 or filtering -->
-        <ng-container *ngIf="favIsFiltering || (favoritesMeta?.total ?? 0) > 8">
-          <div class="section-empty" role="status" *ngIf="!favoriteItems.length">
-            <mat-icon aria-hidden="true">search_off</mat-icon>
-            <p>No favorites match your search</p>
-          </div>
-
-          <div class="fav-grid" role="list" *ngIf="favoriteItems.length">
-            <div class="fav-grid-card" role="listitem" tabindex="0"
-                 [attr.aria-label]="item.paper_name + ' chapter ' + item.chapter_order + ': ' + item.chapter_title"
-                 *ngFor="let item of favoriteItems; trackBy: trackByFavItem"
-                 (click)="router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])"
-                 (keydown.enter)="router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])"
-                 (keydown.space)="$event.preventDefault(); router.navigate(['/read/book', item.paper_id, 'chapter', item.chapter_order])">
-              <div class="fgc-accent" aria-hidden="true" [style.background]="item.paper_color || '#7c6af5'"></div>
-              <div class="fgc-body">
-                <span class="fgc-book">{{ item.paper_name }}</span>
-                <span class="fgc-title">Ch.{{ item.chapter_order }} · {{ item.chapter_title }}</span>
-                <span class="fgc-notes" *ngIf="item.annotationsCount > 0">
-                  <mat-icon aria-hidden="true">format_quote</mat-icon> {{ item.annotationsCount }}
-                </span>
-              </div>
-              <mat-icon class="fgc-go" aria-hidden="true">arrow_forward_ios</mat-icon>
-            </div>
-          </div>
-
-          <!-- Load more -->
-          <div class="load-more-wrap" *ngIf="favoritesMeta?.has_next">
-            <button class="load-more-btn" (click)="loadMoreFavorites()" [disabled]="favoritesLoading">
-              <mat-icon aria-hidden="true">expand_more</mat-icon>
-              {{ favoritesLoading ? 'Loading…' : 'Load more' }}
-            </button>
-          </div>
-        </ng-container>
-      </ng-container>
-    </ng-container>
-  </section>
-
-  <!-- ── BOOKS ─────────────────────────────────────────────────────────────── -->
-  <section class="books-section" aria-labelledby="books-heading">
-    <div class="bs-header">
-      <h2 class="section-title" id="books-heading">
-        <mat-icon aria-hidden="true">auto_stories</mat-icon>
-        Books
-        <span class="section-count" aria-hidden="true">{{ filteredCards.length }}</span>
-      </h2>
-      <div class="bs-controls">
-        <div class="bs-pills" role="group" aria-label="Filter by reading status">
-          <button class="bs-pill" [class.active]="booksStatusFilter === 'all'"
-                  [attr.aria-pressed]="booksStatusFilter === 'all'"
-                  (click)="booksStatusFilter = 'all'">All</button>
-          <button class="bs-pill" [class.active]="booksStatusFilter === 'in_progress'"
-                  [attr.aria-pressed]="booksStatusFilter === 'in_progress'"
-                  (click)="booksStatusFilter = 'in_progress'">
-            <mat-icon aria-hidden="true">schedule</mat-icon> Reading
-          </button>
-          <button class="bs-pill" [class.active]="booksStatusFilter === 'completed'"
-                  [attr.aria-pressed]="booksStatusFilter === 'completed'"
-                  (click)="booksStatusFilter = 'completed'">
-            <mat-icon aria-hidden="true">check_circle</mat-icon> Finished
-          </button>
-        </div>
-        <div class="global-search">
-          <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
-          <input class="gs-input" type="search"
-                 aria-label="Search books, chapters or notes"
-                 placeholder="Search books, chapters or notes…"
-                 [(ngModel)]="searchQuery" />
-          <button class="gs-clear" *ngIf="searchQuery"
-                  aria-label="Clear search"
-                  (click)="searchQuery = ''">
-            <mat-icon aria-hidden="true">close</mat-icon>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="bs-grid" role="list" *ngIf="filteredCards.length; else noResults">
-      <app-paper-card *ngFor="let card of filteredCards; trackBy: trackByPaperId" [paperCard]="card"></app-paper-card>
-    </div>
-    <ng-template #noResults>
-      <div class="section-empty" role="status">
-        <mat-icon aria-hidden="true">search_off</mat-icon>
-        <p>No books match the current filter</p>
-      </div>
-    </ng-template>
-  </section>
-
-  <!-- ── HIGHLIGHTS & NOTES ─────────────────────────────────────────────────── -->
-  <section class="notes-section" aria-labelledby="notes-heading"
-           *ngIf="detailsLoaded || detailsLoading">
-
-    <!-- Loading skeleton -->
-    <div class="notes-loading" *ngIf="detailsLoading && !detailsItems.length" aria-live="polite">
-      <div class="skel skel--title" style="width:220px; margin-bottom:16px;"></div>
-      <div class="journal-entry" *ngFor="let s of [1,2,3]">
-        <div class="skel skel--line" style="width:60%;"></div>
-        <div class="skel skel--line" style="width:85%; margin-top:8px;"></div>
-        <div class="skel skel--line skel--short" style="margin-top:8px;"></div>
-      </div>
-    </div>
-
-    <ng-container *ngIf="detailsLoaded">
-      <div class="notes-toolbar">
-        <div class="notes-toolbar-left">
-          <h2 class="section-title" id="notes-heading">
-            <mat-icon aria-hidden="true">format_quote</mat-icon>
-            Highlights &amp; Notes
-            <span class="section-count" aria-hidden="true" *ngIf="detailsMeta">{{ formatCappedTotal(detailsMeta.total) }}</span>
-          </h2>
-        </div>
-        <div class="notes-toolbar-right">
-          <div class="global-search">
-            <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
-            <input class="gs-input" type="search"
-                   aria-label="Search highlights or notes"
-                   placeholder="Search highlights or notes…"
-                   [(ngModel)]="annotationQuery"
-                   (ngModelChange)="reloadDetails()" />
-            <button class="gs-clear" *ngIf="annotationQuery"
-                    aria-label="Clear search"
-                    (click)="annotationQuery = ''; reloadDetails()">
-              <mat-icon aria-hidden="true">close</mat-icon>
-            </button>
-          </div>
-
-          <div class="notes-filters" role="group" aria-label="Note filters">
-            <button class="nf-pill" [class.active]="annotationFilter === 'all'"
-                    [attr.aria-pressed]="annotationFilter === 'all'"
-                    (click)="annotationFilter = 'all'; reloadDetails()">All</button>
-            <button class="nf-pill nf-pill--star" [class.active]="annotationFilter === 'favorites'"
-                    [attr.aria-pressed]="annotationFilter === 'favorites'"
-                    (click)="annotationFilter = 'favorites'; reloadDetails()">
-              <mat-icon aria-hidden="true">star</mat-icon> Saved
-            </button>
-
-            <select class="nf-select" [(ngModel)]="annotationBook" (ngModelChange)="reloadDetails()"
-                    aria-label="Filter notes by book">
-              <option value="all">All books</option>
-              <option *ngFor="let card of paperCardList; trackBy: trackByPaperId" [value]="card.paper.id">{{ card.paper.name }}</option>
-            </select>
-
-            <select class="nf-select" [(ngModel)]="annotationSort" (ngModelChange)="reloadDetails()"
-                    aria-label="Sort notes">
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="book">By book</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-empty" role="status" *ngIf="!detailsItems.length">
-        <mat-icon aria-hidden="true">search_off</mat-icon>
-        <p>No highlights match the current filter</p>
-      </div>
-
-      <div class="notes-feed" *ngIf="detailsItems.length">
-        <article class="journal-entry"
-                 *ngFor="let ann of detailsItems; trackBy: trackByDetailItem"
-                 [attr.aria-label]="ann.paper_name + ' — chapter ' + ann.chapter_order + ': ' + ann.chapter_title">
-
-          <div class="je-source">
-            <div class="je-source-dot" aria-hidden="true" [style.background]="ann.paper_color || '#7c6af5'"></div>
-            <span class="je-book">{{ ann.paper_name }}</span>
-            <span class="je-sep" aria-hidden="true">·</span>
-            <span class="je-ch">Ch.{{ ann.chapter_order }} — {{ ann.chapter_title }}</span>
-            <span class="je-spacer" aria-hidden="true"></span>
-            <mat-icon class="je-fav-icon" *ngIf="ann.annotation.favorite" aria-label="Saved highlight">star</mat-icon>
-            <time class="je-date" *ngIf="ann.annotation.created_at"
-                  [attr.datetime]="ann.annotation.created_at">
-              {{ ann.annotation.created_at | date:'MMM d, y' }}
-            </time>
-          </div>
-
-          <blockquote class="je-passage" *ngIf="ann.annotation.text">
-            <span class="je-quote-mark" aria-hidden="true">"</span>{{ ann.annotation.text }}<span class="je-quote-mark" aria-hidden="true">"</span>
-          </blockquote>
-
-          <p class="je-note" *ngIf="ann.annotation.note">{{ ann.annotation.note }}</p>
-
-          <footer class="je-footer">
-            <button class="je-read-btn"
-                    [attr.aria-label]="'Read chapter ' + ann.chapter_order + ' of ' + ann.paper_name"
-                    (click)="router.navigate(['/read/book', ann.paper_id, 'chapter', ann.chapter_order])">
-              <mat-icon aria-hidden="true">menu_book</mat-icon> Read chapter
-            </button>
-          </footer>
-        </article>
-      </div>
-
-      <!-- Load more -->
-      <div class="load-more-wrap" *ngIf="detailsMeta?.has_next">
-        <button class="load-more-btn" (click)="loadMoreDetails()" [disabled]="detailsLoading">
-          <mat-icon aria-hidden="true">expand_more</mat-icon>
-          {{ detailsLoading ? 'Loading…' : 'Load more' }}
-        </button>
-      </div>
-
-      <p class="ann-total-info" *ngIf="detailsMeta && !detailsMeta.has_next && detailsItems.length > 0" aria-live="polite">
-        Showing all {{ formatCappedTotal(detailsMeta.total) }} {{ detailsMeta.total === 1 ? 'highlight' : 'highlights' }}
-      </p>
-    </ng-container>
-  </section>
+  <app-rw-notes
+    [detailsItems]="detailsItems"
+    [detailsMeta]="detailsMeta"
+    [detailsLoading]="detailsLoading"
+    [detailsLoaded]="detailsLoaded"
+    [annotationQuery]="annotationQuery"
+    [annotationFilter]="annotationFilter"
+    [annotationBook]="annotationBook"
+    [annotationSort]="annotationSort"
+    [paperCardList]="paperCardList"
+    (annotationQueryChange)="annotationQuery = $event; reloadDetails()"
+    (annotationFilterChange)="annotationFilter = $event; reloadDetails()"
+    (annotationBookChange)="annotationBook = $event; reloadDetails()"
+    (annotationSortChange)="annotationSort = $event; reloadDetails()"
+    (loadMore)="loadMoreDetails()"
+    (navigate)="navigate($event)">
+  </app-rw-notes>
 
   <app-footer></app-footer>
 
-  <!-- ── SCROLL TO TOP ──────────────────────────────────────────────────────── -->
   <button class="scroll-top-fab" *ngIf="showScrollTop"
           (click)="scrollToTop()"
           aria-label="Back to top"

@@ -24,11 +24,8 @@ import { PaperCardComponent } from './paper-card/paper-card.component';
 import { PaperPageComponent } from './paper-page/paper-page.component';
 import { UniversePageComponent } from './universe-page/universe-page.component';
 import { HeaderComponent } from '../../shared/header/header.component';
-import { AdsComponent } from '../../shared/ads/ads.component';
-import { BookDetailComponent } from './book-detail/book-detail.component';
 import { BookInfoComponent } from './book-info/book-info.component';
 import { BookMetadataComponent } from './book-metadata/book-metadata.component';
-import { BookTagsComponent } from './book-tags/book-tags.component';
 import { BooksByAuthorComponent } from './books-by-author/books-by-author.component';
 import { RecommendedBooksComponent } from './recommended-books/recommended-books.component';
 import { StoreWrapperComponent } from './store-wrapper/store-wrapper.component';
@@ -66,10 +63,8 @@ const routes: Routes = [
     TopPanelComponent,
     BodyStoreComponent,
     PaperCardComponent,
-    BookDetailComponent,
     StoreWrapperComponent,
     BookInfoComponent,
-    BookTagsComponent,
     BookMetadataComponent,
     BooksByAuthorComponent,
     RecommendedBooksComponent,
@@ -93,7 +88,6 @@ const routes: Routes = [
     UniverseCardComponent,
     MatTooltipModule,
     MatRadioModule, // ✅ Adicionado aqui
-    AdsComponent,
     HeaderComponent,
     TruncatePipe,
     CloudinaryPipe,

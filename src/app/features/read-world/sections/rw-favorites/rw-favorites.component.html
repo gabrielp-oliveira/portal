@@ -1,0 +1,100 @@
+<section class="fav-section" aria-labelledby="fav-heading"
+         *ngIf="favoritesLoaded || favoritesLoading">
+
+  <!-- Loading skeleton -->
+  <div class="fav-loading" *ngIf="favoritesLoading && !favoriteItems.length" aria-live="polite">
+    <div class="skel skel--title" style="width:180px; margin-bottom:16px;"></div>
+    <div class="fav-scroll">
+      <div class="fav-chip fav-chip--skel" *ngFor="let s of [1,2,3,4,5]">
+        <div class="skel" style="width:100%;height:100%;border-radius:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="favoritesLoaded && (favoriteItems.length || favIsFiltering)">
+    <div class="fav-header">
+      <h2 class="section-title" id="fav-heading">
+        <mat-icon aria-hidden="true">star</mat-icon>
+        Favorites
+        <span class="section-count" aria-hidden="true" *ngIf="favoritesMeta">{{ formatCappedTotal(favoritesMeta.total) }}</span>
+      </h2>
+
+      <div class="fav-controls" *ngIf="(favoritesMeta?.total ?? 0) > 8 || favIsFiltering">
+        <div class="global-search fav-search">
+          <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
+          <input class="gs-input" type="search"
+                 aria-label="Search favorites"
+                 placeholder="Search favorites…"
+                 [ngModel]="favSearch"
+                 (ngModelChange)="favSearchChange.emit($event)" />
+          <button class="gs-clear" *ngIf="favSearch"
+                  aria-label="Clear search"
+                  (click)="favSearchChange.emit('')">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </div>
+        <select class="nf-select"
+                [ngModel]="favBookFilter"
+                (ngModelChange)="favBookFilterChange.emit($event)"
+                aria-label="Filter favorites by book">
+          <option value="all">All books</option>
+          <option *ngFor="let card of paperCardList; trackBy: trackByPaperId" [value]="card.paper.id">{{ card.paper.name }}</option>
+        </select>
+        <button class="gs-clear" *ngIf="favIsFiltering"
+                aria-label="Clear all filters"
+                (click)="resetSearch.emit()" matTooltip="Clear filters">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chips: ≤ 8 and not filtering -->
+    <div class="fav-scroll" role="list"
+         *ngIf="!favIsFiltering && (favoritesMeta?.total ?? 0) <= 8">
+      <div class="fav-chip" role="listitem" tabindex="0"
+           [attr.aria-label]="item.paper_name + ' chapter ' + item.chapter_order + ': ' + item.chapter_title"
+           *ngFor="let item of favoriteItems; trackBy: trackByFavItem"
+           (click)="navigate.emit({ paperId: item.paper_id, order: item.chapter_order })"
+           (keydown.enter)="navigate.emit({ paperId: item.paper_id, order: item.chapter_order })"
+           (keydown.space)="$event.preventDefault(); navigate.emit({ paperId: item.paper_id, order: item.chapter_order })">
+        <div class="fav-chip-bar" aria-hidden="true" [style.background]="item.paper_color || '#7c6af5'"></div>
+        <div class="fav-chip-body">
+          <span class="fav-chip-book">{{ item.paper_name }}</span>
+          <span class="fav-chip-title">Ch.{{ item.chapter_order }} · {{ item.chapter_title }}</span>
+        </div>
+        <mat-icon class="fav-chip-go" aria-hidden="true">arrow_forward_ios</mat-icon>
+      </div>
+    </div>
+
+    <!-- Grid: > 8 or filtering -->
+    <ng-container *ngIf="favIsFiltering || (favoritesMeta?.total ?? 0) > 8">
+      <div class="section-empty" role="status" *ngIf="!favoriteItems.length">
+        <mat-icon aria-hidden="true">search_off</mat-icon>
+        <p>No favorites match your search</p>
+      </div>
+
+      <div class="fav-grid" role="list" *ngIf="favoriteItems.length">
+        <div class="fav-grid-card" role="listitem" tabindex="0"
+             [attr.aria-label]="item.paper_name + ' chapter ' + item.chapter_order + ': ' + item.chapter_title"
+             *ngFor="let item of favoriteItems; trackBy: trackByFavItem"
+             (click)="navigate.emit({ paperId: item.paper_id, order: item.chapter_order })"
+             (keydown.enter)="navigate.emit({ paperId: item.paper_id, order: item.chapter_order })"
+             (keydown.space)="$event.preventDefault(); navigate.emit({ paperId: item.paper_id, order: item.chapter_order })">
+          <div class="fgc-accent" aria-hidden="true" [style.background]="item.paper_color || '#7c6af5'"></div>
+          <div class="fgc-body">
+            <span class="fgc-book">{{ item.paper_name }}</span>
+            <span class="fgc-title">Ch.{{ item.chapter_order }} · {{ item.chapter_title }}</span>
+          </div>
+          <mat-icon class="fgc-go" aria-hidden="true">arrow_forward_ios</mat-icon>
+        </div>
+      </div>
+
+      <div class="load-more-wrap" *ngIf="favoritesMeta?.has_next">
+        <button class="load-more-btn" (click)="loadMore.emit()" [disabled]="favoritesLoading">
+          <mat-icon aria-hidden="true">expand_more</mat-icon>
+          {{ favoritesLoading ? 'Loading…' : 'Load more' }}
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
+</section>

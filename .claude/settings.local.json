@@ -9,7 +9,8 @@
       "Bash(powershell -Command \"robocopy src\\\\app\\\\modules src\\\\app\\\\features /E /NFL /NDL /NJH /NJS /NC /NS\")",
       "Bash(npx ng build --configuration development)",
       "Bash(npx tsc --noEmit)",
-      "Bash(\"/c/Program Files/nodejs/node.exe\" \"./node_modules/@angular/cli/bin/ng.js\" build)"
+      "Bash(\"/c/Program Files/nodejs/node.exe\" \"./node_modules/@angular/cli/bin/ng.js\" build)",
+      "Bash(npm uninstall @kolkov/angular-editor @fortawesome/angular-fontawesome @fortawesome/free-solid-svg-icons moment @types/lodash)"
     ]
   }
 }

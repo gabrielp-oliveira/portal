@@ -1,4 +1,7 @@
 import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../core/api.service';
 import { WorldDataService } from '../../dashboard/world-data.service';
@@ -9,10 +12,11 @@ import { UtilsService } from '../../../utils.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'app-top-panel',
   templateUrl: './top-panel.component.html',
-  styleUrls: ['./top-panel.component.scss']
+  styleUrls: ['./top-panel.component.scss'],
+  imports: [CommonModule, MatIconModule, MatTooltipModule],
 })
 export class TopPanelComponent implements OnInit {
   @Input() world!: world;

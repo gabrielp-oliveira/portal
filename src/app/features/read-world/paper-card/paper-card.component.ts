@@ -115,8 +115,6 @@ export class PaperCardComponent implements OnInit {
   }
 
   toggleExpand() {
-    console.log(this.theme)
-    console.log(this.isDarkMode)
     this.expanded = !this.expanded;
   }
 

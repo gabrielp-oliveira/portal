@@ -1,4 +1,5 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { WorldDataService } from '../../../dashboard/world-data.service';
 import {
@@ -17,6 +18,8 @@ import { ApiService } from '../../../../core/api.service';
   styleUrls: ['./chapter-details.component.scss']
 })
 export class ChapterDetailsComponent {
+  private destroyRef = inject(DestroyRef);
+
   isDarkMode: boolean = false;
 
   chapter!: Chapter;
@@ -35,7 +38,8 @@ export class ChapterDetailsComponent {
     private api: ApiService,
     @Inject(MAT_DIALOG_DATA) public data: chapterDetailsModal | string
   ) {
-    this.wd.settings$.subscribe((ss) => (this.isDarkMode = ss.theme));
+    this.wd.settings$.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((ss) => (this.isDarkMode = !ss.theme));
 
     if (typeof data === 'string') {
       // Carregar detalhes via API se for apenas o ID do capítulo
@@ -122,11 +126,11 @@ export class ChapterDetailsComponent {
       this.paper = data.paper;
       this.link = data.link;
 
-      this.wd.timelines$.subscribe((tl) => {
+      this.wd.timelines$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((tl) => {
         this.timeline = tl.find((t) => t.id === this.chapter.timeline_id)!;
       });
 
-      this.wd.storylines$.subscribe((st) => {
+      this.wd.storylines$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((st) => {
         this.storyline = st.find((s) => s.id === this.chapter.storyline_id)!;
       });
     }

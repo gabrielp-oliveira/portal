@@ -1,0 +1,80 @@
+<!-- Hero skeleton while Phase 1 loads -->
+<header class="rw-hero rw-hero--skeleton" aria-hidden="true" *ngIf="!phaseHeroLoaded">
+  <div class="rw-hero-overlay"></div>
+  <div class="rw-hero-content">
+    <div class="rw-hero-left">
+      <div class="skel skel--title"></div>
+      <div class="skel skel--line"></div>
+      <div class="skel skel--line skel--short"></div>
+    </div>
+  </div>
+</header>
+
+<header class="rw-hero" aria-label="World overview" *ngIf="phaseHeroLoaded && heroData">
+  <img class="rw-hero-bg" aria-hidden="true" *ngIf="backdropCover"
+       [src]="backdropCover | cloudinary:900:400"
+       fetchpriority="high" loading="eager" decoding="async" alt="">
+  <div class="rw-hero-overlay" aria-hidden="true"></div>
+
+  <div class="rw-hero-content">
+    <div class="rw-hero-left">
+
+      <h1 class="rw-world-name">{{ heroData.name }}</h1>
+
+      <p class="rw-authors" *ngIf="uniqueAuthors.length">
+        <mat-icon aria-hidden="true">person</mat-icon>
+        <span>{{ uniqueAuthors.join(' · ') }}</span>
+      </p>
+
+      <p class="rw-world-desc" *ngIf="heroData.description">{{ heroData.description }}</p>
+
+      <dl class="rw-hero-stats" aria-label="Reading statistics">
+        <div class="rw-stat">
+          <dt class="rw-stat-key">Books</dt>
+          <dd class="rw-stat-val">{{ paperCardList.length }}</dd>
+        </div>
+        <div class="rw-stat-divider" aria-hidden="true"></div>
+        <div class="rw-stat">
+          <dt class="rw-stat-key">Finished</dt>
+          <dd class="rw-stat-val">{{ completedBooks }}</dd>
+        </div>
+        <div class="rw-stat-divider" aria-hidden="true"></div>
+        <div class="rw-stat">
+          <dt class="rw-stat-key">Favorites</dt>
+          <dd class="rw-stat-val">{{ totalFavorites }}</dd>
+        </div>
+        <div class="rw-stat-divider" aria-hidden="true"></div>
+        <div class="rw-stat">
+          <dt class="rw-stat-key">Notes</dt>
+          <dd class="rw-stat-val">{{ totalAnnotations }}</dd>
+        </div>
+      </dl>
+
+      <div class="rw-progress-wrap" *ngIf="totalChapters > 0"
+           role="progressbar"
+           [attr.aria-valuenow]="readingPct"
+           aria-valuemin="0" aria-valuemax="100"
+           [attr.aria-label]="readingPct + '% read — ' + totalCompletedChapters + ' of ' + totalChapters + ' chapters'">
+        <div class="rw-progress-track" aria-hidden="true">
+          <div class="rw-progress-fill" [style.width.%]="readingPct"></div>
+        </div>
+        <span class="rw-progress-label" aria-hidden="true">{{ readingPct }}% · {{ totalCompletedChapters }}/{{ totalChapters }} chapters</span>
+      </div>
+    </div>
+
+    <div class="rw-ring-wrap" aria-hidden="true" *ngIf="totalChapters > 0">
+      <svg class="rw-ring" viewBox="0 0 120 120" focusable="false">
+        <circle class="rw-ring-track" cx="60" cy="60" r="50"/>
+        <circle class="rw-ring-fill" cx="60" cy="60" r="50"
+                [style.stroke-dasharray]="314"
+                [style.stroke-dashoffset]="314 - (314 * readingPct / 100)"/>
+      </svg>
+      <div class="rw-ring-inner">
+        <span class="rw-ring-pct">{{ readingPct }}%</span>
+        <span class="rw-ring-sub">read</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Continue reading banner -->

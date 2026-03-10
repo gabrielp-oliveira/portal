@@ -139,10 +139,7 @@ onPaperVisibilityToggle(paper: paper) {
   }
 
   goToChapter(chapter: Chapter) {
-    const worldName = this.route.snapshot.paramMap.get('worldName');
-    if (worldName) {
-      this.router.navigate([`/reader/${worldName}/${chapter.id}`]);
-    }
+    this.router.navigate(['/read/book', chapter.paper_id, 'chapter', chapter.order]);
   }
 
   truncateText(text: string, maxLength: number = 20): string {
@@ -199,7 +196,6 @@ onPaperVisibilityToggle(paper: paper) {
     }
   }
   toggleTimelinesSort(field: 'name' | 'order') {
-    console.log(field)
     if (this.timelineSortBy === field) {
       this.sortAsc = !this.sortAsc;
     } else {

@@ -1,0 +1,49 @@
+<section class="books-section" aria-labelledby="books-heading">
+  <div class="bs-header">
+    <h2 class="section-title" id="books-heading">
+      <mat-icon aria-hidden="true">auto_stories</mat-icon>
+      Books
+      <span class="section-count" aria-hidden="true">{{ filteredCards.length }}</span>
+    </h2>
+    <div class="bs-controls">
+      <div class="bs-pills" role="group" aria-label="Filter by reading status">
+        <button class="bs-pill" [class.active]="booksStatusFilter === 'all'"
+                [attr.aria-pressed]="booksStatusFilter === 'all'"
+                (click)="statusFilterChange.emit('all')">All</button>
+        <button class="bs-pill" [class.active]="booksStatusFilter === 'in_progress'"
+                [attr.aria-pressed]="booksStatusFilter === 'in_progress'"
+                (click)="statusFilterChange.emit('in_progress')">
+          <mat-icon aria-hidden="true">schedule</mat-icon> Reading
+        </button>
+        <button class="bs-pill" [class.active]="booksStatusFilter === 'completed'"
+                [attr.aria-pressed]="booksStatusFilter === 'completed'"
+                (click)="statusFilterChange.emit('completed')">
+          <mat-icon aria-hidden="true">check_circle</mat-icon> Finished
+        </button>
+      </div>
+      <div class="global-search">
+        <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
+        <input class="gs-input" type="search"
+               aria-label="Search books, chapters or notes"
+               placeholder="Search books, chapters or notes…"
+               [ngModel]="searchQuery"
+               (ngModelChange)="searchQueryChange.emit($event)" />
+        <button class="gs-clear" *ngIf="searchQuery"
+                aria-label="Clear search"
+                (click)="searchQueryChange.emit('')">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-grid" role="list" *ngIf="filteredCards.length; else noResults">
+    <app-paper-card *ngFor="let card of filteredCards; trackBy: trackByPaperId" [paperCard]="card"></app-paper-card>
+  </div>
+  <ng-template #noResults>
+    <div class="section-empty" role="status">
+      <mat-icon aria-hidden="true">search_off</mat-icon>
+      <p>No books match the current filter</p>
+    </div>
+  </ng-template>
+</section>

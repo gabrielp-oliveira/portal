@@ -1,0 +1,116 @@
+<section class="notes-section" aria-labelledby="notes-heading"
+         *ngIf="detailsLoaded || detailsLoading">
+
+  <!-- Loading skeleton -->
+  <div class="notes-loading" *ngIf="detailsLoading && !detailsItems.length" aria-live="polite">
+    <div class="skel skel--title" style="width:220px; margin-bottom:16px;"></div>
+    <div class="journal-entry" *ngFor="let s of [1,2,3]">
+      <div class="skel skel--line" style="width:60%;"></div>
+      <div class="skel skel--line" style="width:85%; margin-top:8px;"></div>
+      <div class="skel skel--line skel--short" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="detailsLoaded">
+    <div class="notes-toolbar">
+      <div class="notes-toolbar-left">
+        <h2 class="section-title" id="notes-heading">
+          <mat-icon aria-hidden="true">format_quote</mat-icon>
+          Highlights &amp; Notes
+          <span class="section-count" aria-hidden="true" *ngIf="detailsMeta">{{ formatCappedTotal(detailsMeta.total) }}</span>
+        </h2>
+      </div>
+      <div class="notes-toolbar-right">
+        <div class="global-search">
+          <mat-icon class="gs-icon" aria-hidden="true">search</mat-icon>
+          <input class="gs-input" type="search"
+                 aria-label="Search highlights or notes"
+                 placeholder="Search highlights or notes…"
+                 [ngModel]="annotationQuery"
+                 (ngModelChange)="annotationQueryChange.emit($event)" />
+          <button class="gs-clear" *ngIf="annotationQuery"
+                  aria-label="Clear search"
+                  (click)="annotationQueryChange.emit('')">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="notes-filters" role="group" aria-label="Note filters">
+          <button class="nf-pill" [class.active]="annotationFilter === 'all'"
+                  [attr.aria-pressed]="annotationFilter === 'all'"
+                  (click)="annotationFilterChange.emit('all')">All</button>
+          <button class="nf-pill nf-pill--star" [class.active]="annotationFilter === 'favorites'"
+                  [attr.aria-pressed]="annotationFilter === 'favorites'"
+                  (click)="annotationFilterChange.emit('favorites')">
+            <mat-icon aria-hidden="true">star</mat-icon> Saved
+          </button>
+          <select class="nf-select"
+                  [ngModel]="annotationBook"
+                  (ngModelChange)="annotationBookChange.emit($event)"
+                  aria-label="Filter notes by book">
+            <option value="all">All books</option>
+            <option *ngFor="let card of paperCardList; trackBy: trackByPaperId" [value]="card.paper.id">{{ card.paper.name }}</option>
+          </select>
+          <select class="nf-select"
+                  [ngModel]="annotationSort"
+                  (ngModelChange)="annotationSortChange.emit($event)"
+                  aria-label="Sort notes">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="book">By book</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-empty" role="status" *ngIf="!detailsItems.length">
+      <mat-icon aria-hidden="true">search_off</mat-icon>
+      <p>No highlights match the current filter</p>
+    </div>
+
+    <div class="notes-feed" *ngIf="detailsItems.length">
+      <article class="journal-entry"
+               *ngFor="let ann of detailsItems; trackBy: trackByDetailItem"
+               [attr.aria-label]="ann.paper_name + ' — chapter ' + ann.chapter_order + ': ' + ann.chapter_title">
+
+        <div class="je-source">
+          <div class="je-source-dot" aria-hidden="true" [style.background]="ann.paper_color || '#7c6af5'"></div>
+          <span class="je-book">{{ ann.paper_name }}</span>
+          <span class="je-sep" aria-hidden="true">·</span>
+          <span class="je-ch">Ch.{{ ann.chapter_order }} — {{ ann.chapter_title }}</span>
+          <span class="je-spacer" aria-hidden="true"></span>
+          <mat-icon class="je-fav-icon" *ngIf="ann.annotation.favorite" aria-label="Saved highlight">star</mat-icon>
+          <time class="je-date" *ngIf="ann.annotation.created_at"
+                [attr.datetime]="ann.annotation.created_at">
+            {{ ann.annotation.created_at | date:'MMM d, y' }}
+          </time>
+        </div>
+
+        <blockquote class="je-passage" *ngIf="ann.annotation.text">
+          <span class="je-quote-mark" aria-hidden="true">"</span>{{ ann.annotation.text }}<span class="je-quote-mark" aria-hidden="true">"</span>
+        </blockquote>
+
+        <p class="je-note" *ngIf="ann.annotation.note">{{ ann.annotation.note }}</p>
+
+        <footer class="je-footer">
+          <button class="je-read-btn"
+                  [attr.aria-label]="'Read chapter ' + ann.chapter_order + ' of ' + ann.paper_name"
+                  (click)="navigate.emit({ paperId: ann.paper_id, order: ann.chapter_order })">
+            <mat-icon aria-hidden="true">menu_book</mat-icon> Read chapter
+          </button>
+        </footer>
+      </article>
+    </div>
+
+    <div class="load-more-wrap" *ngIf="detailsMeta?.has_next">
+      <button class="load-more-btn" (click)="loadMore.emit()" [disabled]="detailsLoading">
+        <mat-icon aria-hidden="true">expand_more</mat-icon>
+        {{ detailsLoading ? 'Loading…' : 'Load more' }}
+      </button>
+    </div>
+
+    <p class="ann-total-info" *ngIf="detailsMeta && !detailsMeta.has_next && detailsItems.length > 0" aria-live="polite">
+      Showing all {{ formatCappedTotal(detailsMeta.total) }} {{ detailsMeta.total === 1 ? 'highlight' : 'highlights' }}
+    </p>
+  </ng-container>
+</section>
