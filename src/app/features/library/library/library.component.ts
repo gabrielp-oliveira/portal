@@ -41,6 +41,7 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   universes: LibraryUniverse[] = [];
 
   loading = true;
+  loadError = false;
   sortKey: SortKey = 'default';
   isScrolled    = false;
   showBackToTop = false;
@@ -120,8 +121,13 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
         this.applySort();
         this.loading = false;
       },
-      error: () => { this.loading = false; }
+      error: () => { this.loading = false; this.loadError = true; }
     });
+  }
+
+  retry(): void {
+    this.loadError = false;
+    this.load();
   }
 
   private loadWishlist(): void {

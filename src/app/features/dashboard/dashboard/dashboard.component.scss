@@ -38,6 +38,93 @@
   }
 }
 
+// ── Error states ──────────────────────────────────────────────────────────────
+.db__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: calc(100vh - 120px);
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text);
+
+  .db__error-icon {
+    font-size: 56px; width: 56px; height: 56px;
+    color: var(--muted);
+  }
+
+  .db__error-title {
+    font-size: 20px; font-weight: 600; margin: 0;
+  }
+
+  .db__error-desc {
+    font-size: 14px; color: var(--muted); margin: 0;
+  }
+
+  .db__error-btn {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #2A9D8F, #264653);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+
+    &:hover { opacity: .88; }
+
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  }
+}
+
+.db__error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1280px;
+  margin: 12px auto 0;
+  padding: 12px 20px;
+  background: #fff8f0;
+  border: 1px solid #f4d7b0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #92400e;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; color: #d97706; flex-shrink: 0; }
+
+  span { flex: 1; }
+
+  button {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 14px;
+    background: #d97706;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .2s;
+
+    &:hover { opacity: .88; }
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  }
+
+  .db.dark & {
+    background: #2a1f0e;
+    border-color: #5c3d0a;
+    color: #fcd34d;
+    button { background: #92400e; }
+  }
+}
+
 // ── Page shell ────────────────────────────────────────────────────────────────
 .db {
   min-height: calc(100vh - 60px);

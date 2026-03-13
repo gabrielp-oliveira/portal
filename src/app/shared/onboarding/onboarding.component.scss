@@ -1,0 +1,55 @@
+.ob {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+// ── Brand panel ───────────────────────────────────────────────────────────────
+.ob__brand {
+  flex: 1;
+  background: linear-gradient(145deg, #264653 0%, #2A9D8F 60%, #264653 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 860px) { display: none; }
+}
+
+.ob__brand-deco { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+.deco-circle {
+  position: absolute; border-radius: 50%; opacity: .08; background: #fff;
+  &.c1 { width: 320px; height: 320px; top: -80px;   right: -80px; }
+  &.c2 { width: 200px; height: 200px; bottom: 60px;  left: -60px;  }
+  &.c3 { width: 140px; height: 140px; bottom: 200px; right: 40px;  }
+}
+
+.ob__brand-content {
+  position: relative; z-index: 2;
+  text-align: center; color: #fff; padding: 0 32px;
+}
+
+.ob__logo {
+  width: 80px; height: 80px; border-radius: 50%;
+  object-fit: contain; margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+
+.ob__brand-title  { font-size: 40px; font-weight: 700; margin: 0 0 8px; letter-spacing: 2px; color: #fff; }
+.ob__brand-tagline { font-size: 15px; color: rgba(255,255,255,.75); margin: 0; }
+
+// ── Form panel ────────────────────────────────────────────────────────────────
+.ob__panel {
+  width: 540px; min-width: 320px;
+  background: #f4f4f4;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 24px; box-sizing: border-box; overflow-y: auto;
+
+  @media (max-width: 860px) { width: 100%; }
+}
+
+.ob__card { width: 100%; max-width: 460px; }

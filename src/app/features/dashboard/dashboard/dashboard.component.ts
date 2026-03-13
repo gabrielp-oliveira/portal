@@ -45,6 +45,8 @@ export class DashboardComponent implements OnInit {
     this.ds.load(this.destroyRef);
   }
 
+  retry(): void { this.ds.retryLoad(this.destroyRef); }
+
   logOut(): void { this.auth.logOut(); }
 
   trackById(_: number, item: { id: string }):           string { return item.id; }

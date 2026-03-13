@@ -1,0 +1,219 @@
+.wiz {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+
+  &--modal {
+    // Inside a modal: fixed max-height with scroll on the body
+    .wiz__body {
+      max-height: 52vh;
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      &::-webkit-scrollbar      { width: 4px; }
+      &::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
+    }
+  }
+}
+
+// ── Modal-specific header ─────────────────────────────────────────────────────
+.wiz__modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.wiz__modal-title {
+  font-size: 18px; font-weight: 700; color: #264653; margin: 0;
+}
+
+.wiz__modal-close {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  color: #aaa; display: flex; align-items: center;
+  border-radius: 6px; transition: background .15s, color .15s;
+  svg { width: 16px; height: 16px; }
+  &:hover { background: #f0f0f0; color: #555; }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+.wiz__progress {
+  height: 4px; background: #e5e3dc; border-radius: 2px;
+  margin-bottom: 18px; overflow: hidden;
+}
+
+.wiz__progress-fill {
+  height: 100%; background: linear-gradient(90deg, #2A9D8F, #264653);
+  border-radius: 2px; transition: width .4s ease;
+}
+
+// ── Step header ───────────────────────────────────────────────────────────────
+.wiz__step-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.wiz__step-badge {
+  font-size: 11px; font-weight: 700; color: #2A9D8F;
+  text-transform: uppercase; letter-spacing: .8px;
+}
+
+.wiz__skip-btn {
+  font-size: 12px; color: #aaa; background: none; border: none;
+  cursor: pointer; padding: 0;
+  &:hover:not(:disabled) { color: #666; }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.wiz__body { flex: 1; }
+
+.wiz__title {
+  font-size: 20px; font-weight: 700; color: #264653; margin: 0 0 6px;
+}
+
+.wiz__subtitle {
+  font-size: 13px; color: #78716c; margin: 0 0 20px; line-height: 1.5;
+}
+
+.wiz__section-label {
+  font-size: 12px; font-weight: 700; color: #444;
+  text-transform: uppercase; letter-spacing: .5px;
+  margin: 0 0 10px;
+  &--mt { margin-top: 22px; }
+}
+
+.wiz__required { color: #E76F51; }
+.wiz__optional { font-size: 11px; font-weight: 400; color: #aaa; text-transform: none; }
+
+// ── Chips ─────────────────────────────────────────────────────────────────────
+.wiz__chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+
+.wiz__chip {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid #ddd; background: #fff;
+  font-size: 13px; font-family: inherit; color: #555; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: border-color .12s, background .12s, color .12s;
+
+  &:hover { border-color: #2A9D8F; color: #2A9D8F; }
+  &--on { background: #2A9D8F; border-color: #2A9D8F; color: #fff;
+    &:hover { background: #248f82; }
+  }
+}
+
+// ── Pref cards ────────────────────────────────────────────────────────────────
+.wiz__card-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.wiz__pref-card {
+  flex: 1; min-width: 80px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px; border-radius: 10px;
+  border: 1.5px solid #ddd; background: #fff;
+  cursor: pointer; font-family: inherit;
+  transition: border-color .12s, box-shadow .12s, background .12s;
+
+  &:hover { border-color: #2A9D8F; }
+  &--on {
+    border-color: #2A9D8F; background: #edf8f7;
+    box-shadow: 0 0 0 2px rgba(42,157,143,.18);
+  }
+}
+
+.wiz__pref-icon  { font-size: 22px; line-height: 1; }
+.wiz__pref-label { font-size: 12px; font-weight: 600; color: #264653; }
+.wiz__pref-desc  { font-size: 11px; color: #999; }
+
+// ── Author search ─────────────────────────────────────────────────────────────
+.wiz__author-search {
+  display: flex; align-items: center;
+  background: #fff; border: 1.5px solid #ddd; border-radius: 10px;
+  padding: 0 12px; transition: border-color .2s, box-shadow .2s;
+  margin-bottom: 4px;
+
+  &:focus-within { border-color: #2A9D8F; box-shadow: 0 0 0 3px rgba(42,157,143,.12); }
+
+  input {
+    flex: 1; padding: 9px 8px; border: none; outline: none; background: transparent;
+    font-size: 13px; font-family: inherit; color: #222;
+    &::placeholder { color: #bbb; }
+  }
+}
+
+.wiz__search-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+.wiz__spinner {
+  width: 14px; height: 14px; border: 2px solid #ddd; border-top-color: #2A9D8F;
+  border-radius: 50%; animation: wiz-spin .6s linear infinite; flex-shrink: 0;
+}
+
+@keyframes wiz-spin { to { transform: rotate(360deg); } }
+
+.wiz__author-results {
+  list-style: none; margin: 0 0 4px; padding: 0;
+  background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+  overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  max-height: 180px; overflow-y: auto;
+
+  li {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px; cursor: pointer; font-size: 13px;
+    transition: background .1s;
+    &:hover { background: #f0faf9; }
+  }
+}
+
+.wiz__author-name  { color: #264653; font-weight: 500; }
+.wiz__author-years { font-size: 11px; color: #aaa; }
+
+.wiz__author-tags {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+
+.wiz__author-tag {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px 4px 12px; border-radius: 20px;
+  background: #edf8f7; border: 1px solid #b2e0db;
+  font-size: 12px; color: #264653;
+
+  button {
+    background: none; border: none; cursor: pointer; padding: 0;
+    display: flex; align-items: center; color: #aaa;
+    svg { width: 10px; height: 10px; }
+    &:hover { color: #E76F51; }
+  }
+}
+
+// ── Error ─────────────────────────────────────────────────────────────────────
+.wiz__error {
+  background: #fff3f0; border: 1px solid #f5c2b8;
+  border-radius: 8px; color: #c0392b;
+  font-size: 13px; padding: 10px 14px; margin-top: 12px; line-height: 1.5;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+.wiz__nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 24px; gap: 12px;
+}
+
+.wiz__spacer { flex: 1; }
+
+.wiz__btn {
+  padding: 10px 24px; border-radius: 8px;
+  font-size: 14px; font-family: inherit; font-weight: 600; cursor: pointer;
+  transition: opacity .2s, transform .1s;
+
+  &:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+  &:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  &--primary {
+    background: linear-gradient(135deg, #2A9D8F, #264653);
+    color: #fff; border: none;
+  }
+
+  &--ghost {
+    background: transparent; border: 1.5px solid #ccc; color: #555;
+    &:hover:not(:disabled) { border-color: #999; color: #333; }
+  }
+}

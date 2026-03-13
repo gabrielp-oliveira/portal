@@ -1,0 +1,363 @@
+<div class="pf" [class.dark]="isDark">
+  <div class="pf__inner">
+
+    <!-- ══════════ HERO ══════════ -->
+    <div class="pf__hero" *ngIf="!profileLoading">
+      <div class="pf__avatar">{{ initials }}</div>
+      <div class="pf__hero-info">
+        <h1 class="pf__hero-name">{{ profile?.name || profile?.email || 'Your Profile' }}</h1>
+        <p class="pf__hero-email" *ngIf="profile?.name && profile?.email">{{ profile?.email }}</p>
+        <p class="pf__hero-since" *ngIf="memberSince">Member since {{ memberSince }}</p>
+      </div>
+    </div>
+
+    <!-- Hero skeleton -->
+    <div class="pf__hero pf__hero--sk" *ngIf="profileLoading" aria-hidden="true">
+      <div class="sk-avatar"></div>
+      <div class="pf__hero-info">
+        <div class="sk-line sk-line--lg" style="width:200px"></div>
+        <div class="sk-line" style="width:140px; margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="pf__grid">
+
+      <!-- ══════════ PERSONAL INFO ══════════ -->
+      <section class="pf__card" aria-labelledby="info-title">
+        <div class="pf__card-head">
+          <div class="pf__card-title-group">
+            <div class="pf__card-icon pf__card-icon--teal">
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h2 class="pf__card-title" id="info-title">Personal Information</h2>
+          </div>
+          <button class="pf__card-action" (click)="startEditInfo()" *ngIf="!editingInfo && !profileLoading">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            Edit
+          </button>
+        </div>
+
+        <!-- Skeleton -->
+        <div *ngIf="profileLoading" class="pf__info-grid" aria-hidden="true">
+          <div class="pf__field"><div class="sk-line sk-line--sm" style="width:60px"></div><div class="sk-line" style="width:140px; margin-top:4px"></div></div>
+          <div class="pf__field"><div class="sk-line sk-line--sm" style="width:40px"></div><div class="sk-line" style="width:180px; margin-top:4px"></div></div>
+        </div>
+
+        <!-- View mode -->
+        <div class="pf__info-grid" *ngIf="!profileLoading && !editingInfo">
+          <div class="pf__field">
+            <span class="pf__field-label">Name</span>
+            <span class="pf__field-value">{{ profile?.name || '—' }}</span>
+          </div>
+          <div class="pf__field">
+            <span class="pf__field-label">Email</span>
+            <span class="pf__field-value">{{ profile?.email || '—' }}</span>
+          </div>
+          <div class="pf__field">
+            <span class="pf__field-label">Account status</span>
+            <span class="pf__badge pf__badge--green">Active</span>
+          </div>
+          <div class="pf__field" *ngIf="profile?.created_at">
+            <span class="pf__field-label">Member since</span>
+            <span class="pf__field-value">{{ memberSince }}</span>
+          </div>
+        </div>
+
+        <!-- Edit mode -->
+        <div class="pf__edit-form" *ngIf="editingInfo">
+          <div class="pf__edit-field">
+            <label class="pf__edit-label" for="edit-name">Name</label>
+            <input id="edit-name" class="pf__edit-input" type="text" [(ngModel)]="editName" placeholder="Your name" />
+          </div>
+          <div class="pf__edit-field">
+            <label class="pf__edit-label">Email</label>
+            <span class="pf__field-value pf__field-value--muted">{{ profile?.email }}</span>
+            <span class="pf__hint">Email cannot be changed here.</span>
+          </div>
+          <div class="pf__edit-error" *ngIf="infoError">{{ infoError }}</div>
+          <div class="pf__edit-actions">
+            <button class="pf__btn pf__btn--ghost" (click)="cancelEditInfo()" [disabled]="savingInfo">Cancel</button>
+            <button class="pf__btn pf__btn--primary" (click)="saveInfo()" [disabled]="savingInfo">
+              {{ savingInfo ? 'Saving…' : 'Save changes' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="pf__success-banner" *ngIf="infoSuccess">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M5 8l2.5 2.5L11 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Profile updated successfully.
+        </div>
+      </section>
+
+      <!-- ══════════ READING PREFERENCES ══════════ -->
+      <section class="pf__card" aria-labelledby="prefs-title">
+        <div class="pf__card-head">
+          <div class="pf__card-title-group">
+            <div class="pf__card-icon pf__card-icon--amber">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M4 4h12v12H4V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M4 8h12M8 8v8" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <h2 class="pf__card-title" id="prefs-title">Reading Preferences</h2>
+          </div>
+          <button class="pf__card-action" (click)="openPrefsModal()" *ngIf="!prefsLoading">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            Edit
+          </button>
+        </div>
+
+        <!-- Skeleton -->
+        <div *ngIf="prefsLoading" aria-hidden="true">
+          <div class="sk-line sk-line--sm" style="width:80px; margin-bottom:8px"></div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap">
+            <div class="sk-chip" *ngFor="let i of [1,2,3,4]"></div>
+          </div>
+        </div>
+
+        <!-- Not configured -->
+        <div class="pf__empty" *ngIf="!prefsLoading && prefs && !prefs.configured">
+          <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+            <circle cx="12" cy="12" r="10" stroke="#d0d0d0" stroke-width="1.5"/>
+            <path d="M12 8v5M12 15.5v.5" stroke="#d0d0d0" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p>You haven't set your reading preferences yet.</p>
+          <button class="pf__btn pf__btn--primary" (click)="openPrefsModal()">Set preferences</button>
+        </div>
+
+        <!-- Configured -->
+        <div class="pf__prefs-body" *ngIf="!prefsLoading && prefs?.configured">
+
+          <div class="pf__prefs-group" *ngIf="prefs!.favorite_genres.length > 0">
+            <span class="pf__prefs-label">Genres</span>
+            <div class="pf__chip-row">
+              <span class="pf__chip" *ngFor="let g of prefs!.favorite_genres">{{ genreLabel(g) }}</span>
+            </div>
+          </div>
+
+          <div class="pf__prefs-group" *ngIf="prefs!.preferred_languages.length > 0">
+            <span class="pf__prefs-label">Languages</span>
+            <div class="pf__chip-row">
+              <span class="pf__chip pf__chip--blue" *ngFor="let l of prefs!.preferred_languages">
+                {{ languageMap[l] ?? l }}
+              </span>
+            </div>
+          </div>
+
+          <div class="pf__prefs-row" *ngIf="prefs!.preferred_lengths.length > 0 || prefs!.preferred_maturity.length > 0">
+            <div class="pf__prefs-group" *ngIf="prefs!.preferred_lengths.length > 0">
+              <span class="pf__prefs-label">Length</span>
+              <div class="pf__chip-row">
+                <span class="pf__chip pf__chip--green" *ngFor="let l of prefs!.preferred_lengths">
+                  {{ lengthMap[l]?.icon }} {{ lengthMap[l]?.label ?? l }}
+                </span>
+              </div>
+            </div>
+            <div class="pf__prefs-group" *ngIf="prefs!.preferred_maturity.length > 0">
+              <span class="pf__prefs-label">Rating</span>
+              <div class="pf__chip-row">
+                <span class="pf__chip pf__chip--purple" *ngFor="let m of prefs!.preferred_maturity">
+                  {{ maturityMap[m]?.icon }} {{ maturityMap[m]?.label ?? m }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf__prefs-group" *ngIf="prefs!.favorite_authors.length > 0">
+            <span class="pf__prefs-label">Favourite authors</span>
+            <div class="pf__chip-row">
+              <span class="pf__chip pf__chip--orange" *ngFor="let a of prefs!.favorite_authors">{{ a.name }}</span>
+            </div>
+          </div>
+
+          <p class="pf__prefs-updated" *ngIf="prefs!.updated_at">
+            Last updated {{ formatDate(prefs!.updated_at!) }}
+          </p>
+
+        </div>
+
+        <!-- Error -->
+        <div class="pf__error-inline" *ngIf="prefsError" role="alert">
+          Couldn't load preferences.
+          <button (click)="loadPrefs()">Retry</button>
+        </div>
+      </section>
+
+      <!-- ══════════ PURCHASE HISTORY ══════════ -->
+      <section class="pf__card pf__card--wide" aria-labelledby="purchases-title">
+        <div class="pf__card-head">
+          <div class="pf__card-title-group">
+            <div class="pf__card-icon pf__card-icon--navy">
+              <svg viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="5" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 5V4a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h2 class="pf__card-title" id="purchases-title">Purchase History</h2>
+          </div>
+          <a class="pf__card-action" routerLink="/store">Browse store</a>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="purchasesLoading" aria-hidden="true" class="pf__purchases-sk">
+          <div class="sk-row" *ngFor="let i of [1,2,3]">
+            <div class="sk-cover-sm"></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px">
+              <div class="sk-line" style="width:60%"></div>
+              <div class="sk-line sk-line--sm" style="width:40%"></div>
+            </div>
+            <div class="sk-line sk-line--sm" style="width:60px"></div>
+          </div>
+        </div>
+
+        <!-- Empty -->
+        <div class="pf__empty" *ngIf="!purchasesLoading && purchases.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" width="36" height="36">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" stroke="#d0d0d0" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="#d0d0d0" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p>No purchases yet.</p>
+          <a class="pf__btn pf__btn--primary" routerLink="/store">Explore the store</a>
+        </div>
+
+        <!-- Table -->
+        <div class="pf__table-wrap" *ngIf="!purchasesLoading && purchases.length > 0">
+          <table class="pf__table">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th class="pf__table-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of purchases">
+                <td>
+                  <div class="pf__purchase-book">
+                    <img *ngIf="p.cover_url" [src]="p.cover_url" [alt]="p.paper_name" class="pf__purchase-cover" />
+                    <span>{{ p.paper_name }}</span>
+                  </div>
+                </td>
+                <td><span class="pf__badge" [class.pf__badge--blue]="p.type === 'universe'">{{ p.type }}</span></td>
+                <td>{{ formatDate(p.purchased_at) }}</td>
+                <td class="pf__table-right">{{ formatCurrency(p.amount, p.currency) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══════════ ACCOUNT ══════════ -->
+      <section class="pf__card" aria-labelledby="account-title">
+        <div class="pf__card-head">
+          <div class="pf__card-title-group">
+            <div class="pf__card-icon pf__card-icon--red">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 3v7M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <h2 class="pf__card-title" id="account-title">Account</h2>
+          </div>
+        </div>
+
+        <div class="pf__account-rows">
+          <div class="pf__account-row" *ngIf="!profile || profile.source === 'email'">
+            <div>
+              <p class="pf__account-label">Password</p>
+              <p class="pf__account-desc">Change your account password</p>
+            </div>
+            <a class="pf__btn pf__btn--ghost" routerLink="/forgot-password">Reset password</a>
+          </div>
+          <div class="pf__account-divider" *ngIf="!profile || profile.source === 'email'"></div>
+          <div class="pf__account-row pf__account-row--danger">
+            <div>
+              <p class="pf__account-label pf__account-label--red">Sign out</p>
+              <p class="pf__account-desc">You'll need to sign in again to access your account.</p>
+            </div>
+            <button class="pf__btn pf__btn--danger" (click)="auth.logOut()">Sign out</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ LOGGED DEVICES ══════════ -->
+      <section class="pf__card pf__card--wide" aria-labelledby="sessions-title">
+        <div class="pf__card-head">
+          <div class="pf__card-title-group">
+            <div class="pf__card-icon pf__card-icon--navy">
+              <svg viewBox="0 0 20 20" fill="none">
+                <rect x="2" y="5" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M6 5V4a4 4 0 018 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <h2 class="pf__card-title" id="sessions-title">Logged Devices</h2>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="sessionsLoading" aria-hidden="true" class="pf__purchases-sk">
+          <div class="sk-row" *ngFor="let i of [1,2]">
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px">
+              <div class="sk-line" style="width:50%"></div>
+              <div class="sk-line sk-line--sm" style="width:35%"></div>
+            </div>
+            <div class="sk-line sk-line--sm" style="width:70px"></div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div class="pf__error-inline" *ngIf="sessionsError && !sessionsLoading" role="alert">
+          Couldn't load sessions.
+          <button (click)="loadSessions()">Retry</button>
+        </div>
+
+        <!-- List -->
+        <div class="pf__sessions" *ngIf="!sessionsLoading && !sessionsError">
+          <div class="pf__session-row" *ngFor="let s of sessions">
+            <div class="pf__session-icon">
+              <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
+                <rect x="2" y="5" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M6 5V4a4 4 0 018 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="pf__session-info">
+              <span class="pf__session-device">{{ parseBrowser(s.Device) }} · {{ parseDevice(s.Device) }}</span>
+              <span class="pf__session-meta">Signed in {{ formatDate(s.CreatedAt) }} · Expires {{ formatDate(s.ExpiresAt) }}</span>
+            </div>
+            <span class="pf__session-current" *ngIf="s.ID === currentSessionId">Current</span>
+            <button
+              class="pf__btn pf__btn--ghost pf__btn--sm"
+              *ngIf="s.ID !== currentSessionId"
+              (click)="revokeSession(s.ID)"
+              [disabled]="revokingSessionId === s.ID">
+              {{ revokingSessionId === s.ID ? 'Revoking…' : 'Revoke' }}
+            </button>
+          </div>
+
+          <div class="pf__empty" *ngIf="sessions.length === 0">
+            <p>No active sessions found.</p>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /pf__grid -->
+  </div><!-- /pf__inner -->
+
+  <!-- ══════════ READING PREFERENCES MODAL ══════════ -->
+  <div class="pf__overlay" *ngIf="showPrefsModal" (click)="closePrefsModal()" role="dialog" aria-modal="true" aria-label="Edit reading preferences">
+    <div class="pf__modal" (click)="$event.stopPropagation()">
+      <app-reading-preferences-wizard
+        mode="modal"
+        [initialPrefs]="prefsForWizard"
+        (saved)="onPrefsSaved()"
+        (cancelled)="closePrefsModal()">
+      </app-reading-preferences-wizard>
+    </div>
+  </div>
+
+</div>

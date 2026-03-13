@@ -32,6 +32,7 @@ export class DashboardDataService {
   heroLoading = true;
   heroData: DashboardHeroResponse | null = null;
   loading = true;
+  loadError = false;
   data: DashboardResponse | null = null;
   statCards: StatCard[] = [];
 
@@ -170,8 +171,8 @@ export class DashboardDataService {
           this.recomputeSearch();
           this.stateChanged$.next();
         },
-        error: (e) => {
-          this.err.errHandler(e);
+        error: () => {
+          this.loadError = true;
           this.loading = false;
           this.stateChanged$.next();
         }
@@ -243,6 +244,15 @@ export class DashboardDataService {
       ? this.collapsedSections.delete(id)
       : this.collapsedSections.add(id);
     localStorage.setItem(DashboardDataService.LS_SECTIONS, JSON.stringify([...this.collapsedSections]));
+  }
+
+  // ── Retry ────────────────────────────────────────────────────────────────
+  retryLoad(destroyRef: DestroyRef): void {
+    this.loadError = false;
+    this.loading = true;
+    this.heroLoading = !this.heroData;
+    this.stateChanged$.next();
+    this.load(destroyRef);
   }
 
   // ── World navigation ──────────────────────────────────────────────────────

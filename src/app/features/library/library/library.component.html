@@ -130,6 +130,16 @@
         </div>
       </div>
 
+      <!-- Error state -->
+      <div class="lib__error" *ngIf="!loading && loadError" role="alert">
+        <mat-icon class="lib__error-icon" aria-hidden="true">cloud_off</mat-icon>
+        <p class="lib__error-title">Couldn't load your library</p>
+        <p class="lib__error-desc">Something went wrong. Check your connection and try again.</p>
+        <button class="lib__error-btn" (click)="retry()">
+          <mat-icon aria-hidden="true">refresh</mat-icon> Try again
+        </button>
+      </div>
+
       <!-- Skeleton -->
       <ul class="lib__books-grid" *ngIf="loading" aria-busy="true" aria-label="Loading books" role="status">
         <li class="lib__book-sk" *ngFor="let i of [1,2,3,4,5,6,7,8]" aria-hidden="true">

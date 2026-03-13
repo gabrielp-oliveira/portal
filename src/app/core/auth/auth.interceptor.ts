@@ -7,8 +7,12 @@ const PUBLIC_PATHS = [
   '/signup',
   '/auth/google/getUrl',
   '/auth/google/callback',
-  '/auth/microsoft/getUrl',
-  '/auth/microsoft/callback'
+  '/auth/meta/getUrl',
+  '/auth/meta/callback',
+  '/auth/validate/',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/authors'
 ];
 
 function isPublicRequest(url: string): boolean {

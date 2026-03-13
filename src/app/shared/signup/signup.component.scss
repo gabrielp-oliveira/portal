@@ -1,0 +1,273 @@
+// ── Layout ────────────────────────────────────────────────────────────────────
+.signup-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+// ── Brand panel (left) ────────────────────────────────────────────────────────
+.brand-panel {
+  flex: 1;
+  background: linear-gradient(145deg, #264653 0%, #2A9D8F 60%, #264653 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.brand-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+
+  .logo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: contain;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.brand-title {
+  font-size: 42px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.brand-tagline {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.brand-decoration {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.08;
+  background: #fff;
+
+  &.c1 {
+    width: 320px;
+    height: 320px;
+    top: -80px;
+    right: -80px;
+  }
+  &.c2 {
+    width: 200px;
+    height: 200px;
+    bottom: 60px;
+    left: -60px;
+  }
+  &.c3 {
+    width: 140px;
+    height: 140px;
+    bottom: 200px;
+    right: 40px;
+  }
+}
+
+// ── Form panel (right) ────────────────────────────────────────────────────────
+.form-panel {
+  width: 460px;
+  min-width: 320px;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.form-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+// ── Form header ───────────────────────────────────────────────────────────────
+.form-header {
+  margin-bottom: 28px;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #264653;
+    margin: 0 0 6px;
+  }
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+// ── Fields ────────────────────────────────────────────────────────────────────
+.field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  input {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #fff;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &::placeholder {
+      color: #bbb;
+    }
+
+    &:focus {
+      border-color: #2A9D8F;
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.12);
+    }
+  }
+}
+
+.field-error {
+  font-size: 12px;
+  color: #E76F51;
+  margin-top: 4px;
+}
+
+// ── Error message ─────────────────────────────────────────────────────────────
+.error-message {
+  background: #fff3f0;
+  border: 1px solid #f5c2b8;
+  border-radius: 8px;
+  color: #c0392b;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #2A9D8F, #264653);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s, transform 0.1s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+// ── Login link ────────────────────────────────────────────────────────────────
+.login-link {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-top: 24px;
+
+  a {
+    color: #2A9D8F;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ── Success card ──────────────────────────────────────────────────────────────
+.success-card {
+  text-align: center;
+  padding: 16px 0;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #264653;
+    margin: 20px 0 10px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0 0 28px;
+  }
+}
+
+.success-icon {
+  svg {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.login-link-btn {
+  display: inline-block;
+  padding: 11px 28px;
+  background: linear-gradient(135deg, #2A9D8F, #264653);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

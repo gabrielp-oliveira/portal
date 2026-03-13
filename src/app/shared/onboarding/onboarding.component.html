@@ -1,0 +1,32 @@
+<div class="ob">
+
+  <!-- ── Brand panel ── -->
+  <div class="ob__brand">
+    <div class="ob__brand-deco">
+      <div class="deco-circle c1"></div>
+      <div class="deco-circle c2"></div>
+      <div class="deco-circle c3"></div>
+    </div>
+    <div class="ob__brand-content">
+      <picture>
+        <source type="image/avif" srcset="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_opxauw.avif" />
+        <source type="image/webp" srcset="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp" />
+        <img src="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp" alt="Portal" class="ob__logo" />
+      </picture>
+      <h1 class="ob__brand-title">Portal</h1>
+      <p class="ob__brand-tagline">Personalize your reading experience</p>
+    </div>
+  </div>
+
+  <!-- ── Form panel ── -->
+  <div class="ob__panel">
+    <div class="ob__card">
+      <app-reading-preferences-wizard
+        mode="page"
+        (saved)="onSaved()"
+        (skipped)="onSkipped()">
+      </app-reading-preferences-wizard>
+    </div>
+  </div>
+
+</div>

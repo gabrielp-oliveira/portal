@@ -18,6 +18,26 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/home/home.component').then(c => c.HomeComponent)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./shared/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+    canActivate: [noAuthGuard]
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./shared/reset-password/reset-password.component').then(c => c.ResetPasswordComponent),
+    canActivate: [noAuthGuard]
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./shared/profile/profile.component').then(c => c.ProfileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'onboarding',
+    loadComponent: () => import('./shared/onboarding/onboarding.component').then(c => c.OnboardingComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'dashboard',
     loadChildren: () => import('./features/dashboard/dashboard.module').then(c => c.DashboardModule),
     canActivate: [authGuard]

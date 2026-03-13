@@ -1,26 +1,124 @@
-<p>signup works!</p>
+<div class="signup-page">
 
-<form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
-    <label for="email">Email: </label>
-    <input id="email" type="email" formControlName="email" />
-    <label for="email">Full Name: </label>
-    <input id="name" type="name" formControlName="name" />
-    <br />
-
-
-    <label for="password">Password: </label>
-    <input id="password" type="password" formControlName="password" />
-    <br />
-
-    <label for="confirmPassword">Confirm Password: </label>
-    <input id="confirmPassword" type="password" formControlName="confirmPassword" />
-    <br />
-    <div *ngIf="signUpForm.hasError('mismatch') && signUpForm.get('confirmPassword')?.touched">
-        <span>Passwords do not match.</span>
+  <!-- Left: Brand panel -->
+  <div class="brand-panel">
+    <div class="brand-content">
+      <picture>
+        <source type="image/avif" srcset="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_opxauw.avif" />
+        <source type="image/webp" srcset="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp" />
+        <img src="https://res.cloudinary.com/dyibidxxv/image/upload/v1772918274/homeLightIcon_h25jyb.webp"
+             alt="PaperTrail" class="logo" />
+      </picture>
+      <h1 class="brand-title">Portal</h1>
+      <p class="brand-tagline">Start your creative journey.</p>
     </div>
+    <div class="brand-decoration">
+      <div class="deco-circle c1"></div>
+      <div class="deco-circle c2"></div>
+      <div class="deco-circle c3"></div>
+    </div>
+  </div>
 
-    <br />
-    <button type="submit" [disabled]="!signUpForm.valid">Submit Profile</button>
-</form>
+  <!-- Right: Form panel -->
+  <div class="form-panel">
+    <div class="form-card">
 
-<a routerLink="/login">login</a>
+      <!-- Success state -->
+      <ng-container *ngIf="successMessage; else formBlock">
+        <div class="success-card">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="11" stroke="#2A9D8F" stroke-width="1.5"/>
+              <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#2A9D8F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Check your inbox</h2>
+          <p>{{ successMessage }}</p>
+          <a class="login-link-btn" routerLink="/login">Back to sign in</a>
+        </div>
+      </ng-container>
+
+      <ng-template #formBlock>
+        <div class="form-header">
+          <h2>Create account</h2>
+          <p class="subtitle">Join Portal today</p>
+        </div>
+
+        <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+
+          <div class="field-group">
+            <label for="name">Full name</label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Gabriel Silva"
+              autocomplete="name"
+            />
+            <span class="field-error" *ngIf="signUpForm.get('name')?.touched && signUpForm.get('name')?.hasError('required')">
+              Name is required
+            </span>
+            <span class="field-error" *ngIf="signUpForm.get('name')?.touched && signUpForm.get('name')?.hasError('nameInvalid')">
+              Name can only contain letters and spaces
+            </span>
+          </div>
+
+          <div class="field-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+            />
+            <span class="field-error" *ngIf="signUpForm.get('email')?.touched && signUpForm.get('email')?.invalid">
+              Enter a valid email
+            </span>
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="new-password"
+            />
+            <span class="field-error" *ngIf="signUpForm.get('password')?.touched && signUpForm.get('password')?.invalid">
+              Password must be at least 8 characters
+            </span>
+          </div>
+
+          <div class="field-group">
+            <label for="confirmPassword">Confirm password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="••••••••"
+              autocomplete="new-password"
+            />
+            <span class="field-error" *ngIf="signUpForm.hasError('mismatch') && signUpForm.get('confirmPassword')?.touched">
+              Passwords do not match
+            </span>
+          </div>
+
+          <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+          <button type="submit" class="submit-btn" [disabled]="!signUpForm.valid || loading">
+            {{ loading ? 'Creating account...' : 'Create account' }}
+          </button>
+
+        </form>
+
+        <p class="login-link">
+          Already have an account? <a routerLink="/login">Sign in</a>
+        </p>
+      </ng-template>
+
+    </div>
+  </div>
+
+</div>

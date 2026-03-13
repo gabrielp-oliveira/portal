@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -9,14 +9,20 @@ type LoginResponse = {
   accessToken: string;
   refreshToken?: string;
   sessionId?: string;
-  expiry: string; // PADRÃO DEFINITIVO
+  expiry: string;
 };
 
 type RefreshResponse = {
   accessToken: string;
   refreshToken?: string;
   sessionId?: string;
-  expiry: string; // PADRÃO DEFINITIVO
+  expiry: string;
+};
+
+type ProfileDetails = {
+  onboarding_complete: boolean;
+  profile_complete: boolean;
+  [key: string]: any;
 };
 
 @Injectable({
@@ -68,22 +74,24 @@ export class AuthService {
     return !!token && expiryMs > Date.now();
   }
 
-  googleLogin(): Observable<any> {
-    return this.http
-      .get<{ url: string }>(`${this.AUTH_BASE}/auth/google/getUrl`)
-      .pipe(tap(r => (window.location.href = r.url)));
+  getProfileDetails(): Observable<ProfileDetails> {
+    return this.http.get<ProfileDetails>(`${this.AUTH_BASE}/logged/profile/details`);
   }
 
-  microsoftLogin(): Observable<any> {
+  googleLogin(): Observable<{ url: string }> {
     return this.http
-      .get<{ url: string }>(`${this.AUTH_BASE}/auth/microsoft/getUrl`)
+      .get<{ url: string }>(`${this.AUTH_BASE}/auth/google/getUrl`)
+      .pipe(tap(r => { window.location.href = r.url; }));
+  }
+
+  microsoftLogin(): Observable<{ url: string }> {
+    return this.http
+      .get<{ url: string }>(`${this.AUTH_BASE}/auth/meta/getUrl`)
       .pipe(tap(r => { if (r?.url) window.location.href = r.url; }));
   }
 
-  signUp(body: any): void {
-    this.http
-      .post<{ url: string }>(`${this.AUTH_BASE}/signup`, body)
-      .subscribe(r => (window.location.href = r.url));
+  signUp(body: any): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.AUTH_BASE}/signup`, body);
   }
 
   login(body: any): Observable<void> {
@@ -97,11 +105,17 @@ export class AuthService {
             sessionId: resp.sessionId,
             expiry: resp.expiry
           });
-
           this.isLoggedSubject.next(true);
+        }),
+        switchMap(() => this.getProfileDetails()),
+        tap((details: ProfileDetails) => {
           const redirect = localStorage.getItem('auth-redirect');
           localStorage.removeItem('auth-redirect');
-          this.router.navigate([redirect ?? '/dashboard']);
+          if (!details.onboarding_complete) {
+            this.router.navigate(['/onboarding']);
+          } else {
+            this.router.navigate([redirect ?? '/dashboard']);
+          }
         }),
         map(() => void 0),
         catchError(err => {
@@ -141,13 +155,55 @@ export class AuthService {
   }
 
   logOut(): void {
-    localStorage.clear();
-    this.isLoggedSubject.next(false);
-    this.router.navigate(['/']);
+    this.http.post(`${this.AUTH_BASE}/logged/logout`, null).pipe(
+      finalize(() => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('sessionId');
+        localStorage.removeItem('expiry');
+        this.isLoggedSubject.next(false);
+        this.router.navigate(['/']);
+      })
+    ).subscribe({ error: () => {} });
+  }
+
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.AUTH_BASE}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.AUTH_BASE}/auth/reset-password`, { token, password });
+  }
+
+  getReadingPreferences(): Observable<{
+    configured: boolean;
+    favorite_genres: string[];
+    favorite_authors: { id: string; name: string; birth_year?: number; death_year?: number }[];
+    preferred_lengths: string[];
+    preferred_maturity: string[];
+    preferred_languages: string[];
+    updated_at?: string;
+  }> {
+    return this.http.get<any>(`${this.AUTH_BASE}/logged/profile/reading-preferences`);
+  }
+
+  getAuthors(search?: string): Observable<{ authors: { id: string; name: string; birth_year?: number; death_year?: number }[] }> {
+    const url = search
+      ? `${this.AUTH_BASE}/authors?search=${encodeURIComponent(search)}`
+      : `${this.AUTH_BASE}/authors`;
+    return this.http.get<{ authors: { id: string; name: string; birth_year?: number; death_year?: number }[] }>(url);
   }
 
   setLoggedStatus(logged: boolean): void {
     this.isLoggedSubject.next(logged);
+  }
+
+  getSessions(): Observable<{ ID: string; Device: string; CreatedAt: string; ExpiresAt: string }[]> {
+    return this.http.get<{ ID: string; Device: string; CreatedAt: string; ExpiresAt: string }[]>(`${this.AUTH_BASE}/logged/sessions`);
+  }
+
+  revokeSession(sessionId: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.AUTH_BASE}/logged/sessions/${sessionId}`);
   }
 
   getSessionId(): string | null {

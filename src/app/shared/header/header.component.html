@@ -24,6 +24,9 @@
           <button class="hdr__nav-link" (click)="GoTo('/dashboard')" *ngIf="isLogged">
             <span class="material-icons" aria-hidden="true">dashboard</span><span>Dashboard</span>
           </button>
+          <button class="hdr__nav-link" (click)="GoTo('/profile')" *ngIf="isLogged">
+            <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
+          </button>
           <button class="hdr__nav-link" (click)="GoTo('/library')">
             <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
           </button>
@@ -75,6 +78,9 @@
           </button>
           <button class="hdr__drawer-link" (click)="GoTo('/dashboard'); menuOpen=false" *ngIf="isLogged">
             <span class="material-icons" aria-hidden="true">dashboard</span><span>Dashboard</span>
+          </button>
+          <button class="hdr__drawer-link" (click)="GoTo('/profile'); menuOpen=false" *ngIf="isLogged">
+            <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
           </button>
           <button class="hdr__drawer-link" (click)="GoTo('/library'); menuOpen=false">
             <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
@@ -136,6 +142,9 @@
         <button class="hdr__nav-link" (click)="navigateIfLogged('/dashboard')" *ngIf="isLogged">
           <span class="material-icons" aria-hidden="true">dashboard</span><span>Dashboard</span>
         </button>
+        <button class="hdr__nav-link" (click)="navigateIfLogged('/profile')" *ngIf="isLogged">
+          <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
+        </button>
         <button class="hdr__nav-link" (click)="GoTo('/library')">
           <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>
         </button>
@@ -190,6 +199,9 @@
         </button>
         <button class="hdr__drawer-link" (click)="navigateIfLogged('/dashboard'); menuOpen=false" *ngIf="isLogged">
           <span class="material-icons" aria-hidden="true">dashboard</span><span>Dashboard</span>
+        </button>
+        <button class="hdr__drawer-link" (click)="navigateIfLogged('/profile'); menuOpen=false" *ngIf="isLogged">
+          <span class="material-icons" aria-hidden="true">person</span><span>Perfil</span>
         </button>
         <button class="hdr__drawer-link" (click)="GoTo('/library'); menuOpen=false">
           <span class="material-icons" aria-hidden="true">library_books</span><span>Biblioteca</span>

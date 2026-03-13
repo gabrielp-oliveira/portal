@@ -19,6 +19,16 @@
     </div>
   </div>
 
+  <!-- ── Error state ── -->
+  <div class="db__error" *ngIf="ds.loadError && !ds.heroData" role="alert">
+    <mat-icon class="db__error-icon" aria-hidden="true">cloud_off</mat-icon>
+    <h2 class="db__error-title">Não foi possível carregar o painel</h2>
+    <p class="db__error-desc">Verifique sua conexão e tente novamente.</p>
+    <button class="db__error-btn" (click)="retry()">
+      <mat-icon aria-hidden="true">refresh</mat-icon> Tentar novamente
+    </button>
+  </div>
+
   <!-- ── Hero phase — renders as soon as heroData is available (cache or API) ── -->
   <!-- Visible while the full dashboard API is still loading.                     -->
   <div class="db__inner" *ngIf="ds.heroData && ds.loading">
@@ -147,6 +157,15 @@
 
     </div>
 
+  </div>
+
+  <!-- ── Error banner (hero data available but full data failed) ── -->
+  <div class="db__error-banner" *ngIf="ds.loadError && ds.heroData" role="alert">
+    <mat-icon aria-hidden="true">warning_amber</mat-icon>
+    <span>Não foi possível carregar todos os dados do painel.</span>
+    <button (click)="retry()">
+      <mat-icon aria-hidden="true">refresh</mat-icon> Tentar novamente
+    </button>
   </div>
 
   <!-- ── Full content — replaces hero phase when full API responds ─ -->

@@ -183,6 +183,21 @@
 }
 
 // ── Fields ────────────────────────────────────────────────────────────────────
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: #2A9D8F;
+  text-decoration: none;
+  font-weight: 500;
+  &:hover { text-decoration: underline; }
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -252,6 +267,18 @@
     opacity: 0.45;
     cursor: not-allowed;
   }
+}
+
+// ── Error message ─────────────────────────────────────────────────────────────
+.error-message {
+  background: #fff3f0;
+  border: 1px solid #f5c2b8;
+  border-radius: 8px;
+  color: #c0392b;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 // ── Sign-up link ──────────────────────────────────────────────────────────────

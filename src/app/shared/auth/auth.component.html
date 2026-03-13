@@ -73,7 +73,10 @@
         </div>
 
         <div class="field-group">
-          <label for="password">Password</label>
+          <div class="field-label-row">
+            <label for="password">Password</label>
+            <a class="forgot-link" routerLink="/forgot-password">Forgot password?</a>
+          </div>
           <input
             id="password"
             type="password"
@@ -86,8 +89,10 @@
           </span>
         </div>
 
-        <button type="submit" class="submit-btn" [disabled]="!signUpForm.valid">
-          Sign in
+        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <button type="submit" class="submit-btn" [disabled]="!signUpForm.valid || loading">
+          {{ loading ? 'Signing in...' : 'Sign in' }}
         </button>
 
       </form>

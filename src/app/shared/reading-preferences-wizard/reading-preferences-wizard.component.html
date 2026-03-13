@@ -1,0 +1,133 @@
+<div class="wiz" [class.wiz--modal]="mode === 'modal'">
+
+  <!-- Modal header (only in modal mode) -->
+  <div class="wiz__modal-head" *ngIf="mode === 'modal'">
+    <h3 class="wiz__modal-title">Reading Preferences</h3>
+    <button class="wiz__modal-close" type="button" (click)="cancelled.emit()" [disabled]="loading" aria-label="Close">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="wiz__progress" role="progressbar" [attr.aria-valuenow]="progressPct" aria-valuemin="0" aria-valuemax="100">
+    <div class="wiz__progress-fill" [style.width.%]="progressPct"></div>
+  </div>
+
+  <!-- Step header -->
+  <div class="wiz__step-header">
+    <span class="wiz__step-badge">Step {{ step }} of {{ totalSteps }}</span>
+    <button class="wiz__skip-btn" *ngIf="mode === 'page'" (click)="skip()" [disabled]="loading" type="button">Skip setup</button>
+  </div>
+
+  <!-- ════ STEP 1 — Genres ════ -->
+  <div class="wiz__body" *ngIf="step === 1">
+    <h2 class="wiz__title">What genres do you love?</h2>
+    <p class="wiz__subtitle">Select all that apply — the more you pick, the better your recommendations.</p>
+
+    <div class="wiz__chip-grid">
+      <button *ngFor="let genre of genres" type="button" class="wiz__chip"
+        [class.wiz__chip--on]="isSelected(selectedGenres, genre)"
+        (click)="toggle(selectedGenres, genre)">
+        {{ genre }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 2 — Length + Maturity ════ -->
+  <div class="wiz__body" *ngIf="step === 2">
+    <h2 class="wiz__title">Your reading style</h2>
+    <p class="wiz__subtitle">How long should your books be, and what content are you comfortable with?</p>
+
+    <p class="wiz__section-label">Preferred length</p>
+    <div class="wiz__card-row">
+      <button *ngFor="let len of lengths" type="button" class="wiz__pref-card"
+        [class.wiz__pref-card--on]="isSelected(selectedLengths, len.value)"
+        (click)="toggle(selectedLengths, len.value)">
+        <span class="wiz__pref-icon">{{ len.icon }}</span>
+        <span class="wiz__pref-label">{{ len.label }}</span>
+        <span class="wiz__pref-desc">{{ len.desc }}</span>
+      </button>
+    </div>
+
+    <p class="wiz__section-label wiz__section-label--mt">Content rating</p>
+    <div class="wiz__card-row">
+      <button *ngFor="let mat of maturity" type="button" class="wiz__pref-card"
+        [class.wiz__pref-card--on]="isSelected(selectedMaturity, mat.value)"
+        (click)="toggle(selectedMaturity, mat.value)">
+        <span class="wiz__pref-icon">{{ mat.icon }}</span>
+        <span class="wiz__pref-label">{{ mat.label }}</span>
+        <span class="wiz__pref-desc">{{ mat.desc }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════ STEP 3 — Languages + Authors ════ -->
+  <div class="wiz__body" *ngIf="step === 3">
+    <h2 class="wiz__title">Languages & favourite authors</h2>
+    <p class="wiz__subtitle">We'll prioritise books in your preferred languages and by authors you love.</p>
+
+    <p class="wiz__section-label">Reading languages <span class="wiz__required">*</span></p>
+    <div class="wiz__chip-grid">
+      <button *ngFor="let lang of languages" type="button" class="wiz__chip"
+        [class.wiz__chip--on]="isSelected(selectedLanguages, lang.code)"
+        (click)="toggle(selectedLanguages, lang.code)">
+        <span>{{ lang.flag }}</span> {{ lang.label }}
+      </button>
+    </div>
+
+    <p class="wiz__section-label wiz__section-label--mt">Favourite authors <span class="wiz__optional">(optional)</span></p>
+
+    <div class="wiz__author-search">
+      <svg class="wiz__search-icon" viewBox="0 0 20 20" fill="none">
+        <circle cx="8.5" cy="8.5" r="5.5" stroke="#aaa" stroke-width="1.5"/>
+        <path d="M13 13l3.5 3.5" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input type="text" [(ngModel)]="authorSearch" (input)="onAuthorInput()"
+        placeholder="Search by author name…" autocomplete="off" />
+      <div class="wiz__spinner" *ngIf="authorSearching"></div>
+    </div>
+
+    <ul class="wiz__author-results" *ngIf="authorResults.length > 0">
+      <li *ngFor="let a of authorResults" (click)="addAuthor(a)">
+        <span class="wiz__author-name">{{ a.name }}</span>
+        <span class="wiz__author-years" *ngIf="a.birth_year">
+          {{ a.birth_year }}{{ a.death_year ? '–' + a.death_year : '' }}
+        </span>
+      </li>
+    </ul>
+
+    <div class="wiz__author-tags" *ngIf="selectedAuthors.length > 0">
+      <div class="wiz__author-tag" *ngFor="let a of selectedAuthors">
+        <span>{{ a.name }}</span>
+        <button type="button" (click)="removeAuthor(a.id)" [attr.aria-label]="'Remove ' + a.name">
+          <svg viewBox="0 0 12 12" fill="none">
+            <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="wiz__error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  </div>
+
+  <!-- ── Navigation ── -->
+  <div class="wiz__nav">
+    <button class="wiz__btn wiz__btn--ghost" type="button" (click)="back()" *ngIf="step > 1" [disabled]="loading">
+      Back
+    </button>
+    <div *ngIf="step === 1" class="wiz__spacer"></div>
+
+    <button class="wiz__btn wiz__btn--primary" type="button"
+      *ngIf="step < totalSteps" (click)="next()" [disabled]="loading">
+      Next
+    </button>
+
+    <button class="wiz__btn wiz__btn--primary" type="button"
+      *ngIf="step === totalSteps" (click)="save()" [disabled]="loading">
+      {{ loading ? 'Saving…' : (mode === 'modal' ? 'Save preferences' : 'Finish setup') }}
+    </button>
+  </div>
+
+</div>

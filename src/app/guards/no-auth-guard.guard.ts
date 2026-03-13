@@ -7,7 +7,7 @@ export const noAuthGuard: CanActivateFn = () => {
   const expiry = new Date(localStorage.getItem('expiry') || '');
 
   if (token && expiry.getTime() > new Date().getTime()) {
-    router.navigate(['/']);
+    router.navigate(['/dashboard']);
     return false;
   } else {
     return true;
